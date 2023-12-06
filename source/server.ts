@@ -7,7 +7,7 @@ admin.initializeApp();
 const uri = 'mongodb+srv://jhlee:jhlee@imicainstance.h807wuk.mongodb.net/Cufit?retryWrites=true&w=majority';
 
 const app = express();
-const port = 22;
+const port = 3030;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
