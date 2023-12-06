@@ -484,8 +484,10 @@ router.post("/purchase", async (req, res) => {
   } finally {
     session.endSession();
   }
+  const user = await User.getFromUid(uid);
   res.status(200).json({
     message: "Successfully purchase product!",
+    user,
     productId,
     productPrice: product.credit,
     productType,
