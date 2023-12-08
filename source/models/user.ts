@@ -86,11 +86,9 @@ UserSchema.statics.getFromUid = async function(uid: string) {
     result.credit = creditAmount
     const guidelines = await purchasedGuidelines(uid);
     const filters = await purchasedFilters(uid);
-    console.log(guidelines)
-    console.log(filters)
-    console.log(creditAmount)
     result.filters = filters;
     result.guidelines = guidelines;
+    console.log(result)
     return result;
   } catch(error) {
     throw error;
