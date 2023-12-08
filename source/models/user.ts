@@ -154,6 +154,10 @@ async function purchasedFilters(uid: string) : Promise<object[]> {
   const orders = await Order.find({uid: uid});
   const filterIds = orders.filter(order => order.productType.toLowerCase() === "filter").map(order => order.productId);
   const filters = await Filter.find({_id: { $in: filterIds }})
+  .populate('likedCount')
+  .populate('wishedCount')
+  .populate('usedCount')
+  .populate('creator');
   return filters
 }
 
@@ -161,6 +165,10 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
   const orders = await Order.find({uid: uid});
   const guidelineIds = orders.filter(order => order.productType.toLowerCase() === "guideline").map(order => order.productId);
   const guidelines = await Guideline.find({_id: { $in: guidelineIds }})
+  .populate('likedCount')
+  .populate('wishedCount')
+  .populate('usedCount')
+  .populate('creator');
   return guidelines
 }
 
