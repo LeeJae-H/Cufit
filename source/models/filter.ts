@@ -1,8 +1,9 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import * as like from './like';
+import { Like } from './like';
 import * as order from './order';
 import * as wish from './wish';
-like
+import * as user from './user';
+user
 order
 wish
 
@@ -18,7 +19,6 @@ interface DBFilter {
   credit: number;
   type: string;
   creatorUid: string;
-  creatorDisplayName: string;
   adjustment: object;
 }
 
@@ -33,6 +33,7 @@ interface DBFilterModel extends Model<DBFilterDocument> {
   getListFromTagWithSort: (tag: string, sortBy: string, sort: string, auth: string) => Promise<[DBFilterDocument]>;
   getFromObjId: (_id: string) => Promise<DBFilterDocument>;
   newFilter: (data: Object) => Promise<DBFilterDocument>;
+  top5: () => Promise<[DBFilterDocument]>;
 }
 
 const FilterSchema = new Schema<DBFilterDocument>({
@@ -46,8 +47,7 @@ const FilterSchema = new Schema<DBFilterDocument>({
   filteredImageUrl: { required: true, type: String },
   credit: { required: true, type: Number },
   type: { required: true, type: String, default: "Filter" },
-  creatorUid: { required: true, type: String },
-  creatorDisplayName: { required: true, type: String },
+  creatorUid: { required: true, type: String, ref: 'User' },
   adjustment: { required: true, type: Object },
 }, {
   toObject: {
@@ -63,7 +63,8 @@ FilterSchema.statics.getListFromCreatorUid = async function(uid: string, auth: s
     const result = await Filter.find({ creatorUid: uid, authStatus: auth }).sort({ _id: -1 }).limit(50)
     .populate('likedCount')
     .populate('wishedCount')
-    .populate('usedCount');
+    .populate('usedCount')
+    .populate('creator');
     return result;
   } catch(error) {
     throw error;
@@ -75,7 +76,8 @@ FilterSchema.statics.getListFromCreatorId = async function(cid: string, auth: st
     const result = await Filter.find({ creatorId: cid, authStatus: auth }).sort({ _id: -1 }).limit(50)
     .populate('likedCount')
     .populate('wishedCount')
-    .populate('usedCount');
+    .populate('usedCount')
+    .populate('creator');
     return result;
   } catch(error) {
     throw error;
@@ -87,7 +89,8 @@ FilterSchema.statics.getListFromTag = async function(tag: string, auth: string) 
     const result = await Filter.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } }, authStatus: auth }).sort({ _id: -1 }).limit(50)
     .populate('likedCount')
     .populate('wishedCount')
-    .populate('usedCount');
+    .populate('usedCount')
+    .populate('creator');
     return result;
   } catch(error) {
     throw error;
@@ -102,24 +105,28 @@ FilterSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy
       return await query.sort({ _id : -1 }).limit(20)
       .populate('likedCount')
       .populate('wishedCount')
-      .populate('usedCount');
+      .populate('usedCount')
+      .populate('creator');
     } else {
       return await query.sort({ _id : 1 }).limit(20)
       .populate('likedCount')
       .populate('wishedCount')
-      .populate('usedCount');
+      .populate('usedCount')
+      .populate('creator');
     }
   } else if (sortBy === "p") {
     if (sort === "a") {
       return await query.sort({ likedCount : -1 }).limit(20)
       .populate('likedCount')
       .populate('wishedCount')
-      .populate('usedCount');
+      .populate('usedCount')
+      .populate('creator');
     } else {
       return await query.sort({ likedCount: 1 }).limit(20)
       .populate('likedCount')
       .populate('wishedCount')
-      .populate('usedCount');
+      .populate('usedCount')
+      .populate('creator');
     }
   } else {
     return [];
@@ -131,12 +138,65 @@ FilterSchema.statics.getFromObjId = async function(_id: string) {
     const result = await Filter.findById(_id)
     .populate('likedCount')
     .populate('wishedCount')
-    .populate('usedCount');
+    .populate('usedCount')
+    .populate('creator');
     return result;
   } catch(error) {
     throw error;
   }
 }
+
+FilterSchema.statics.top5 = async function() {
+  try {
+    const top5Filters = await Like.aggregate([
+      {
+        $match: { productType: 'Filter' }
+      },
+      {
+        $group: {
+          _id: '$productId',
+          likeCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'filter', // 'guidelines'는 실제 Guideline 컬렉션의 이름입니다.
+          localField: '_id',
+          foreignField: '_id',
+          as: 'filter'
+        }
+      },
+      {
+        $unwind: { path: '$filter', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $sort: { likeCount: 1 }
+      },
+      {
+        $limit: 5
+      },
+      {
+        $project: {
+          _id: '$filter._id'
+        }
+      }
+    ]);
+
+    const filterIds = top5Filters.map((item) => item._id);
+
+    const top5FilterDocuments = await Filter.find({ _id: { $in: filterIds } })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('creator');
+
+    return top5FilterDocuments;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
+}
+
 
 FilterSchema.virtual('likedCount', {
   ref: 'Like',
@@ -158,6 +218,13 @@ FilterSchema.virtual('usedCount', {
   foreignField: 'productId',
   count: true
 });
+
+FilterSchema.virtual('creator', {
+  ref: 'User',
+  localField: 'creatorUid',
+  foreignField: 'uid',
+  justOne: true
+})
 
 const Filter = mongoose.model<DBFilterDocument, DBFilterModel>("Filter", FilterSchema, "filter");
 export { Filter, FilterSchema };

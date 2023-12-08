@@ -3,7 +3,11 @@ import cors from 'cors';
 import routes from './routes/index';
 import mongoose from 'mongoose';
 import * as admin from 'firebase-admin';
-admin.initializeApp();
+import serviceAccount from './firebasekey.json';
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount)
+});
 const uri = 'mongodb+srv://jhlee:jhlee@imicainstance.h807wuk.mongodb.net/Cufit?retryWrites=true&w=majority';
 
 const app = express();

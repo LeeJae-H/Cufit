@@ -1,8 +1,9 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import * as like from './like';
+import { Like } from './like';
 import * as order from './order';
 import * as wish from './wish';
-like
+import * as user from './user';
+user
 order
 wish
 
@@ -19,7 +20,6 @@ interface DBGuideline {
   type: string;
   placeName?: string;
   creatorUid: string;
-  creatorDisplayName: string;
   location: {
     type: string;
     coordinates: number[];
@@ -36,6 +36,7 @@ interface DBGuidelineModel extends Model<DBDBGuidelineDocument> {
   getFromObjId: (_id: string) => Promise<DBDBGuidelineDocument>;
   newGuideline: (data: Object) => Promise<DBDBGuidelineDocument>;
   getListFromTagWithSort: (tag: string, sortBy: string, sort: string, auth: string) => Promise<[DBDBGuidelineDocument]>;
+  top5: () => Promise<[DBDBGuidelineDocument]>;
 }
 
 const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
@@ -50,8 +51,7 @@ const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
   credit: { required: true, type: Number },
   type: { required: true, type: String, default: "Guideline" },
   placeName: { type: String },
-  creatorUid: { required: true, type: String },
-  creatorDisplayName: { required: true, type: String },
+  creatorUid: { required: true, type: String, ref: 'User' },
   location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{type: Number}], default: [0, 0] } }
 }, {
   toJSON: {
@@ -67,7 +67,8 @@ GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, auth
     const result = await Guideline.find({ creatorUid: uid, authStatus: auth }).sort({ _id: -1 }).limit(50)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     return result;
   } catch(error) {
     throw error;
@@ -79,7 +80,8 @@ GuidelineSchema.statics.getListFromTag = async function(tag: string, auth: strin
     const result = await Guideline.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } }, authStatus: auth }).sort({ _id: -1 }).limit(50)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     return result;
   } catch(error) {
     throw error;
@@ -91,7 +93,8 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string) {
     const result = await Guideline.findById(_id)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     return result;
   } catch(error) {
     throw error;
@@ -105,29 +108,86 @@ GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sor
       return await query.sort({ _id : -1 }).limit(20)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     } else {
       return await query.sort({ _id : 1 }).limit(20)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     }
   } else if (sortBy === "p") {
     if (sort === "a") {
       return await query.sort({ likedCount : -1 }).limit(20)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     } else {
       return await query.sort({ likedCount: 1 }).limit(20)
                     .populate('likedCount')
                     .populate('wishedCount')
-                    .populate('usedCount');
+                    .populate('usedCount')
+                    .populate('creator');
     }
   } else {
     return [];
   }
 }
+
+GuidelineSchema.statics.top5 = async function() {
+  try {
+    const top5Guidelines = await Like.aggregate([
+      {
+        $match: { productType: 'Guideline' }
+      },
+      {
+        $group: {
+          _id: '$productId',
+          likeCount: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'guideline', // 'guidelines'는 실제 Guideline 컬렉션의 이름입니다.
+          localField: '_id',
+          foreignField: '_id',
+          as: 'guideline'
+        }
+      },
+      {
+        $unwind: { path: '$guideline', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $sort: { likeCount: 1 }
+      },
+      {
+        $limit: 5
+      },
+      {
+        $project: {
+          _id: '$guideline._id'
+        }
+      }
+    ]);
+
+    const guidelineIds = top5Guidelines.map((item) => item._id);
+
+    // Guideline 모델에서 상위 5개 Guideline을 가져오기
+    const top5GuidelineDocuments = await Guideline.find({ _id: { $in: guidelineIds } })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('creator');
+
+    return top5GuidelineDocuments;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
+}
+
 
 GuidelineSchema.virtual('likedCount', {
   ref: 'Like',
@@ -150,6 +210,13 @@ GuidelineSchema.virtual('usedCount', {
   count: true
 });
 
+GuidelineSchema.virtual('creator', {
+  ref: 'User',
+  localField: 'creatorUid',
+  foreignField: 'uid',
+  justOne: true
+})
+ 
 GuidelineSchema.index({ location: "2dsphere" }); 
 
 const Guideline = mongoose.model<DBDBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");

@@ -19,11 +19,10 @@ router.post('/upload', async (req, res) => {
   const description = req.body.description;
   const credit = req.body.credit;
   const creatorUid = req.body.creatorUid;
-  const creatorDisplayName = req.body.creatorDisplayName;
   const adjustment = req.body.adjustment;
   const originalImageUrl = req.body.originalImageUrl;
   const filteredImageUrl = req.body.filteredImageUrl;
-  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !creatorDisplayName || !adjustment || !originalImageUrl || ! filteredImageUrl) {
+  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !adjustment || !originalImageUrl || ! filteredImageUrl) {
     res.status(400).json({
       error: "essential data not found."
     })
@@ -51,7 +50,6 @@ router.post('/upload', async (req, res) => {
     description,
     authStatus,
     creatorUid,
-    creatorDisplayName,
     adjustment: adjustmentObject,
     originalImageUrl: originalImageUrl,
     filteredImageUrl: filteredImageUrl
@@ -83,10 +81,7 @@ router.get("/main", async (req, res) => {
     }
     result.push(data);
   }
-  let top = await Filter.find({ authStatus : auth.AUTHORIZED }).sort({ likedCount : -1 }).limit(5)
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount');
+  let top = await Filter.top5();
   res.status(200).json({
     message: "Successfully read main contents.",
     top: top,

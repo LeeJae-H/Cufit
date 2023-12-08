@@ -20,12 +20,11 @@ router.post('/upload', async (req, res) => {
   const description = req.body.description;
   const credit = req.body.credit;
   const creatorUid = req.body.creatorUid;
-  const creatorDisplayName = req.body.creatorDisplayName;
   const originalImageUrl = req.body.originalImageUrl;
   const guidelineImageUrl = req.body.guidelineImageUrl;
   const placeName = req.body.placeName; // nullable
-  const locationString = req.body.location; // nullable
-  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !creatorDisplayName || !originalImageUrl || ! guidelineImageUrl) {
+  const locationString = req.body.location;
+  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !originalImageUrl || ! guidelineImageUrl) {
     res.status(400).json({
       error: "essential data not found."
     })
@@ -50,7 +49,6 @@ router.post('/upload', async (req, res) => {
     description,
     authStatus,
     creatorUid,
-    creatorDisplayName,
     originalImageUrl: originalImageUrl,
     guidelineImageUrl: guidelineImageUrl,
     placeName: placeName,
@@ -127,10 +125,7 @@ router.get("/main", async (req, res) => {
     }
     result.push(data);
   }
-  let top = await Guideline.find({ authStatus : auth.AUTHORIZED }).sort({ likedCount : -1 }).limit(5)
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount');
+  let top = await Guideline.top5();
   res.status(200).json({
     message: "Successfully read main contents.",
     top: top,

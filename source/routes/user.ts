@@ -188,8 +188,16 @@ router.get("/wishlist/:uid", async (req, res) => {
   .map(wish => wish.productId)
   const guidelineIds = wishlist.filter(wish => wish.productType === "Guideline")
   .map(wish => wish.productId)
-  const filters = await Filter.find({_id: { $in: filterIds }});
-  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } });
+  const filters = await Filter.find({_id: { $in: filterIds }})
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
+  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
   res.status(200).json({
     filters: filters,
     guidelines: guidelines,
@@ -204,8 +212,16 @@ router.get("/likelist/:uid", async (req, res) => {
   .map(like => like.productId);
   const guidelineIds = likelist.filter(like => like.productType === "Guideline")
   .map(like => like.productId)
-  const filters = await Filter.find({_id: { $in: filterIds }});
-  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } });
+  const filters = await Filter.find({_id: { $in: filterIds }})
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
+  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
   res.status(200).json({
     filters: filters,
     guidelines: guidelines,
@@ -239,11 +255,11 @@ router.post('/credit/purchase', async (req, res) => {
     const { uid, atid } = req.body;
 
     const receiptData = req.body.receiptData;
-    const routerleProductionURL = 'https://buy.itunes.routerle.com/verifyReceipt'; // Production URL
-    const routerleSandboxURL = 'https://sandbox.itunes.routerle.com/verifyReceipt'; // Sandbox URL
+    const appleProductionURL = 'https://buy.itunes.apple.com/verifyReceipt'; // Production URL
+    const appleSandboxURL = 'https://sandbox.itunes.apple.com/verifyReceipt'; // Sandbox URL
     const password = '71ede09526bb4a599f1e777e1f25c98e';
 
-    const response = await axios.post(routerleProductionURL, {
+    const response = await axios.post(appleProductionURL, {
       "receipt-data": receiptData,
       "password": password
     })
@@ -260,7 +276,7 @@ router.post('/credit/purchase', async (req, res) => {
           })
           return;
         }
-        const receipts = verificationResult.receipt.in_router
+        const receipts = verificationResult.receipt.in_app
         const availableReceipts = receipts.filter((element: any) => {
           return element.original_transaction_id === atid;
         });
@@ -299,7 +315,7 @@ router.post('/credit/purchase', async (req, res) => {
         })
         return;
       }
-      const sandboxResponse = await axios.post(routerleSandboxURL, {
+      const sandboxResponse = await axios.post(appleSandboxURL, {
         "receipt-data": receiptData,
         "password": password
       })
@@ -309,7 +325,7 @@ router.post('/credit/purchase', async (req, res) => {
         const session = await mongoose.startSession();
         session.startTransaction();
         try {
-          const receipts = sandboxVerificationResult.receipt.in_router
+          const receipts = sandboxVerificationResult.receipt.in_app
           const availableReceipts = receipts.filter((element: any) => {
             return element.original_transaction_id === atid;
           });

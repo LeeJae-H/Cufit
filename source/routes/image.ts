@@ -2,7 +2,7 @@ import express from 'express';
 import formidable from 'formidable';
 import { Storage } from '@google-cloud/storage';
 const router = express.Router();
-const storage = new Storage({ keyFilename: "firebasekey.json" })
+const storage = new Storage({ keyFilename: "../firebasekey.json" })
 
 router.post("/upload", async (req, res) => {
   const form = new formidable.IncomingForm({ multiples: true });
