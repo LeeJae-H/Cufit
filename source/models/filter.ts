@@ -191,6 +191,7 @@ FilterSchema.statics.top5 = async function() {
       .populate('creator');
     if (top5FilterDocuments.length < 5) {
         const additional = await Filter.find().sort({ _id: -1 })
+          .limit(5 - top5FilterDocuments.length)
           .populate('likedCount')
           .populate('wishedCount')
           .populate('usedCount')

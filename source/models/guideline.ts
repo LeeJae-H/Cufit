@@ -182,6 +182,7 @@ GuidelineSchema.statics.top5 = async function() {
       .populate('creator');
     if (top5GuidelineDocuments.length < 5) {
       const additional = await Guideline.find().sort({ _id: -1 })
+        .limit(5 - top5GuidelineDocuments.length)
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
