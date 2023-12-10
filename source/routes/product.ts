@@ -5,6 +5,8 @@ import { Follow } from '../models/follow';
 import { Like } from '../models/like';
 import { Wish } from '../models/wish';
 import { Order } from '../models/order';
+import { Filter } from '../models/filter';
+import { Guideline } from '../models/guideline';
 
 // router 객체
 const router = express.Router();
@@ -134,7 +136,12 @@ router.get("/detail/:productId", async (req, res) => {
 
   let user: any;
   try {
-    user = await User.getFromUid(cid);
+    const tUser = await User.getFromUid(cid);
+    const salingFilters = await Filter.getListFromCreatorUid(tUser.uid, "authorized");
+    const salingGuidelines = await Guideline.getListFromCreatorUid(tUser.uid, "authorized");
+    user = tUser;
+    user.salingFilters = salingFilters;
+    user.salingGuidelines = salingGuidelines;
   } catch(error) {
     console.error("error while find creator info.")
     console.error(error);
