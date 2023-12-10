@@ -170,7 +170,7 @@ FilterSchema.statics.top5 = async function() {
         $unwind: { path: '$filter', preserveNullAndEmptyArrays: true }
       },
       {
-        $sort: { likeCount: 1 }
+        $sort: { likeCount: -1 }
       },
       {
         $limit: 5

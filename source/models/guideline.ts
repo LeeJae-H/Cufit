@@ -160,7 +160,7 @@ GuidelineSchema.statics.top5 = async function() {
         $unwind: { path: '$guideline', preserveNullAndEmptyArrays: true }
       },
       {
-        $sort: { likeCount: 1 }
+        $sort: { likeCount: -1 }
       },
       {
         $limit: 5
