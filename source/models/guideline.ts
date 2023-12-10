@@ -175,12 +175,21 @@ GuidelineSchema.statics.top5 = async function() {
     const guidelineIds = top5Guidelines.map((item) => item._id);
 
     // Guideline 모델에서 상위 5개 Guideline을 가져오기
-    const top5GuidelineDocuments = await Guideline.find({ _id: { $in: guidelineIds } })
+    let top5GuidelineDocuments = await Guideline.find({ _id: { $in: guidelineIds } })
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
       .populate('creator');
-
+    if (top5GuidelineDocuments.length < 5) {
+      const additional = await Guideline.find().sort({ _id: -1 })
+        .populate('likedCount')
+        .populate('wishedCount')
+        .populate('usedCount')
+        .populate('creator');
+        additional.forEach(item => {
+          top5GuidelineDocuments.push(item);
+        })
+    }
     return top5GuidelineDocuments;
   } catch (error) {
     console.error('Error getting top 5 guidelines by likes:', error);

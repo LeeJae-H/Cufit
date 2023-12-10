@@ -189,7 +189,16 @@ FilterSchema.statics.top5 = async function() {
       .populate('wishedCount')
       .populate('usedCount')
       .populate('creator');
-
+    if (top5FilterDocuments.length < 5) {
+        const additional = await Filter.find().sort({ _id: -1 })
+          .populate('likedCount')
+          .populate('wishedCount')
+          .populate('usedCount')
+          .populate('creator');
+          additional.forEach(item => {
+            top5FilterDocuments.push(item);
+          })
+      }
     return top5FilterDocuments;
   } catch (error) {
     console.error('Error getting top 5 guidelines by likes:', error);
