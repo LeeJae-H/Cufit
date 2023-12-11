@@ -295,7 +295,7 @@ router.post('/credit/purchase', async (req, res) => {
           creditId: newCredit._id,
           amount: amount,
           createdAt: currentTime,
-          transactionType: "PURCHASE"
+          transactionType: "PURCHASE_CREDIT"
         })
         await newCredit.save({session})
         await newTransaction.save({session})
@@ -344,7 +344,7 @@ router.post('/credit/purchase', async (req, res) => {
             creditId: newCredit._id,
             amount: amount,
             createdAt: currentTime,
-            transactionType: "PURCHASE"
+            transactionType: "PURCHASE_CREDIT"
           })
           await newCredit.save({session})
           await newTransaction.save({session})

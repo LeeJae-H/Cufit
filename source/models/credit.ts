@@ -33,7 +33,8 @@ const CreditSchema = new Schema<DBCreditDocument>({
   },
   creditType: {
     required: true,
-    type: String
+    type: String,
+    enum: ['PURCHASE', 'ADMIN']
   },
   atid: {
     type: String
@@ -59,6 +60,7 @@ const CreditTransactionSchema = new Schema<DBCreditTransactionDocument>({
   transactionType: {
     required: true,
     type: String,
+    enum: ['PURCHASE_PRODUCT', 'PURCHASE_CREDIT']
   },
   amount: {
     required: true,
