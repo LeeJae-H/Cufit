@@ -183,4 +183,21 @@ router.get("/tag/:tag", async (req, res) => { // get tagged guidelines
   }
 })
 
+router.get("/search/:keyword", async (req, res) => {
+  const keyword = req.params.keyword.toLowerCase();
+  const sort = `${req.query.sort}`;
+  const sortby = `${req.query.sortby}`;
+  const cost = `${req.query.cost}`;
+  if (!keyword || !sort || !sortby || !cost) {
+    res.status(201).json({
+      message: "essential data not found"
+    })
+    return;
+  }
+  const result = await Guideline.search(keyword, sort, sortby, cost);
+  res.status(200).json({
+    result
+  })
+})
+
 export default router;

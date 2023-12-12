@@ -37,6 +37,7 @@ interface DBGuidelineModel extends Model<DBDBGuidelineDocument> {
   newGuideline: (data: Object) => Promise<DBDBGuidelineDocument>;
   getListFromTagWithSort: (tag: string, sortBy: string, sort: string, auth: string) => Promise<[DBDBGuidelineDocument]>;
   top5: () => Promise<[DBDBGuidelineDocument]>;
+  search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBDBGuidelineDocument]>;
 }
 
 const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
@@ -198,6 +199,30 @@ GuidelineSchema.statics.top5 = async function() {
   }
 }
 
+GuidelineSchema.statics.search = async function(keyword: string, sort: string, sortby: string, cost: string) {
+  if (sortby === "p") { // like순서
+    let result = searchByLike(keyword, sort === "d", cost === "f")
+    return result
+  } else { // 최신순
+    let result = await Guideline.find({
+      $or: [
+        { tags: { $regex: new RegExp(keyword, 'i') } },
+        { title: { $regex: new RegExp(keyword, 'i') } },
+        { description: { $regex: new RegExp(keyword, 'i') } },
+        { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+      ],
+      credit: cost === "f" ?
+      { $eq: 0 } :
+      { $gt: 0 }
+    })
+    .sort({ _id: sort === "d" ? -1 : 1 })
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
+    return result;
+  }
+}
 
 GuidelineSchema.virtual('likedCount', {
   ref: 'Like',
@@ -228,6 +253,71 @@ GuidelineSchema.virtual('creator', {
 })
  
 GuidelineSchema.index({ location: "2dsphere" }); 
+
+async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
+  let result = await Like.aggregate([
+    {
+      $match: {
+        productType: "Guideline"
+      },
+    },
+    {
+      $group: {
+        _id: '$productId',
+        likedCount: { $sum: 1 },
+      }
+    },
+    {
+      $lookup: {
+        from: "filter",
+        localField: "_id",
+        foreignField: "_id",
+        as: "filterData",
+      }
+    },
+    {
+      $unwind: {
+        path: '$filterData',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: '$filterData._id',
+        tags: '$filterData.tags',
+        title: '$filterData.title',
+        description: '$filterData.description',
+        shortDescription: '$filterData.shortDescription',
+        credit: '$filterData.credit'
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { tags: { $regex: new RegExp(keyword, 'i') } },
+          { title: { $regex: new RegExp(keyword, 'i') } },
+          { description: { $regex: new RegExp(keyword, 'i') } },
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+        ],
+        credit: isFree ?
+          { $eq: 0 } :
+          { $gt: 0 } 
+      }
+    },
+    {
+      $sort: { likedCount: desc ? -1 : 1 }
+    }
+  ])
+
+  const guidelineIds = result.map(item => item._id);
+  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
+  .populate('likedCount')
+  .populate('wishedCount')
+  .populate('usedCount')
+  .populate('creator');
+  return guidelines;
+}
+
 
 const Guideline = mongoose.model<DBDBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");
 export { Guideline, GuidelineSchema };

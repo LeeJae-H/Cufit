@@ -34,6 +34,7 @@ interface DBFilterModel extends Model<DBFilterDocument> {
   getFromObjId: (_id: string) => Promise<DBFilterDocument>;
   newFilter: (data: Object) => Promise<DBFilterDocument>;
   top5: () => Promise<[DBFilterDocument]>;
+  search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBFilterDocument]>;
 }
 
 const FilterSchema = new Schema<DBFilterDocument>({
@@ -146,6 +147,31 @@ FilterSchema.statics.getFromObjId = async function(_id: string) {
   }
 }
 
+FilterSchema.statics.search = async function(keyword: string, sort: string, sortby: string, cost: string) {
+  if (sortby === "p") { // like순서
+    let result = searchByLike(keyword, sort === "d", cost === "f")
+    return result
+  } else { // 최신순
+    let result = await Filter.find({
+      $or: [
+        { tags: { $regex: new RegExp(keyword, 'i') } },
+        { title: { $regex: new RegExp(keyword, 'i') } },
+        { description: { $regex: new RegExp(keyword, 'i') } },
+        { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+      ],
+      credit: cost === "f" ?
+      { $eq: 0 } :
+      { $gt: 0 }
+    })
+    .sort({ _id: sort === "d" ? -1 : 1 })
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
+    return result;
+  }
+}
+
 FilterSchema.statics.top5 = async function() {
   try {
     const top5Filters = await Like.aggregate([
@@ -235,6 +261,70 @@ FilterSchema.virtual('creator', {
   foreignField: 'uid',
   justOne: true
 })
+
+async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
+  let result = await Like.aggregate([
+    {
+      $match: {
+        productType: "Filter"
+      },
+    },
+    {
+      $group: {
+        _id: '$productId',
+        likedCount: { $sum: 1 },
+      }
+    },
+    {
+      $lookup: {
+        from: "filter",
+        localField: "_id",
+        foreignField: "_id",
+        as: "filterData",
+      }
+    },
+    {
+      $unwind: {
+        path: '$filterData',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: '$filterData._id',
+        tags: '$filterData.tags',
+        title: '$filterData.title',
+        description: '$filterData.description',
+        shortDescription: '$filterData.shortDescription',
+        credit: '$filterData.credit'
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { tags: { $regex: new RegExp(keyword, 'i') } },
+          { title: { $regex: new RegExp(keyword, 'i') } },
+          { description: { $regex: new RegExp(keyword, 'i') } },
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+        ],
+        credit: isFree ?
+          { $eq: 0 } :
+          { $gt: 0 } 
+      }
+    },
+    {
+      $sort: { likedCount: desc ? -1 : 1 }
+    }
+  ])
+
+  const filterIds = result.map(item => item._id);
+  const filters = await Filter.find({ _id: { $in: filterIds } })
+  .populate('likedCount')
+  .populate('wishedCount')
+  .populate('usedCount')
+  .populate('creator');
+  return filters;
+}
 
 const Filter = mongoose.model<DBFilterDocument, DBFilterModel>("Filter", FilterSchema, "filter");
 export { Filter, FilterSchema };
