@@ -206,7 +206,7 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
   } else { // 최신순
     let result = await Guideline.find({
       $or: [
-        { tags: { $regex: new RegExp(keyword, 'i') } },
+        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
         { title: { $regex: new RegExp(keyword, 'i') } },
         { description: { $regex: new RegExp(keyword, 'i') } },
         { shortDescription: { $regex: new RegExp(keyword, 'i') } },
@@ -294,7 +294,7 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
     {
       $match: {
         $or: [
-          { tags: { $regex: new RegExp(keyword, 'i') } },
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
           { title: { $regex: new RegExp(keyword, 'i') } },
           { description: { $regex: new RegExp(keyword, 'i') } },
           { shortDescription: { $regex: new RegExp(keyword, 'i') } },
