@@ -99,7 +99,7 @@ UserSchema.statics.getFromObjId = async function(_id: string) {
   try {
     const result = (await User.findById(_id).populate('follower').populate('following'))?.toObject()
     if (!result) {
-      throw "result not found"
+      return null;
     }
     const credits = await Credit.find({ 
       uid: result.uid,
