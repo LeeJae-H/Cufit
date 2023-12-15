@@ -78,7 +78,8 @@ router.post("/profile", async (req, res) => {
     const uid = decodedToken.uid;
 
     // 데이터베이스에서 uid 조회
-    const result = await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });
+    await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });
+    const result = await User.getFromUid(uid);
     console.log(result)
     res.status(200).json({
       message: "Successfully updated!",
