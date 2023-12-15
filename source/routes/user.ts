@@ -65,10 +65,10 @@ router.get("/profile/uid/:uid", async (req, res) => {
 
 // idToken을 받아서 user 정보 수정하기
 router.post("/profile", async (req, res) => {
-  const { idToken, bio, userName, instagramName, tiktokName, youtubeName } = req.body;
+  const { idToken, bio, displayName, instagramName, tiktokName, youtubeName } = req.body;
   const newUserData = {
     bio: bio,
-    userName: userName,
+    displayName: displayName,
     instagramName: instagramName,
     tiktokName: tiktokName,
     youtubeName: youtubeName
