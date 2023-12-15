@@ -79,12 +79,13 @@ router.post("/profile", async (req, res) => {
 
     // 데이터베이스에서 uid 조회
     const result = await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });
-
+    console.log(result)
     res.status(200).json({
       message: "Successfully updated!",
       result: result
     });
   } catch (error) {
+    console.error(error)
     res.status(401).json({
       error: error
     });
