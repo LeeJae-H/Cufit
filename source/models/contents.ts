@@ -9,7 +9,7 @@ interface DBContentsDocument extends DBContents, Document {
 
 }
 
-interface DBFilterModel extends Model<DBContentsDocument> {
+interface DBContentsModel extends Model<DBContentsDocument> {
   
 }
 
@@ -27,8 +27,13 @@ const ContentsSchema = new Schema<DBContentsDocument>({
     ]
   },
   type: {type: String, required: true}
-  // d -> displayName, t-> tag, b -> sort by(l: latest, p: popularity), s -> sort(a: asc, d: dsc)
+  /**
+   * d -> displayName, 
+   * t-> tag, 
+   * b -> sort by(l: latest, p: popularity), 
+   * s -> sort(a: asc, d: dsc)
+   *  */ 
 });
 
-const Contents = mongoose.model<DBContentsDocument, DBFilterModel>("Contents", ContentsSchema, "contents");
+const Contents = mongoose.model<DBContentsDocument, DBContentsModel>("Contents", ContentsSchema, "contents");
 export { Contents, ContentsSchema };

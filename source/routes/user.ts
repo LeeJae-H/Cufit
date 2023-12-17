@@ -15,6 +15,8 @@ import { Guideline } from '../models/guideline';
 import { Credit, CreditTransaction } from "../models/credit";
 import { Order } from '../models/order';
 import { Income } from "../models/income";
+import { Faq } from '../models/faq';
+
 
 router.post("/auth", async (req, res) => {
   const { idToken } = req.body;
@@ -61,6 +63,37 @@ router.get("/profile/uid/:uid", async (req, res) => {
       error: error
     });
   }  
+})
+
+router.post("/faq", async (req, res) => {
+  const { uid, title, content, type } = req.body;
+  if (!uid || !title || !content || !type) {
+    res.status(200).json({
+      statusCode: -1,
+      message: "essential data not found.",
+      result: {}
+    })
+  }
+  const faqData = {
+    uid, title, content, faqType: type, createdAt: Date.now()
+  }
+  const newFaq = new Faq(faqData);
+  await newFaq.save();
+  res.status(200).json({
+    statusCode: 0,
+    message: "faq uploaded successfully.",
+    result: newFaq
+  })
+})
+
+router.get('/faq/list/:uid', async (req, res) => {
+  const uid = req.params.uid;
+  const result = await Faq.getFromUid(uid);
+  res.status(200).json({
+    statusCode: 0,
+    message: "List read.",
+    result
+  })
 })
 
 // idToken을 받아서 user 정보 수정하기

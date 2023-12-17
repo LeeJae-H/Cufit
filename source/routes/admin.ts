@@ -2,6 +2,7 @@ import express from 'express';
 import { Filter } from '../models/filter';
 import { Guideline } from '../models/guideline';
 import { Contents } from '../models/contents';
+import { Faq, FaqAnswer } from '../models/faq';
 
 const router = express.Router();
 // authorization
@@ -58,6 +59,30 @@ router.post("/main/contents", async (req, res) => {
     result: newContents
   });
 });
+
+router.get('/faq/list', async (req, res) => {
+  const faqs = await Faq.list();
+  res.status(200).json({
+    statusCode: 0,
+    message: "faqs successfully read.",
+    result: faqs
+
+  })
+})
+
+router.post('/faq/answer/:faqId', async (req, res) => {
+  const faqId = req.params.faqId;
+  const { title, content } = req.body;
+  const answerData = {
+    faqId, title, content, createdAt: Date.now()
+  }
+  const newAnswer = await FaqAnswer.create(answerData);
+  res.status(200).json({
+    statusCode: 0,
+    message: "Answer successfully uploaded",
+    result: newAnswer
+  })
+})
 
 router.post("/authorize", async (req, res) => {
   const type = `${req.body.type}`;
