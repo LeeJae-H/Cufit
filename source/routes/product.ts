@@ -124,16 +124,12 @@ router.get("/detail/:productId", async (req, res) => {
   const cid = `${req.query.cid}`;
   const type = `${req.query.type}`;
   const productId = req.params.productId;
-  if (!uid || !cid || !productId || !type) {
+  if (!cid || !productId || !type) {
     res.status(401).json({
       error: "no essential data."
     })
+    return
   }
-  let isFollowed: Boolean = await Follow.isFollowed(uid, cid);
-  let isLiked: Boolean = await Like.isExist(productId, uid, type);
-  let isWished: Boolean = await Wish.isExist(productId, uid, type);
-  let isPurchased: Boolean = await Order.isExist(productId, uid, type);
-
   let user: any;
   try {
     const tUser = await User.getFromUid(cid);
@@ -149,6 +145,23 @@ router.get("/detail/:productId", async (req, res) => {
       error: error
     })
   }
+  
+  if (!uid) {
+    res.status(200).json({
+      creator: user,
+      isFollowed: false,
+      isLiked: false,
+      isWished: false,
+      isPurchased: false
+    })
+    return
+  }
+  let isFollowed: Boolean = await Follow.isFollowed(uid, cid);
+  let isLiked: Boolean = await Like.isExist(productId, uid, type);
+  let isWished: Boolean = await Wish.isExist(productId, uid, type);
+  let isPurchased: Boolean = await Order.isExist(productId, uid, type);
+
+  
   res.status(200).json({
     creator: user,
     isFollowed,
