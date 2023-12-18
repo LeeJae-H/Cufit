@@ -224,6 +224,7 @@ router.post("/manage/products", async (req, res) => {
 
     const filters = await Filter.getListFromCreatorUid(uid, "all");
     const guidelines = await Guideline.getListFromCreatorUid(uid, "all");
+    console.log("filter, guideline loaded")
     console.log(filters)
     console.log(guidelines)
     res.status(200).json({
@@ -235,6 +236,7 @@ router.post("/manage/products", async (req, res) => {
       }
     })
   } catch(error) {
+    console.error("error occured")
     console.error(error);
     res.status(200).json({
       statusCode: -1,
