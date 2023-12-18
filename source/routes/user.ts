@@ -219,9 +219,10 @@ router.get("/follow/check", async (req, res) => {
 router.post("/manage/products", async (req, res) => {
   const idToken = req.body.idToken;
   try {
+    console.log("decoding")
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
+    console.log("decoding complete")
     const filters = await Filter.getListFromCreatorUid(uid, "all");
     const guidelines = await Guideline.getListFromCreatorUid(uid, "all");
     console.log("filter, guideline loaded")
