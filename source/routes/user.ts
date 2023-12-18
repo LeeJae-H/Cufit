@@ -224,7 +224,8 @@ router.post("/manage/products", async (req, res) => {
 
     const filters = await Filter.getListFromCreatorUid(uid, "all");
     const guidelines = await Guideline.getListFromCreatorUid(uid, "all");
-
+    console.log(filters)
+    console.log(guidelines)
     res.status(200).json({
       statusCode: 0,
       message: "successfully read products",
