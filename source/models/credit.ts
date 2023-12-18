@@ -34,7 +34,7 @@ const CreditSchema = new Schema<DBCreditDocument>({
   creditType: {
     required: true,
     type: String,
-    enum: ['PURCHASE', 'ADMIN']
+    enum: ['PURCHASE', 'ADMIN', 'AD', 'EVENT']
   },
   atid: {
     type: String
