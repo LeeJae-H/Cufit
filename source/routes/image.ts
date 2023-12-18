@@ -4,6 +4,7 @@ import { Storage } from '@google-cloud/storage';
 const router = express.Router();
 const storage = new Storage({ keyFilename: "../firebasekey.json" })
 
+//upload 함수를 s3기반으로 작성
 router.post("/upload", async (req, res) => {
   const form = new formidable.IncomingForm({ multiples: true });
   form.parse(req, async (err, fields, files) => {
@@ -55,4 +56,8 @@ router.post("/upload", async (req, res) => {
   })
 })
 
+//delete 함수를 s3기반으로 작성.
+router.delete("/delete/:name", async (req, res) => {
+  const imageName = req.params.name;
+})
 export default router;
