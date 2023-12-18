@@ -234,6 +234,7 @@ router.post("/manage/products", async (req, res) => {
       }
     })
   } catch(error) {
+    console.error(error);
     res.status(200).json({
       statusCode: -1,
       message: error,
