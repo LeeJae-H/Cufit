@@ -216,6 +216,35 @@ router.get("/follow/check", async (req, res) => {
   }
 })
 
+router.post("/manage/products", async (req, res) => {
+  const idToken = req.body.idToken;
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    const filters = await Filter.getListFromCreatorUid(uid, "all");
+    const guidelines = await Guideline.getListFromCreatorUid(uid, "all");
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "successfully read products",
+      result: {
+        filters,
+        guidelines
+      }
+    })
+  } catch(error) {
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {
+        filters: [],
+        guidelines: []
+      }
+    })
+  }
+})
+
 router.get("/wishlist/:uid", async (req, res) => {
   const uid = req.params.uid;
   const wishlist = await Wish.find({uid: uid});

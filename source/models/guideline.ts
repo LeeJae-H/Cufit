@@ -65,12 +65,23 @@ const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
 
 GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, auth: string) {
   try {
-    const result = await Guideline.find({ creatorUid: uid, authStatus: auth }).sort({ _id: -1 }).limit(50)
-                    .populate('likedCount')
-                    .populate('wishedCount')
-                    .populate('usedCount')
-                    .populate('creator');
-    return result;
+    if (auth === "all") {
+      const result = await Guideline.find({ creatorUid: uid }).sort({ _id: -1 }).limit(50)
+        .populate('likedCount')
+        .populate('wishedCount')
+        .populate('usedCount')
+        .populate('creator');
+      return result;
+    } else {
+      const result = await Guideline.find({ creatorUid: uid, authStatus: auth }).sort({ _id: -1 }).limit(50)
+        .populate('likedCount')
+        .populate('wishedCount')
+        .populate('usedCount')
+        .populate('creator');
+      return result;
+    }
+    
+    
   } catch(error) {
     throw error;
   }
@@ -213,7 +224,8 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
       ],
       credit: cost === "f" ?
       { $eq: 0 } :
-      { $gt: 0 }
+      { $gt: 0 },
+      authStatus: "authorized"
     })
     .sort({ _id: sort === "d" ? -1 : 1 })
     .populate('likedCount')
@@ -288,7 +300,8 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
         title: '$filterData.title',
         description: '$filterData.description',
         shortDescription: '$filterData.shortDescription',
-        credit: '$filterData.credit'
+        credit: '$filterData.credit',
+        authStatus: '$filterData.authStatus'
       }
     },
     {
@@ -301,7 +314,8 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
         ],
         credit: isFree ?
           { $eq: 0 } :
-          { $gt: 0 } 
+          { $gt: 0 },
+        authStatus: "authorized"
       }
     },
     {

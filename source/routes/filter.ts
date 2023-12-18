@@ -141,9 +141,8 @@ router.get("/cid/:cid", async (req, res) => { // get filters from user id
 
 router.get("/uid/:uid", async (req, res) => { // get filters from user id
   const uid = req.params.uid;
-  const authStatus = `${req.query.authStatus}` ?? auth.AUTHORIZED;
   try {
-    const result = await Filter.getListFromCreatorUid(uid, authStatus);
+    const result = await Filter.getListFromCreatorUid(uid, auth.AUTHORIZED);
     res.status(200).json({
       result
     });

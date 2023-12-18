@@ -151,9 +151,8 @@ router.get("/:id", async (req, res) => { // get _id guideline
 
 router.get("/uid/:uid", async (req, res) => { // get guidelines from user id
   const uid = req.params.uid;
-  const authStatus = `${req.query.authStatus}` ?? auth.AUTHORIZED;
   try {
-    const result = await Guideline.getListFromCreatorUid(uid, authStatus);
+    const result = await Guideline.getListFromCreatorUid(uid, auth.AUTHORIZED);
     res.status(200).json({
       result
     });
