@@ -7,7 +7,8 @@ import { Wish } from '../models/wish';
 import { Order } from '../models/order';
 import { Filter } from '../models/filter';
 import { Guideline } from '../models/guideline';
-
+import { Review } from '../models/review';
+import * as admin from "firebase-admin";
 // router 객체
 const router = express.Router();
 
@@ -116,6 +117,43 @@ router.post('/wish', async (req, res) => {
       message: "type needed"
     })
     return;
+  }
+})
+
+router.post("/review/:productId", async (req, res) => {
+  const productId = req.params.productId;
+  const idToken = req.body.idToken;
+  const productType = req.body.productType;
+  const stars = req.body.stars;
+  const comment = req.body.comment;
+  const imageUrl = req.body.imageUrl;
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    const review = new Review({
+      uid: uid,
+      imageUrl: imageUrl,
+      stars: stars,
+      productId: new mongoose.Types.ObjectId(productId),
+      productType: productType,
+      comment: comment,
+      createdAt: Date.now()
+    })
+    await review.save();
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "Review saved.",
+      result: review
+    })
+  } catch(error) {
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
   }
 })
 
