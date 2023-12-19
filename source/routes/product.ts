@@ -145,8 +145,8 @@ router.get("/detail/:productId", async (req, res) => {
       error: error
     })
   }
-  
-  if (!uid) {
+
+  if (!uid || uid === "") {
     res.status(200).json({
       creator: user,
       isFollowed: false,
