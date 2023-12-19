@@ -132,6 +132,16 @@ router.post("/review/:productId", async (req, res) => {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
+    const existReview = await Review.findOne({ uid, productId });
+    if (existReview) {
+      res.status(200).json({
+        statusCode: 1,
+        message: "Review already submitted.",
+        result: existReview
+      })
+      return
+    }
+
     const review = new Review({
       uid: uid,
       imageUrl: imageUrl,
