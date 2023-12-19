@@ -131,9 +131,10 @@ router.post("/review/:productId", async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
+    console.log(uid);
     const existReview = await Review.findOne({ uid, productId });
     if (existReview) {
+      console.log(existReview);
       res.status(200).json({
         statusCode: 1,
         message: "Review already submitted.",
@@ -152,13 +153,14 @@ router.post("/review/:productId", async (req, res) => {
       createdAt: Date.now()
     })
     await review.save();
-
+    console.log(review);
     res.status(200).json({
       statusCode: 0,
       message: "Review saved.",
       result: review
     })
   } catch(error) {
+    console.error(error);
     res.status(200).json({
       statusCode: -1,
       message: error,
