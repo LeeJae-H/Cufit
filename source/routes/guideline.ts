@@ -67,8 +67,10 @@ router.post('/upload', async (req, res) => {
 
 router.get("/near", async (req, res) => {
   if (!req.query.lat || !req.query.lng) {
-    res.status(201).json({
-      message: "lat or lng not found."
+    res.status(200).json({
+      statusCode: -1,
+      message: "lat or lng not found.",
+      result: {}
     })
   }
   const lat = parseFloat(req.query.lat as string);
@@ -76,19 +78,25 @@ router.get("/near", async (req, res) => {
   const distanceString = req.query.distance === undefined ? "1000" : `${req.query.distance}`
   const distance = parseFloat(distanceString);
   const result = await Guideline.find({
-    location: {
-     $near: {
-      $maxDistance: distance,
-      $geometry: {
-       type: "Point",
-       coordinates: [lng, lat]
+      location: {
+        $near: {
+            $maxDistance: distance,
+            $geometry: {
+              type: "Point",
+              coordinates: [lng, lat]
+          }
+        }
       }
-     }
-    }
-   })
-   res.status(200).json({
-    result
-   })
+    })
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator');
+    res.status(200).json({
+        statusCode: 0,
+        message: "Success",
+        result
+    })
 })
 
 
