@@ -210,14 +210,15 @@ router.get("/detail/:productId", async (req, res) => {
   let isLiked: Boolean = await Like.isExist(productId, uid, type);
   let isWished: Boolean = await Wish.isExist(productId, uid, type);
   let isPurchased: Boolean = await Order.isExist(productId, uid, type);
-
+  let review = await Review.find({uid, productId});
   
   res.status(200).json({
     creator: user,
     isFollowed,
     isLiked,
     isWished,
-    isPurchased
+    isPurchased,
+    review
   })
 })
 
