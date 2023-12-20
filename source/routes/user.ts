@@ -314,6 +314,50 @@ router.get("/transactions/:idToken", async (req, res) => {
   }
 })
 
+// 광고 시청으로 획득한 크레딧
+router.post("/adreward", async (req, res) => {
+  const idToken = req.body.idToken;
+  const session = await mongoose.startSession();
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    const currentTime = Date.now();
+    const creditInfo = {
+      uid: uid,
+      amount: 3,
+      createdAt: currentTime,
+      expireAt: -1,
+      creditType: "AD"
+    };
+    const newCredit = new Credit(creditInfo)
+    const newTransaction = new CreditTransaction({
+      creditId: newCredit._id,
+      amount: 3,
+      createdAt: currentTime,
+      transactionType: "AD_REWARD"
+    })
+    await newCredit.save({session})
+    await newTransaction.save({session})
+    await session.commitTransaction();
+    const resultUser = await User.getFromUid(uid);
+    res.status(200).json({
+      statusCode: -1,
+      message: "Success",
+      result: resultUser
+    })
+  } catch(error) {
+    console.error(error);
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+  } finally { 
+    session.endSession();
+  }
+})
+
 // 인앱 결제로 구매한 credit (광고 시청 등으로 얻은 credit x)
 router.post('/credit/purchase', async (req, res) => {
   try {
