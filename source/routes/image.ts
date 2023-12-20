@@ -1,12 +1,17 @@
 import express from 'express';
 import formidable from 'formidable';
-import { Storage } from '@google-cloud/storage';
+import AWS from 'aws-sdk';
+import fs from 'fs';
 const router = express.Router();
-const storage = new Storage({ keyFilename: "../firebasekey.json" })
 
-//upload 함수를 s3기반으로 작성
+const s3 = new AWS.S3({
+  accessKeyId: 'AKIAXCOGHQE4QCHHWEFA',
+  secretAccessKey: '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',
+  region: 'ap-southeast-2'
+});
+
 router.post("/upload", async (req, res) => {
-  const form = new formidable.IncomingForm({ multiples: true });
+  const form = formidable({ multiples: true });
   form.parse(req, async (err, fields, files) => {
     if (err) {
       res.status(401).json({
@@ -14,27 +19,38 @@ router.post("/upload", async (req, res) => {
       });
       return;
     }
-    const image = (files.image ?? [])[0];
+    const fFiles: formidable.File[] = files.image ?? [];
+    const image = fFiles[0]!
     const type = fields.type;
-    if (!image || !type) {
+
+    const fileType = image.originalFilename?.split('.').pop(); // 파일의 확장자 
+    if (!image || !type || !fileType) {
       res.status(402).json({
         error: "not essential input."
       })
       return;
     }
-    const bucket = storage.bucket("gs://imica-kr.appspot.com");
     let imageUrl = "";
-    const downLoadPath = "https://firebasestorage.googleapis.com/v0/b/imica-kr.appspot.com/o/";
+
     try {
       if (image.size !== 0) {
-        const imageResponse = await bucket.upload(image.filepath, {
-          destination: `${type}/${Date.now()}.png`,
-          resumable: true,
-        });
-        imageUrl =
-          downLoadPath +
-          encodeURIComponent(imageResponse[0].name) +
-          "?alt=media";
+        const file = fs.readFileSync(image.filepath)
+        const uploadParams = {
+          Bucket: 'cufit-image-bucket',
+          Key: `${type}/${Date.now()}.${fileType}`,
+          Body: file,
+        };
+        console.log("after params", image.filepath)
+        let data = await s3.upload(uploadParams).promise();
+        imageUrl = data.Location;
+        res.status(200).json({
+          message: "Image uploaded successfully.",
+          result: {
+            url: imageUrl,
+            type: type
+          }
+        })
+        return;
       } else {
         res.status(400).json({
           error: "image file size is zero."
@@ -45,19 +61,38 @@ router.post("/upload", async (req, res) => {
       res.status(401).json({
         error: error
       });
+      return;
     }
-    res.status(200).json({
-      message: "Image uploaded successfully.",
-      result: {
-        url: imageUrl,
-        type: type
-      }
-    })
   })
 })
 
-//delete 함수를 s3기반으로 작성.
-router.delete("/delete/:name", async (req, res) => {
-  const imageName = req.params.name;
+router.delete("/delete", async (req, res) => {
+  const fileName = req.body.fileName;
+  const type = req.body.type;
+  
+  const bucketName = 'cufit-image-bucket';
+
+  //* 단일 객체 삭제
+  const objectParams_del = {
+    Bucket: bucketName,
+    Key: `${type}/${fileName}.png`
+  };
+  try {
+    let result = await s3.deleteObject(objectParams_del).promise()
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result
+    })
+  } catch(error) {
+    console.error(error);
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    return;
+  }
 })
+
 export default router;
