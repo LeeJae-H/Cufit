@@ -172,8 +172,8 @@ router.post("/review/:productId", async (req, res) => {
     await review.save();
     await newCredit.save({session})
     await newTransaction.save({session})
-    const resultUser = await User.getFromUid(uid);
     session.commitTransaction();
+    const resultUser = await User.getFromUid(uid);
     res.status(200).json({
       statusCode: 0,
       message: "Review saved.",
