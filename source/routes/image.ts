@@ -12,10 +12,12 @@ const s3 = new AWS.S3({
 
 router.post("/upload", async (req, res) => {
   const form = formidable({ multiples: true });
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      res.status(401).json({
-        error: err
+  form.parse(req, async (error, fields, files) => {
+    if (error) {
+      res.status(200).json({
+        statusCode: -1, 
+        message: error,
+        result: {}
       });
       return;
     }
@@ -25,8 +27,10 @@ router.post("/upload", async (req, res) => {
 
     const fileType = image.originalFilename?.split('.').pop(); // 파일의 확장자 
     if (!image || !type || !fileType) {
-      res.status(402).json({
-        error: "not essential input."
+      res.status(200).json({
+        statusCode: -1,
+        message: "not essential input.",
+        result: {}
       })
       return;
     }
@@ -44,6 +48,7 @@ router.post("/upload", async (req, res) => {
         let data = await s3.upload(uploadParams).promise();
         imageUrl = data.Location;
         res.status(200).json({
+          statusCode: 0,
           message: "Image uploaded successfully.",
           result: {
             url: imageUrl,
@@ -52,14 +57,18 @@ router.post("/upload", async (req, res) => {
         })
         return;
       } else {
-        res.status(400).json({
-          error: "image file size is zero."
+        res.status(200).json({
+          statusCode: -1,
+          message: "image file size is zero.",
+          result: {}
         })
         return;
       }
     } catch(error) {
-      res.status(401).json({
-        error: error
+      res.status(200).json({
+        statusCode: -1,
+        message: error,
+        result: {}
       });
       return;
     }
