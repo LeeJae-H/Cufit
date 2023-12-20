@@ -321,7 +321,7 @@ router.post("/adreward", async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
+    session.startTransaction();
     const currentTime = Date.now();
     const creditInfo = {
       uid: uid,
@@ -341,7 +341,6 @@ router.post("/adreward", async (req, res) => {
     await newTransaction.save({session})
     await session.commitTransaction();
     const resultUser = await User.getFromUid(uid);
-    console.log(resultUser)
     res.status(200).json({
       statusCode: 0,
       message: "Success",
