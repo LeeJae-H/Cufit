@@ -1,5 +1,5 @@
 import express from 'express';
-import mongoose from 'mongoose';
+import mongoose, { Mongoose } from 'mongoose';
 import { User } from '../models/user';
 import { Follow } from '../models/follow';
 import { Like } from '../models/like';
@@ -8,6 +8,7 @@ import { Order } from '../models/order';
 import { Filter } from '../models/filter';
 import { Guideline } from '../models/guideline';
 import { Review } from '../models/review';
+import { Credit, CreditTransaction } from '../models/credit';
 import * as admin from "firebase-admin";
 // router 객체
 const router = express.Router();
@@ -128,10 +129,12 @@ router.post("/review/:productId", async (req, res) => {
   const comment = req.body.comment;
   const imageUrl = req.body.imageUrl;
 
+  const session = await mongoose.startSession();
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-    console.log(uid);
+    const currentTime = Date.now();
+    session.startTransaction();
     const existReview = await Review.findOne({ uid, productId });
     if (existReview) {
       console.log(existReview);
@@ -150,22 +153,41 @@ router.post("/review/:productId", async (req, res) => {
       productId: new mongoose.Types.ObjectId(productId),
       productType: productType,
       comment: comment,
-      createdAt: Date.now()
+      createdAt: currentTime
+    })
+    const creditInfo = {
+      uid: uid,
+      amount: 1,
+      createdAt: currentTime,
+      expireAt: -1,
+      creditType: "REVIEW"
+    };
+    const newCredit = new Credit(creditInfo)
+    const newTransaction = new CreditTransaction({
+      creditId: newCredit._id,
+      amount: 1,
+      createdAt: currentTime,
+      transactionType: "PURCHASE_CREDIT"
     })
     await review.save();
-    console.log(review);
+    await newCredit.save({session})
+    await newTransaction.save({session})
+    session.commitTransaction();
     res.status(200).json({
       statusCode: 0,
       message: "Review saved.",
       result: review
     })
   } catch(error) {
+    session.abortTransaction();
     console.error(error);
     res.status(200).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+  } finally {
+    session.endSession();
   }
 })
 
