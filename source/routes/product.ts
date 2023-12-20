@@ -167,7 +167,7 @@ router.post("/review/:productId", async (req, res) => {
       creditId: newCredit._id,
       amount: 1,
       createdAt: currentTime,
-      transactionType: "PURCHASE_CREDIT"
+      transactionType: "REVIEW_REWARD"
     })
     await review.save();
     await newCredit.save({session})
