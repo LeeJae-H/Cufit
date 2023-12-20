@@ -341,12 +341,14 @@ router.post("/adreward", async (req, res) => {
     await newTransaction.save({session})
     await session.commitTransaction();
     const resultUser = await User.getFromUid(uid);
+    console.log(resultUser)
     res.status(200).json({
-      statusCode: -1,
+      statusCode: 0,
       message: "Success",
       result: resultUser
     })
   } catch(error) {
+    session.abortTransaction();
     console.error(error);
     res.status(200).json({
       statusCode: -1,
