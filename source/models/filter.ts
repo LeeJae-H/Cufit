@@ -66,7 +66,8 @@ FilterSchema.statics.getListFromCreatorUid = async function(uid: string) {
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator');
+      .populate('creator')
+      .populate('authStatus');
       return result;
   } catch(error) {
     throw error;
@@ -79,7 +80,8 @@ FilterSchema.statics.getListFromCreatorId = async function(cid: string) {
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
-    .populate('creator');
+    .populate('creator')
+    .populate('authStatus');
     return result;
   } catch(error) {
     throw error;
@@ -92,7 +94,7 @@ FilterSchema.statics.getListFromTag = async function(tag: string) {
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
-    .populate('creator');
+    .populate('creator').populate('authStatus');
     return result;
   } catch(error) {
     throw error;
@@ -108,13 +110,15 @@ FilterSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator');
+      .populate('creator')
+      .populate('authStatus');
     } else {
       return await query.sort({ _id : 1 }).limit(20)
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator');
+      .populate('creator')
+      .populate('authStatus');
     }
   } else if (sortBy === "p") {
     if (sort === "a") {
@@ -122,13 +126,15 @@ FilterSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator');
+      .populate('creator')
+      .populate('authStatus');
     } else {
       return await query.sort({ likedCount: 1 }).limit(20)
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator');
+      .populate('creator')
+      .populate('authStatus');
     }
   } else {
     return [];
@@ -141,7 +147,8 @@ FilterSchema.statics.getFromObjId = async function(_id: string) {
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
-    .populate('creator');
+    .populate('creator')
+    .populate('authStatus');
     return result;
   } catch(error) {
     throw error;
@@ -159,7 +166,19 @@ FilterSchema.statics.newSearch = async function(keyword: string) {
       }
     },
     {
+      $lookup: {
+        from: "auth",
+        localField: "_id",
+        foreignField: "productId",
+        as: "authStatus"
+      }
+    },
+    {
+      $unwind: "$authStatus"
+    },
+    {
       $match: {
+        "authStatus.code": "authorized",
         $or: [
           { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
           { title: { $regex: new RegExp(keyword, 'i') } },
@@ -192,7 +211,8 @@ FilterSchema.statics.search = async function(keyword: string, sort: string, sort
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
-    .populate('creator');
+    .populate('creator')
+    .populate('authStatus');
     return result;
   }
 }
@@ -239,7 +259,8 @@ FilterSchema.statics.top5 = async function() {
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator');
+      .populate('creator')
+      .populate('authStatus');
     if (top5FilterDocuments.length < 5) {
         const additional = await Filter.find().sort({ _id: -1 })
           .limit(5 - top5FilterDocuments.length)
@@ -355,7 +376,8 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
   .populate('likedCount')
   .populate('wishedCount')
   .populate('usedCount')
-  .populate('creator');
+  .populate('creator')
+  .populate('authStatus');
   return filters;
 }
 

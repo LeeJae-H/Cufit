@@ -363,7 +363,8 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
   .populate('likedCount')
   .populate('wishedCount')
   .populate('usedCount')
-  .populate('creator');
+  .populate('creator')
+  .populate('authStatus');
   return guidelines;
 }
 
