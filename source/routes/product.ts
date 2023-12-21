@@ -121,6 +121,16 @@ router.post('/wish', async (req, res) => {
   }
 })
 
+router.get("/review/:productId", async (req, res) => {
+  const productId = req.params.productId;
+  const reviews = await Review.find({ productId });
+  res.status(200).json({
+    statusCode: 0,
+    message: "Success",
+    result: reviews
+  })
+})
+
 router.post("/review/:productId", async (req, res) => {
   const productId = req.params.productId;
   const idToken = req.body.idToken;
