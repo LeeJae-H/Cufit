@@ -98,13 +98,14 @@ router.get('/faq/list/:uid', async (req, res) => {
 
 // idToken을 받아서 user 정보 수정하기
 router.post("/profile", async (req, res) => {
-  const { idToken, bio, displayName, instagramName, tiktokName, youtubeName } = req.body;
+  const { idToken, bio, displayName, instagramName, tiktokName, youtubeName, photoURL } = req.body;
   const newUserData = {
     bio: bio,
     displayName: displayName,
     instagramName: instagramName,
     tiktokName: tiktokName,
-    youtubeName: youtubeName
+    youtubeName: youtubeName,
+    photoURL: photoURL
   }
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -115,13 +116,16 @@ router.post("/profile", async (req, res) => {
     const result = await User.getFromUid(uid);
     console.log(result)
     res.status(200).json({
+      statusCode: 0,
       message: "Successfully updated!",
       result: result
     });
   } catch (error) {
     console.error(error)
-    res.status(401).json({
-      error: error
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
     });
   }  
 });
