@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 interface DBAuth {
   productId: mongoose.Schema.Types.ObjectId,
   productType: string,
-  status: string,
+  code: string,
   message: string,
   createdAt: number,
   lastAt: number
@@ -32,7 +32,7 @@ const AuthSchema = new Schema<DBAuthDocument>({
     required: true,
     type: Number
   },
-  status: {
+  code: {
     required: true,
     type: String,
     enum: ['authorized', 'unauthorized', 'denied']

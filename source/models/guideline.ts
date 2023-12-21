@@ -3,6 +3,8 @@ import { Like } from './like';
 import * as order from './order';
 import * as wish from './wish';
 import * as user from './user';
+import * as auth from './auth';
+auth
 user
 order
 wish
@@ -26,21 +28,22 @@ interface DBGuideline {
   };
 }
 
-interface DBDBGuidelineDocument extends DBGuideline, Document {
+interface DBGuidelineDocument extends DBGuideline, Document {
 
 }
 
-interface DBGuidelineModel extends Model<DBDBGuidelineDocument> {
-  getListFromCreatorUid: (uid: string) => Promise<[DBDBGuidelineDocument]>;
-  getListFromTag: (tag: string) => Promise<[DBDBGuidelineDocument]>;
-  getFromObjId: (_id: string) => Promise<DBDBGuidelineDocument>;
-  newGuideline: (data: Object) => Promise<DBDBGuidelineDocument>;
-  getListFromTagWithSort: (tag: string, sortBy: string, sort: string) => Promise<[DBDBGuidelineDocument]>;
-  top5: () => Promise<[DBDBGuidelineDocument]>;
-  search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBDBGuidelineDocument]>;
+interface DBGuidelineModel extends Model<DBGuidelineDocument> {
+  getListFromCreatorUid: (uid: string) => Promise<[DBGuidelineDocument]>;
+  getListFromTag: (tag: string) => Promise<[DBGuidelineDocument]>;
+  getFromObjId: (_id: string) => Promise<DBGuidelineDocument>;
+  newGuideline: (data: Object) => Promise<DBGuidelineDocument>;
+  getListFromTagWithSort: (tag: string, sortBy: string, sort: string) => Promise<[DBGuidelineDocument]>;
+  top5: () => Promise<[DBGuidelineDocument]>;
+  search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBGuidelineDocument]>;
+  newSearch: (keyword: string) => Promise<[DBGuidelineDocument]>;
 }
 
-const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
+const GuidelineSchema = new Schema<DBGuidelineDocument>({
   title: { required: true, type: String },
   tags: { required: true, type: [String] },  
   description: { required: true, type: String },
@@ -68,6 +71,7 @@ GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string) {
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
+        .populate('authStatus')
         .populate('creator');
       return result;
   } catch(error) {
@@ -81,6 +85,7 @@ GuidelineSchema.statics.getListFromTag = async function(tag: string) {
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
+                    .populate('authStatus')
                     .populate('creator');
     return result;
   } catch(error) {
@@ -94,6 +99,7 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string) {
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
+                    .populate('authStatus')
                     .populate('creator');
     return result;
   } catch(error) {
@@ -109,12 +115,14 @@ GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sor
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
+                    .populate('authStatus')
                     .populate('creator');
     } else {
       return await query.sort({ _id : 1 }).limit(20)
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
+                    .populate('authStatus')
                     .populate('creator');
     }
   } else if (sortBy === "p") {
@@ -123,12 +131,14 @@ GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sor
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
+                    .populate('authStatus')
                     .populate('creator');
     } else {
       return await query.sort({ likedCount: 1 }).limit(20)
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
+                    .populate('authStatus')
                     .populate('creator');
     }
   } else {
@@ -179,6 +189,7 @@ GuidelineSchema.statics.top5 = async function() {
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
+      .populate('authStatus')
       .populate('creator');
     if (top5GuidelineDocuments.length < 5) {
       const additional = await Guideline.find().sort({ _id: -1 })
@@ -186,6 +197,7 @@ GuidelineSchema.statics.top5 = async function() {
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
+        .populate('authStatus')
         .populate('creator');
         additional.forEach(item => {
           top5GuidelineDocuments.push(item);
@@ -197,6 +209,36 @@ GuidelineSchema.statics.top5 = async function() {
     throw error;
   }
 }
+
+GuidelineSchema.statics.newSearch = async function(keyword: string) {
+  let result = await Guideline.aggregate([
+    {
+      $match: {
+        // authStatus: {
+        //   $match: {
+        //     code: "authorized"
+        //   }
+        // },
+        $or: [
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+          { title: { $regex: new RegExp(keyword, 'i') } },
+          { description: { $regex: new RegExp(keyword, 'i') } },
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+        ],
+      }
+    }
+  ])
+  // let result = await Guideline.find({
+  //   $or: [
+  //     { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+  //     { title: { $regex: new RegExp(keyword, 'i') } },
+  //     { description: { $regex: new RegExp(keyword, 'i') } },
+  //     { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+  //   ],
+  // })
+  return result;
+}
+
 
 GuidelineSchema.statics.search = async function(keyword: string, sort: string, sortby: string, cost: string) {
   if (sortby === "p") { // like순서
@@ -218,6 +260,7 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
+    .populate('authStatus')
     .populate('creator');
     return result;
   }
@@ -248,6 +291,13 @@ GuidelineSchema.virtual('creator', {
   ref: 'User',
   localField: 'creatorUid',
   foreignField: 'uid',
+  justOne: true
+})
+
+GuidelineSchema.virtual('authStatus', {
+  ref: 'Auth',
+  localField: '_id',
+  foreignField: 'productId',
   justOne: true
 })
  
@@ -318,5 +368,5 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
 }
 
 
-const Guideline = mongoose.model<DBDBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");
+const Guideline = mongoose.model<DBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");
 export { Guideline, GuidelineSchema };

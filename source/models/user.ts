@@ -31,6 +31,7 @@ interface DBUserModel extends Model<DBUserDocument> {
   getFromUid: (uid: string) => Promise<DBUserDocument>;
   getFromObjId: (_id: string) => Promise<DBUserDocument>;
   createNewUser: (uid: DecodedIdToken) => Promise<DBUserDocument>;
+  search: (keyword: string) => Promise<[DBUserDocument]>;
 }
 
 const UserSchema = new Schema<DBUserDocument>({
@@ -68,6 +69,16 @@ const UserSchema = new Schema<DBUserDocument>({
   toObject: { virtuals: true },
   toJSON: { virtuals: true }
 })
+
+UserSchema.statics.search = async function(keyword: string) {
+  let result = await User.find({
+    $or: [
+      { displayName: { $regex: new RegExp(keyword, 'i') } },
+      { bio: { $regex: new RegExp(keyword, 'i') } }
+    ],
+  })
+  return result;  
+}
 
 UserSchema.statics.getFromUid = async function(uid: string) {
   try {

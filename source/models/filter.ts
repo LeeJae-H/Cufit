@@ -3,6 +3,8 @@ import { Like } from './like';
 import * as order from './order';
 import * as wish from './wish';
 import * as user from './user';
+import * as auth from './auth';
+auth
 user
 order
 wish
@@ -13,7 +15,6 @@ interface DBFilter {
   description: string;
   shortDescription: string;
   createdAt: number;
-  authStatus: object;
   originalImageUrl: string;
   filteredImageUrl: string;
   credit: number;
@@ -35,6 +36,7 @@ interface DBFilterModel extends Model<DBFilterDocument> {
   newFilter: (data: Object) => Promise<DBFilterDocument>;
   top5: () => Promise<[DBFilterDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBFilterDocument]>;
+  newSearch: (keyword: string) => Promise<[DBFilterDocument]>;
 }
 
 const FilterSchema = new Schema<DBFilterDocument>({
@@ -146,6 +148,30 @@ FilterSchema.statics.getFromObjId = async function(_id: string) {
   }
 }
 
+FilterSchema.statics.newSearch = async function(keyword: string) {
+  let result = await Filter.aggregate([
+    {
+      $lookup: {
+        from: "user",
+        localField: "creatorUid",
+        foreignField: "uid",
+        as: "creator"
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+          { title: { $regex: new RegExp(keyword, 'i') } },
+          { description: { $regex: new RegExp(keyword, 'i') } },
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+        ],
+      }
+    }
+  ])
+  return result;
+}
+
 FilterSchema.statics.search = async function(keyword: string, sort: string, sortby: string, cost: string) {
   if (sortby === "p") { // like순서
     let result = searchByLike(keyword, sort === "d", cost === "f")
@@ -220,7 +246,8 @@ FilterSchema.statics.top5 = async function() {
           .populate('likedCount')
           .populate('wishedCount')
           .populate('usedCount')
-          .populate('creator');
+          .populate('creator')
+          .populate('authStatus');
           additional.forEach(item => {
             top5FilterDocuments.push(item);
           })
@@ -258,6 +285,13 @@ FilterSchema.virtual('creator', {
   ref: 'User',
   localField: 'creatorUid',
   foreignField: 'uid',
+  justOne: true
+})
+
+FilterSchema.virtual('authStatus', {
+  ref: 'Auth',
+  localField: '_id',
+  foreignField: 'productId',
   justOne: true
 })
 
