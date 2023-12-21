@@ -13,7 +13,7 @@ interface DBGuideline {
   description: string;
   shortDescription: string;
   createdAt: number;
-  authStatus: string;
+  authStatus: object;
   originalImageUrl: string;
   guidelineImageUrl: string;
   credit: number;
@@ -31,11 +31,11 @@ interface DBDBGuidelineDocument extends DBGuideline, Document {
 }
 
 interface DBGuidelineModel extends Model<DBDBGuidelineDocument> {
-  getListFromCreatorUid: (uid: string, auth: string) => Promise<[DBDBGuidelineDocument]>;
-  getListFromTag: (tag: string, auth: string) => Promise<[DBDBGuidelineDocument]>;
+  getListFromCreatorUid: (uid: string) => Promise<[DBDBGuidelineDocument]>;
+  getListFromTag: (tag: string) => Promise<[DBDBGuidelineDocument]>;
   getFromObjId: (_id: string) => Promise<DBDBGuidelineDocument>;
   newGuideline: (data: Object) => Promise<DBDBGuidelineDocument>;
-  getListFromTagWithSort: (tag: string, sortBy: string, sort: string, auth: string) => Promise<[DBDBGuidelineDocument]>;
+  getListFromTagWithSort: (tag: string, sortBy: string, sort: string) => Promise<[DBDBGuidelineDocument]>;
   top5: () => Promise<[DBDBGuidelineDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBDBGuidelineDocument]>;
 }
@@ -46,7 +46,6 @@ const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
   description: { required: true, type: String },
   shortDescription: { required: true, type: String },
   createdAt: { required: true, type: Number },
-  authStatus: { required: true, type: String },
   originalImageUrl: { required: true, type: String },
   guidelineImageUrl: { required: true, type: String },
   credit: { required: true, type: Number },
@@ -63,33 +62,22 @@ const GuidelineSchema = new Schema<DBDBGuidelineDocument>({
   }
 })
 
-GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, auth: string) {
+GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string) {
   try {
-    if (auth === "all") {
-      const result = await Guideline.find({ creatorUid: uid }).sort({ _id: -1 }).limit(50)
+    const result = await Guideline.find({ creatorUid: uid }).sort({ _id: -1 }).limit(50)
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
         .populate('creator');
       return result;
-    } else {
-      const result = await Guideline.find({ creatorUid: uid, authStatus: auth }).sort({ _id: -1 }).limit(50)
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('creator');
-      return result;
-    }
-    
-    
   } catch(error) {
     throw error;
   }
 }
 
-GuidelineSchema.statics.getListFromTag = async function(tag: string, auth: string) {
+GuidelineSchema.statics.getListFromTag = async function(tag: string) {
   try {
-    const result = await Guideline.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } }, authStatus: auth }).sort({ _id: -1 }).limit(50)
+    const result = await Guideline.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } } }).sort({ _id: -1 }).limit(50)
                     .populate('likedCount')
                     .populate('wishedCount')
                     .populate('usedCount')
@@ -113,8 +101,8 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string) {
   }
 }
 
-GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy: string, sort: string, auth: string) {
-  let query = Guideline.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } }, authStatus: auth })
+GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy: string, sort: string) {
+  let query = Guideline.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } } })
   if (sortBy === "l") {
     if (sort === "a") {
       return await query.sort({ _id : -1 }).limit(20)
@@ -224,8 +212,7 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
       ],
       credit: cost === "f" ?
       { $eq: 0 } :
-      { $gt: 0 },
-      authStatus: "authorized"
+      { $gt: 0 }
     })
     .sort({ _id: sort === "d" ? -1 : 1 })
     .populate('likedCount')
@@ -300,8 +287,7 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
         title: '$filterData.title',
         description: '$filterData.description',
         shortDescription: '$filterData.shortDescription',
-        credit: '$filterData.credit',
-        authStatus: '$filterData.authStatus'
+        credit: '$filterData.credit'
       }
     },
     {
@@ -314,8 +300,7 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
         ],
         credit: isFree ?
           { $eq: 0 } :
-          { $gt: 0 },
-        authStatus: "authorized"
+          { $gt: 0 }
       }
     },
     {

@@ -13,7 +13,7 @@ interface DBFilter {
   description: string;
   shortDescription: string;
   createdAt: number;
-  authStatus: string;
+  authStatus: object;
   originalImageUrl: string;
   filteredImageUrl: string;
   credit: number;
@@ -27,10 +27,10 @@ interface DBFilterDocument extends DBFilter, Document {
 }
 
 interface DBFilterModel extends Model<DBFilterDocument> {
-  getListFromCreatorUid: (uid: string, auth: string) => Promise<[DBFilterDocument]>;
-  getListFromCreatorId: (cid: string, auth: string) => Promise<[DBFilterDocument]>;
-  getListFromTag: (tag: string, auth: string) => Promise<[DBFilterDocument]>;
-  getListFromTagWithSort: (tag: string, sortBy: string, sort: string, auth: string) => Promise<[DBFilterDocument]>;
+  getListFromCreatorUid: (uid: string) => Promise<[DBFilterDocument]>;
+  getListFromCreatorId: (cid: string) => Promise<[DBFilterDocument]>;
+  getListFromTag: (tag: string) => Promise<[DBFilterDocument]>;
+  getListFromTagWithSort: (tag: string, sortBy: string, sort: string) => Promise<[DBFilterDocument]>;
   getFromObjId: (_id: string) => Promise<DBFilterDocument>;
   newFilter: (data: Object) => Promise<DBFilterDocument>;
   top5: () => Promise<[DBFilterDocument]>;
@@ -43,7 +43,6 @@ const FilterSchema = new Schema<DBFilterDocument>({
   description: { required: true, type: String },
   shortDescription: { required: true, type: String },
   createdAt: { required: true, type: Number },
-  authStatus: { required: true, type: String },
   originalImageUrl: { required: true, type: String },
   filteredImageUrl: { required: true, type: String },
   credit: { required: true, type: Number },
@@ -59,31 +58,22 @@ const FilterSchema = new Schema<DBFilterDocument>({
   }
 });
 
-FilterSchema.statics.getListFromCreatorUid = async function(uid: string, auth: string) {
+FilterSchema.statics.getListFromCreatorUid = async function(uid: string) {
   try {
-    if (auth === "all") {
-      const result = await Filter.find({ creatorUid: uid }).sort({ _id: -1 }).limit(50)
+    const result = await Filter.find({ creatorUid: uid }).sort({ _id: -1 }).limit(50)
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
       .populate('creator');
       return result;
-    } else {
-      const result = await Filter.find({ creatorUid: uid, authStatus: auth }).sort({ _id: -1 }).limit(50)
-      .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('creator');
-      return result;
-    }
   } catch(error) {
     throw error;
   }
 }
 
-FilterSchema.statics.getListFromCreatorId = async function(cid: string, auth: string) {
+FilterSchema.statics.getListFromCreatorId = async function(cid: string) {
   try {
-    const result = await Filter.find({ creatorId: cid, authStatus: auth }).sort({ _id: -1 }).limit(50)
+    const result = await Filter.find({ creatorId: cid }).sort({ _id: -1 }).limit(50)
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
@@ -94,9 +84,9 @@ FilterSchema.statics.getListFromCreatorId = async function(cid: string, auth: st
   }
 }
 
-FilterSchema.statics.getListFromTag = async function(tag: string, auth: string) {
+FilterSchema.statics.getListFromTag = async function(tag: string) {
   try {
-    const result = await Filter.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } }, authStatus: auth }).sort({ _id: -1 }).limit(50)
+    const result = await Filter.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } } }).sort({ _id: -1 }).limit(50)
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
@@ -108,8 +98,8 @@ FilterSchema.statics.getListFromTag = async function(tag: string, auth: string) 
 }
 
 
-FilterSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy: string, sort: string, auth: string) {
-  let query = Filter.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } }, authStatus: auth })
+FilterSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy: string, sort: string) {
+  let query = Filter.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } } })
   if (sortBy === "l") {
     if (sort === "a") {
       return await query.sort({ _id : -1 }).limit(20)
@@ -170,8 +160,7 @@ FilterSchema.statics.search = async function(keyword: string, sort: string, sort
       ],
       credit: cost === "f" ?
       { $eq: 0 } :
-      { $gt: 0 },
-      authStatus: "authorized"
+      { $gt: 0 }
     })
     .sort({ _id: sort === "d" ? -1 : 1 })
     .populate('likedCount')
@@ -306,8 +295,7 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
         title: '$filterData.title',
         description: '$filterData.description',
         shortDescription: '$filterData.shortDescription',
-        credit: '$filterData.credit',
-        authStatus: '$filterData.authStatus'
+        credit: '$filterData.credit'
       }
     },
     {
@@ -320,8 +308,7 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
         ],
         credit: isFree ?
           { $eq: 0 } :
-          { $gt: 0 },
-        authStatus: "authorized"
+          { $gt: 0 }
       }
     },
     {

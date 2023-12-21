@@ -5,12 +5,6 @@ import { Contents } from '../models/contents';
 import { Faq, FaqAnswer } from '../models/faq';
 
 const router = express.Router();
-// authorization
-const auth = {
-  UNAUTHORIZED: "unauthorized",
-  DENIED: "denied",
-  AUTHORIZED: "authorized"
-};
 
 router.get("/main/contents", async (req, res) => {
   const type = `${req.query.type}`;
@@ -94,12 +88,6 @@ router.post("/authorize", async (req, res) => {
     });
     return;
   }
-  if (status !== auth.AUTHORIZED && status !== auth.DENIED && status !== auth.UNAUTHORIZED) {
-    res.status(400).json({
-      error: `${status} is not proper status code.`
-    });
-    return;
-  }
   if (type === "Filter") {
     const filter = await Filter.getFromObjId(productId);
     if (!filter) {
@@ -108,7 +96,6 @@ router.post("/authorize", async (req, res) => {
       });
       return;
     }
-    filter.authStatus = status;
     let result: any = {};
     try {
       result = await filter.save();
@@ -133,7 +120,6 @@ router.post("/authorize", async (req, res) => {
       });
       return;
     }
-    guideline.authStatus = status;
     let result: any = {};
     try {
       result = await guideline.save();

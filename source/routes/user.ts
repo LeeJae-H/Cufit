@@ -222,8 +222,8 @@ router.post("/manage/products", async (req, res) => {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
-    const filters = await Filter.getListFromCreatorUid(uid, "all");
-    const guidelines = await Guideline.getListFromCreatorUid(uid, "all");
+    const filters = await Filter.getListFromCreatorUid(uid);
+    const guidelines = await Guideline.getListFromCreatorUid(uid);
 
     res.status(200).json({
       statusCode: 0,

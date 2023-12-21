@@ -209,8 +209,8 @@ router.get("/detail/:productId", async (req, res) => {
   let user: any;
   try {
     const tUser = await User.getFromUid(cid);
-    const salingFilters = await Filter.getListFromCreatorUid(tUser.uid, "authorized");
-    const salingGuidelines = await Guideline.getListFromCreatorUid(tUser.uid, "authorized");
+    const salingFilters = await Filter.getListFromCreatorUid(tUser.uid);
+    const salingGuidelines = await Guideline.getListFromCreatorUid(tUser.uid);
     user = tUser;
     user.salingFilters = salingFilters;
     user.salingGuidelines = salingGuidelines;

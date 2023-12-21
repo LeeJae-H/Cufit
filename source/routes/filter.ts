@@ -1,20 +1,14 @@
 import express from 'express';
 import { Filter } from '../models/filter';
 import { Contents } from '../models/contents';
+import { Auth } from '../models/auth';
+import mongoose from 'mongoose';
 const router = express.Router();
-
-// authorization
-const auth = {
-  UNAUTHORIZED: "unauthorized",
-  DENIED: "denied",
-  AUTHORIZED: "authorized"
-};
 
 router.post('/upload', async (req, res) => {
   const title = req.body.title;
   const createdAt = Date.now();
   const tagsString = req.body.tags;
-  const authStatus = auth.UNAUTHORIZED;
   const shortDescription = req.body.shortDescription;
   const description = req.body.description;
   const credit = req.body.credit;
@@ -48,25 +42,40 @@ router.post('/upload', async (req, res) => {
     tags: tagsString.split(','),
     shortDescription,
     description,
-    authStatus,
     creatorUid,
     adjustment: adjustmentObject,
     originalImageUrl: originalImageUrl,
     filteredImageUrl: filteredImageUrl
   })
+  const newAuthStatus = new Auth({
+    productId: newFilter._id,
+    productType: 'Filter',
+    status: 'unauthorized',
+    message: 'In process....',
+    createdAt: createdAt,
+    lastAt: createdAt
+  })
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const result = await newFilter.save();
+    await newAuthStatus.save();
+    await session.commitTransaction();
     res.json({
       statusCode: 0,
       message: "successfully uploaded!", 
       result
     });
   } catch(error) {
+    await session.abortTransaction();
+    console.error(error);
     res.status(200).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+  } finally {
+    session.endSession();
   }
 });
 
@@ -78,7 +87,7 @@ router.get("/main", async (req, res) => {
     const tag = item.t;
     const sortBy = item.b;
     const sort = item.s;
-    const filters = await Filter.getListFromTagWithSort(tag, sortBy, sort, auth.AUTHORIZED);
+    const filters = await Filter.getListFromTagWithSort(tag, sortBy, sort);
     const data = {
       title: item.d,
       tag: tag,
@@ -92,23 +101,6 @@ router.get("/main", async (req, res) => {
     top: top,
     contents: result
   })
-})
-
-router.get("/", async (req, res) => { // get all
-  const count = parseInt(`${req.query.count}`) ?? 50;
-  const authStatus = `${req.query.authStatus}` ?? auth.AUTHORIZED;
-  try {
-    const result = await Filter.find({ authStatus: authStatus }).sort({ _id: -1 }).limit(count);
-    res.status(200).json({
-      result
-    })
-  } catch(error) {
-    console.error("error in find all.");
-    console.error(error);
-    res.status(401).json({
-      error: error
-    });
-  }
 })
 
 router.get("/:id", async (req, res) => { // get _id filter
@@ -129,9 +121,8 @@ router.get("/:id", async (req, res) => { // get _id filter
 
 router.get("/cid/:cid", async (req, res) => { // get filters from user id
   const cid = req.params.cid;
-  const authStatus = `${req.query.authStatus}` ?? auth.AUTHORIZED;
   try {
-    const result = await Filter.getListFromCreatorId(cid, authStatus);
+    const result = await Filter.getListFromCreatorId(cid);
     res.status(200).json({
       result
     });
@@ -147,29 +138,12 @@ router.get("/cid/:cid", async (req, res) => { // get filters from user id
 router.get("/uid/:uid", async (req, res) => { // get filters from user id
   const uid = req.params.uid;
   try {
-    const result = await Filter.getListFromCreatorUid(uid, auth.AUTHORIZED);
+    const result = await Filter.getListFromCreatorUid(uid);
     res.status(200).json({
       result
     });
   } catch(error) {
     console.error("error in find by uid.")
-    console.error(error);
-    res.status(401).json({
-      error: error
-    })
-  }
-})
-
-router.get("/tag/:tag", async (req, res) => { // get tagged filters
-  const tag = req.params.tag.toLowerCase();
-  const authStatus = `${req.query.authStatus}` ?? auth.AUTHORIZED;
-  try {
-    const result = await Filter.getListFromTag(tag, authStatus);
-    res.status(200).json({
-      result
-    });
-  } catch(error) {
-    console.error("error in find by tag.")
     console.error(error);
     res.status(401).json({
       error: error
