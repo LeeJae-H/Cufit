@@ -168,7 +168,8 @@ async function purchasedFilters(uid: string) : Promise<object[]> {
   .populate('likedCount')
   .populate('wishedCount')
   .populate('usedCount')
-  .populate('creator');
+  .populate('creator')
+  .populate('authStatus');
   return filters
 }
 
@@ -179,7 +180,8 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
   .populate('likedCount')
   .populate('wishedCount')
   .populate('usedCount')
-  .populate('creator');
+  .populate('creator')
+  .populate('authStatus');
   return guidelines
 }
 
