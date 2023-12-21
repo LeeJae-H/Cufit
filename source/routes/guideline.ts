@@ -106,7 +106,8 @@ router.get("/near", async (req, res) => {
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
-    .populate('creator');
+    .populate('creator')
+    .populate('authStatus');
     res.status(200).json({
         statusCode: 0,
         message: "Success",
