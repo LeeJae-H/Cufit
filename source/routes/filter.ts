@@ -50,7 +50,7 @@ router.post('/upload', async (req, res) => {
   const newAuthStatus = new Auth({
     productId: newFilter._id,
     productType: 'Filter',
-    status: 'unauthorized',
+    code: 'unauthorized',
     message: 'In process....',
     createdAt: createdAt,
     lastAt: createdAt
