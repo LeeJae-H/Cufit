@@ -25,8 +25,10 @@ router.post('/upload', async (req, res) => {
   const placeName = req.body.placeName; // nullable
   const locationString = req.body.location;
   if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !originalImageUrl || ! guidelineImageUrl) {
-    res.status(400).json({
-      error: "essential data not found."
+    res.status(200).json({
+      statusCode: -1,
+      message: "essential data not found.",
+      result: {}
     })
     return;
   }
@@ -56,11 +58,16 @@ router.post('/upload', async (req, res) => {
   })
   try {
     const result = await newGuideline.save();
-    res.json({message: "successfully uploaded!", result});
+    res.status(200).json({
+      statusCode: 0,
+      message: "successfully uploaded!", 
+      result
+    });
   } catch(error) {
-    res.status(401).json({
-      error: error,
-      message: "error occured while saving to mongodb."
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
     })
   }
 });
