@@ -22,11 +22,21 @@ router.post("/upload", async (req, res) => {
       return;
     }
     const fFiles: formidable.File[] = files.image ?? [];
-    const image = fFiles[0]!
-    const type = fields.type;
+    const image = fFiles[0]
+    const fType: String[] = fields.type ?? [];
+    const type = fType[0];
 
+    
+    if (!image || !type) {
+      res.status(200).json({
+        statusCode: -1,
+        message: "not essential input.",
+        result: {}
+      })
+      return;
+    }
     const fileType = image.originalFilename?.split('.').pop(); // 파일의 확장자 
-    if (!image || !type || !fileType) {
+    if (!fileType) {
       res.status(200).json({
         statusCode: -1,
         message: "not essential input.",
