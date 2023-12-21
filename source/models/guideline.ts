@@ -22,6 +22,9 @@ interface DBGuideline {
   type: string;
   placeName?: string;
   creatorUid: string;
+  likedCount: number;
+  wishedCount: number;
+  usedCount: number;
   location: {
     type: string;
     coordinates: number[];
@@ -148,62 +151,58 @@ GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sor
 
 GuidelineSchema.statics.top5 = async function() {
   try {
-    const top5Guidelines = await Like.aggregate([
+    const filtered = await Guideline.aggregate([
       {
-        $match: { productType: 'Guideline' }
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
       },
       {
-        $group: {
-          _id: '$productId',
-          likeCount: { $sum: 1 }
-        }
+        $unwind: "$authStatus"
       },
       {
         $lookup: {
-          from: 'guideline', // 'guidelines'는 실제 Guideline 컬렉션의 이름입니다.
-          localField: '_id',
-          foreignField: '_id',
-          as: 'guideline'
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
         }
       },
       {
-        $unwind: { path: '$guideline', preserveNullAndEmptyArrays: true }
-      },
-      {
-        $sort: { likeCount: -1 }
-      },
-      {
-        $limit: 5
+        $match: {
+          'authStatus.code': "authorized"
+        }
       },
       {
         $project: {
-          _id: '$guideline._id'
+          likedCount: { $size: "$likes" }
         }
+      },
+      {
+        $sort: {
+          likedCount: -1
+        }
+      },
+      {
+        $limit: 5
       }
     ]);
-
-    const guidelineIds = top5Guidelines.map((item) => item._id);
-
-    // Guideline 모델에서 상위 5개 Guideline을 가져오기
-    let top5GuidelineDocuments = await Guideline.find({ _id: { $in: guidelineIds } })
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const top5Guidelines = await Guideline.find({ _id: filteredIds })
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
       .populate('authStatus')
       .populate('creator');
-    if (top5GuidelineDocuments.length < 5) {
-      const additional = await Guideline.find().sort({ _id: -1 })
-        .limit(5 - top5GuidelineDocuments.length)
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('authStatus')
-        .populate('creator');
-        additional.forEach(item => {
-          top5GuidelineDocuments.push(item);
-        })
-    }
-    return top5GuidelineDocuments;
+    console.log('result')
+    console.log(top5Guidelines)
+    top5Guidelines.sort((a, b): number => {
+      return b.likedCount - a.likedCount;
+  });
+    return top5Guidelines;
   } catch (error) {
     console.error('Error getting top 5 guidelines by likes:', error);
     throw error;
@@ -213,12 +212,30 @@ GuidelineSchema.statics.top5 = async function() {
 GuidelineSchema.statics.newSearch = async function(keyword: string) {
   let result = await Guideline.aggregate([
     {
+      $lookup: {
+        from: "user",
+        localField: "creatorUid",
+        foreignField: "uid",
+        as: "creator"
+      }
+    },
+    {
+      $unwind: "$creator"
+    },
+    {
+      $lookup: {
+        from: "auth",
+        localField: "_id",
+        foreignField: "productId",
+        as: "authStatus"
+      }
+    },
+    {
+      $unwind: "$authStatus"
+    },
+    {
       $match: {
-        // authStatus: {
-        //   $match: {
-        //     code: "authorized"
-        //   }
-        // },
+        "authStatus.code": "authorized",
         $or: [
           { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
           { title: { $regex: new RegExp(keyword, 'i') } },
@@ -228,14 +245,6 @@ GuidelineSchema.statics.newSearch = async function(keyword: string) {
       }
     }
   ])
-  // let result = await Guideline.find({
-  //   $or: [
-  //     { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-  //     { title: { $regex: new RegExp(keyword, 'i') } },
-  //     { description: { $regex: new RegExp(keyword, 'i') } },
-  //     { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-  //   ],
-  // })
   return result;
 }
 

@@ -18,6 +18,9 @@ interface DBFilter {
   originalImageUrl: string;
   filteredImageUrl: string;
   credit: number;
+  likedCount: number;
+  wishedCount: number;
+  usedCount: number;
   type: string;
   creatorUid: string;
   adjustment: object;
@@ -219,61 +222,58 @@ FilterSchema.statics.search = async function(keyword: string, sort: string, sort
 
 FilterSchema.statics.top5 = async function() {
   try {
-    const top5Filters = await Like.aggregate([
+    const filtered = await Filter.aggregate([
       {
-        $match: { productType: 'Filter' }
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
       },
       {
-        $group: {
-          _id: '$productId',
-          likeCount: { $sum: 1 }
-        }
+        $unwind: "$authStatus"
       },
       {
         $lookup: {
-          from: 'filter', // 'guidelines'는 실제 Guideline 컬렉션의 이름입니다.
-          localField: '_id',
-          foreignField: '_id',
-          as: 'filter'
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
         }
       },
       {
-        $unwind: { path: '$filter', preserveNullAndEmptyArrays: true }
-      },
-      {
-        $sort: { likeCount: -1 }
-      },
-      {
-        $limit: 5
+        $match: {
+          'authStatus.code': "authorized"
+        }
       },
       {
         $project: {
-          _id: '$filter._id'
+          likedCount: { $size: "$likes" }
         }
+      },
+      {
+        $sort: {
+          likedCount: -1
+        }
+      },
+      {
+        $limit: 5
       }
     ]);
-
-    const filterIds = top5Filters.map((item) => item._id);
-
-    const top5FilterDocuments = await Filter.find({ _id: { $in: filterIds } })
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const top5Filters = await Filter.find({ _id: filteredIds })
       .populate('likedCount')
       .populate('wishedCount')
       .populate('usedCount')
-      .populate('creator')
-      .populate('authStatus');
-    if (top5FilterDocuments.length < 5) {
-        const additional = await Filter.find().sort({ _id: -1 })
-          .limit(5 - top5FilterDocuments.length)
-          .populate('likedCount')
-          .populate('wishedCount')
-          .populate('usedCount')
-          .populate('creator')
-          .populate('authStatus');
-          additional.forEach(item => {
-            top5FilterDocuments.push(item);
-          })
-      }
-    return top5FilterDocuments;
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(top5Filters)
+    top5Filters.sort((a, b): number => {
+      return b.likedCount - a.likedCount;
+  });
+    return top5Filters;
   } catch (error) {
     console.error('Error getting top 5 guidelines by likes:', error);
     throw error;
