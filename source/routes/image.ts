@@ -65,6 +65,7 @@ router.post("/upload", async (req, res) => {
         return;
       }
     } catch(error) {
+      console.log(error)
       res.status(200).json({
         statusCode: -1,
         message: error,
