@@ -111,39 +111,10 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string) {
 }
 
 GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy: string, sort: string) {
-  let query = Guideline.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } } })
   if (sortBy === "l") {
-    if (sort === "a") {
-      return await query.sort({ _id : -1 }).limit(20)
-                    .populate('likedCount')
-                    .populate('wishedCount')
-                    .populate('usedCount')
-                    .populate('authStatus')
-                    .populate('creator');
-    } else {
-      return await query.sort({ _id : 1 }).limit(20)
-                    .populate('likedCount')
-                    .populate('wishedCount')
-                    .populate('usedCount')
-                    .populate('authStatus')
-                    .populate('creator');
-    }
+    return await getByLatest(tag, sort);
   } else if (sortBy === "p") {
-    if (sort === "a") {
-      return await query.sort({ likedCount : -1 }).limit(20)
-                    .populate('likedCount')
-                    .populate('wishedCount')
-                    .populate('usedCount')
-                    .populate('authStatus')
-                    .populate('creator');
-    } else {
-      return await query.sort({ likedCount: 1 }).limit(20)
-                    .populate('likedCount')
-                    .populate('wishedCount')
-                    .populate('usedCount')
-                    .populate('authStatus')
-                    .populate('creator');
-    }
+    return await getByLikedCount(tag, sort);
   } else {
     return [];
   }
@@ -201,7 +172,7 @@ GuidelineSchema.statics.top5 = async function() {
     console.log(top5Guidelines)
     top5Guidelines.sort((a, b): number => {
       return b.likedCount - a.likedCount;
-  });
+    });
     return top5Guidelines;
   } catch (error) {
     console.error('Error getting top 5 guidelines by likes:', error);
@@ -377,6 +348,108 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
   return guidelines;
 }
 
+async function getByLikedCount(tag: string, sort: string) {
+  try {
+    const filtered = await Guideline.aggregate([
+      {
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
+      },
+      {
+        $unwind: "$authStatus"
+      },
+      {
+        $lookup: {
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
+        }
+      },
+      {
+        $match: {
+          'authStatus.code': "authorized",
+          tags: { $elemMatch: { $regex: tag, $options: 'i' } }
+        }
+      },
+      {
+        $project: {
+          likedCount: { $size: "$likes" }
+        }
+      },
+      {
+        $sort: {
+          likedCount: sort === "a" ? 1 : -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ]);
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const result = await Guideline.find({ _id: filteredIds })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(result)
+    return result;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
+}
+
+async function getByLatest(tag: string, sort: string) {
+  try {
+    const filtered = await Guideline.aggregate([
+      {
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
+      },
+      {
+        $unwind: "$authStatus"
+      },
+      {
+        $match: {
+          'authStatus.code': "authorized",
+          tags: { $elemMatch: { $regex: tag, $options: 'i' } }
+        }
+      },
+      {
+        $sort: {
+          _id: sort === "a" ? 1 : -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ]);
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const result = await Guideline.find({ _id: filteredIds })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(result)
+    return result;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
+}
 
 const Guideline = mongoose.model<DBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");
 export { Guideline, GuidelineSchema };

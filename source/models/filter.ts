@@ -106,39 +106,10 @@ FilterSchema.statics.getListFromTag = async function(tag: string) {
 
 
 FilterSchema.statics.getListFromTagWithSort = async function(tag: string, sortBy: string, sort: string) {
-  let query = Filter.find({ tags: { $elemMatch: { $regex: tag, $options: 'i' } } })
   if (sortBy === "l") {
-    if (sort === "a") {
-      return await query.sort({ _id : -1 }).limit(20)
-      .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('creator')
-      .populate('authStatus');
-    } else {
-      return await query.sort({ _id : 1 }).limit(20)
-      .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('creator')
-      .populate('authStatus');
-    }
+    return await getByLatest(tag, sort);
   } else if (sortBy === "p") {
-    if (sort === "a") {
-      return await query.sort({ likedCount : -1 }).limit(20)
-      .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('creator')
-      .populate('authStatus');
-    } else {
-      return await query.sort({ likedCount: 1 }).limit(20)
-      .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('creator')
-      .populate('authStatus');
-    }
+    return await getByLikedCount(tag, sort);
   } else {
     return [];
   }
@@ -379,6 +350,109 @@ async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
   .populate('creator')
   .populate('authStatus');
   return filters;
+}
+
+async function getByLikedCount(tag: string, sort: string) {
+  try {
+    const filtered = await Filter.aggregate([
+      {
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
+      },
+      {
+        $unwind: "$authStatus"
+      },
+      {
+        $lookup: {
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
+        }
+      },
+      {
+        $match: {
+          'authStatus.code': "authorized",
+          tags: { $elemMatch: { $regex: tag, $options: 'i' } }
+        }
+      },
+      {
+        $project: {
+          likedCount: { $size: "$likes" }
+        }
+      },
+      {
+        $sort: {
+          likedCount: sort === "a" ? 1 : -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ]);
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const result = await Filter.find({ _id: filteredIds })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(result)
+    return result;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
+}
+
+async function getByLatest(tag: string, sort: string) {
+  try {
+    const filtered = await Filter.aggregate([
+      {
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
+      },
+      {
+        $unwind: "$authStatus"
+      },
+      {
+        $match: {
+          'authStatus.code': "authorized",
+          tags: { $elemMatch: { $regex: tag, $options: 'i' } }
+        }
+      },
+      {
+        $sort: {
+          _id: sort === "a" ? 1 : -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ]);
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const result = await Filter.find({ _id: filteredIds })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(result)
+    return result;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
 }
 
 const Filter = mongoose.model<DBFilterDocument, DBFilterModel>("Filter", FilterSchema, "filter");
