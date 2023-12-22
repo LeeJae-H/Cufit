@@ -225,24 +225,8 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
     let result = searchByLike(keyword, sort === "d", cost === "f")
     return result
   } else { // 최신순
-    let result = await Guideline.find({
-      $or: [
-        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-        { title: { $regex: new RegExp(keyword, 'i') } },
-        { description: { $regex: new RegExp(keyword, 'i') } },
-        { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-      ],
-      credit: cost === "f" ?
-      { $eq: 0 } :
-      { $gt: 0 }
-    })
-    .sort({ _id: sort === "d" ? -1 : 1 })
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('authStatus')
-    .populate('creator');
-    return result;
+    let result = searchByLatest(keyword, sort === "d", cost === "f")
+    return result
   }
 }
 
@@ -283,69 +267,123 @@ GuidelineSchema.virtual('authStatus', {
  
 GuidelineSchema.index({ location: "2dsphere" }); 
 
-async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
-  let result = await Like.aggregate([
-    {
-      $match: {
-        productType: "Guideline"
+async function searchByLatest(keyword: string, desc: boolean, isFree: boolean) {
+  try {
+    const filtered = await Guideline.aggregate([
+      {
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
       },
-    },
-    {
-      $group: {
-        _id: '$productId',
-        likedCount: { $sum: 1 },
-      }
-    },
-    {
-      $lookup: {
-        from: "filter",
-        localField: "_id",
-        foreignField: "_id",
-        as: "filterData",
-      }
-    },
-    {
-      $unwind: {
-        path: '$filterData',
-        preserveNullAndEmptyArrays: true,
+      {
+        $unwind: "$authStatus"
       },
-    },
-    {
-      $project: {
-        _id: '$filterData._id',
-        tags: '$filterData.tags',
-        title: '$filterData.title',
-        description: '$filterData.description',
-        shortDescription: '$filterData.shortDescription',
-        credit: '$filterData.credit'
+      {
+        $match: {
+          'authStatus.code': "authorized",
+          $or: [
+            { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+            { title: { $regex: new RegExp(keyword, 'i') } },
+            { description: { $regex: new RegExp(keyword, 'i') } },
+            { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+          ],
+          credit: isFree ?
+            { $eq: 0 } :
+            { $gt: 0 }
+        }
+      },
+      {
+        $sort: {
+          _id: desc ? -1 : 1
+        }
+      },
+      {
+        $limit: 100
       }
-    },
-    {
-      $match: {
-        $or: [
-          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-          { title: { $regex: new RegExp(keyword, 'i') } },
-          { description: { $regex: new RegExp(keyword, 'i') } },
-          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-        ],
-        credit: isFree ?
-          { $eq: 0 } :
-          { $gt: 0 }
-      }
-    },
-    {
-      $sort: { likedCount: desc ? -1 : 1 }
-    }
-  ])
+    ]);
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const result = await Guideline.find({ _id: filteredIds })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(result)
+    return result;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
+}
 
-  const guidelineIds = result.map(item => item._id);
-  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
-  .populate('likedCount')
-  .populate('wishedCount')
-  .populate('usedCount')
-  .populate('creator')
-  .populate('authStatus');
-  return guidelines;
+async function searchByLike(keyword: string, desc: boolean, isFree: boolean) {
+  try {
+    const filtered = await Guideline.aggregate([
+      {
+        $lookup: {
+          from: "auth",
+          localField: "_id",
+          foreignField: "productId",
+          as: "authStatus"
+        }
+      },
+      {
+        $unwind: "$authStatus"
+      },
+      {
+        $lookup: {
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
+        }
+      },
+      {
+        $match: {
+          'authStatus.code': "authorized",
+          $or: [
+            { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+            { title: { $regex: new RegExp(keyword, 'i') } },
+            { description: { $regex: new RegExp(keyword, 'i') } },
+            { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+          ],
+          credit: isFree ?
+            { $eq: 0 } :
+            { $gt: 0 }
+        }
+      },
+      {
+        $project: {
+          likedCount: { $size: "$likes" }
+        }
+      },
+      {
+        $sort: {
+          likedCount: desc ? -1 : 1
+        }
+      },
+      {
+        $limit: 100
+      }
+    ]);
+    const filteredIds = filtered.map(item => item._id).reverse();
+    const result = await Guideline.find({ _id: filteredIds })
+      .populate('likedCount')
+      .populate('wishedCount')
+      .populate('usedCount')
+      .populate('authStatus')
+      .populate('creator');
+    console.log('result')
+    console.log(result)
+    return result;
+  } catch (error) {
+    console.error('Error getting top 5 guidelines by likes:', error);
+    throw error;
+  }
 }
 
 async function getByLikedCount(tag: string, sort: string) {
