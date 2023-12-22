@@ -1,9 +1,8 @@
 import express from 'express';
-import { Filter } from '../models/filter';
-import { Guideline } from '../models/guideline';
 import { Contents } from '../models/contents';
 import { Faq, FaqAnswer } from '../models/faq';
 import { Status } from '../models/servserStatus';
+import { Auth } from '../models/auth';
 const router = express.Router();
 
 router.post("/status/:code", async (req, res) => {
@@ -92,66 +91,29 @@ router.post('/faq/answer/:faqId', async (req, res) => {
 router.post("/authorize", async (req, res) => {
   const type = `${req.body.type}`;
   const productId = `${req.body.productId}`;
-  const status = `${req.body.status}`;
-  if (!type || !productId || !status) {
-    res.status(400).json({
-      error: "essential data not found."
-    });
+  const code = `${req.body.code}`;
+  const message = req.body.message;
+  if (!type || !productId || !code || !message) {
+    res.status(200).json({
+      statusCode: -1,
+      message: "essential data not found.",
+      result: {}
+    })
     return;
   }
-  if (type === "Filter") {
-    const filter = await Filter.getFromObjId(productId);
-    if (!filter) {
-      res.status(404).json({
-        error: "filter not found."
-      });
-      return;
-    }
-    let result: any = {};
-    try {
-      result = await filter.save();
-    } catch(error) {
-      console.error("error while save filter.")
-      console.error(error);
-      res.status(401).json({
-        error: error
-      });
-    }
-    console.log(result);
+  try {
+    const result = await Auth.findOneAndUpdate({ productId }, { code, lastAt: Date.now(), message }, { new: true });
     res.status(200).json({
-      message: "successfully changed.",
-      result: result
+      statusCode: 0,
+      message: "Success",
+      result
     })
-    return;
-  } else if (type === "Guideline") {
-    const guideline = await Guideline.getFromObjId(productId);
-    if (!guideline) {
-      res.status(404).json({
-        error: "guideline not found."
-      });
-      return;
-    }
-    let result: any = {};
-    try {
-      result = await guideline.save();
-    } catch(error) {
-      console.error("error while save filter.")
-      console.error(error);
-      res.status(401).json({
-        error: error
-      });
-    }
-    console.log(result);
+  } catch(error) {
     res.status(200).json({
-      message: "successfully changed.",
-      result: result
+      statusCode: -1,
+      message: error,
+      result: {}
     })
-    return;
-  } else {
-    res.status(401).json({
-      error: "no exact type you sent."
-    });
-    return;
   }
 })
 
