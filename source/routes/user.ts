@@ -17,6 +17,7 @@ import { Order } from '../models/order';
 import { Income } from "../models/income";
 import { Faq } from '../models/faq';
 
+const adReward = 1;
 
 router.post("/auth", async (req, res) => {
   const { idToken } = req.body;
@@ -319,6 +320,14 @@ router.get("/transactions/:idToken", async (req, res) => {
 })
 
 // 광고 시청으로 획득한 크레딧
+router.get("/adreward/amount", async (req, res) => {
+  res.status(200).json({
+    statusCode: 0,
+    message: "Success",
+    result: adReward
+  })
+})
+
 router.post("/adreward", async (req, res) => {
   const idToken = req.body.idToken;
   const session = await mongoose.startSession();
@@ -329,7 +338,7 @@ router.post("/adreward", async (req, res) => {
     const currentTime = Date.now();
     const creditInfo = {
       uid: uid,
-      amount: 3,
+      amount: adReward,
       createdAt: currentTime,
       expireAt: -1,
       creditType: "AD"
@@ -337,7 +346,7 @@ router.post("/adreward", async (req, res) => {
     const newCredit = new Credit(creditInfo)
     const newTransaction = new CreditTransaction({
       creditId: newCredit._id,
-      amount: 3,
+      amount: adReward,
       createdAt: currentTime,
       transactionType: "AD_REWARD"
     })
