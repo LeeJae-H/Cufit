@@ -3,8 +3,19 @@ import { Filter } from '../models/filter';
 import { Guideline } from '../models/guideline';
 import { Contents } from '../models/contents';
 import { Faq, FaqAnswer } from '../models/faq';
-
+import { Status } from '../models/servserStatus';
 const router = express.Router();
+
+router.post("/status/:code", async (req, res) => {
+  const code = req.params.code;
+  // code -> 0 = 서버 정상
+  // 1 -> 점검중
+  // 2 -> 테스트 플라이트 전용
+  let currentStatus = await Status.findOne({})
+  currentStatus!.code = parseInt(code)
+  await currentStatus?.save()
+  res.status(200).send()
+})
 
 router.get("/main/contents", async (req, res) => {
   const type = `${req.query.type}`;
