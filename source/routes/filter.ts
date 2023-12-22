@@ -58,8 +58,8 @@ router.post('/upload', async (req, res) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const result = await newFilter.save();
-    await newAuthStatus.save();
+    const result = await newFilter.save({ session });
+    await newAuthStatus.save({ session });
     await session.commitTransaction();
     res.json({
       statusCode: 0,
