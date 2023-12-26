@@ -3,6 +3,8 @@ import { Contents } from '../models/contents';
 import { Faq, FaqAnswer } from '../models/faq';
 import { Status } from '../models/servserStatus';
 import { Auth } from '../models/auth';
+import { Filter } from '../models/filter';
+import { Guideline } from '../models/guideline';
 const router = express.Router();
 
 router.post("/status/:code", async (req, res) => {
@@ -72,6 +74,117 @@ router.get('/faq/list', async (req, res) => {
     result: faqs
 
   })
+})
+
+router.get('/product', async (req, res) => {
+  const type = req.query.type;
+  const code = req.query.code;
+  if (type === "Filter") {
+    try {
+      const filtered = await Filter.aggregate([
+        {
+          $lookup: {
+            from: "auth",
+            localField: "_id",
+            foreignField: "productId",
+            as: "authStatus"
+          }
+        },
+        {
+          $unwind: "$authStatus"
+        },
+        {
+          $match: {
+            'authStatus.code': code
+          }
+        },
+        {
+          $sort: {
+            _id: -1
+          }
+        }
+      ]);
+      const filteredIds = filtered.map(item => item._id).reverse();
+      const result = await Filter.find({ _id: filteredIds })
+        .populate('likedCount')
+        .populate('wishedCount')
+        .populate('usedCount')
+        .populate('authStatus')
+        .populate('creator');
+      console.log('result')
+      console.log(result)
+      res.status(200).json({
+        statusCode: -1,
+        message: "Successfully load filters",
+        result: result
+      })
+      return;
+    } catch(error) {
+      console.error(error);
+      res.status(200).json({
+        statusCode: -1,
+        message: error,
+        result: {}
+      })
+      return;
+    }
+  } else if (type === "Guideline") {
+    try {
+      const filtered = await Guideline.aggregate([
+        {
+          $lookup: {
+            from: "auth",
+            localField: "_id",
+            foreignField: "productId",
+            as: "authStatus"
+          }
+        },
+        {
+          $unwind: "$authStatus"
+        },
+        {
+          $match: {
+            'authStatus.code': code
+          }
+        },
+        {
+          $sort: {
+            _id: -1
+          }
+        }
+      ]);
+      const filteredIds = filtered.map(item => item._id).reverse();
+      const result = await Guideline.find({ _id: filteredIds })
+        .populate('likedCount')
+        .populate('wishedCount')
+        .populate('usedCount')
+        .populate('authStatus')
+        .populate('creator');
+      console.log('result')
+      console.log(result)
+      res.status(200).json({
+        statusCode: -1,
+        message: "Successfully load filters",
+        result: result
+      })
+      return;
+    } catch(error) {
+      console.error(error);
+      res.status(200).json({
+        statusCode: -1,
+        message: error,
+        result: {}
+      })
+      return;
+    }
+  } else {
+    res.status(200).json({
+      statusCode: -1,
+      message: "No type sent.",
+      result: {}
+    })
+    return
+  }
 })
 
 router.post('/faq/answer/:faqId', async (req, res) => {
