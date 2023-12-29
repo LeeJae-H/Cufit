@@ -6,6 +6,7 @@ import image from './image';
 import product from './product';
 import user from './user';
 import search from './search';
+import creator from './creator';
 import { Status } from '../models/servserStatus';
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.use('/image', image);
 router.use('/product', product);
 router.use('/user', user);
 router.use('/search', search);
+router.use('/creator', creator);
 router.get('/status', async(req, res) => {
   const currentStatus = await Status.findOne({})
   if (!currentStatus) {
