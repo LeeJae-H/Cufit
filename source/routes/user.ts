@@ -605,9 +605,10 @@ router.post("/purchase", async (req, res) => {
     orderId = `${order._id}`;
     const income = new Income({
       uid: product.creatorUid,
-      orderId: orderId,
+      product: productId,
+      productType: productType,
+      order: order._id,
       createdAt: currentTime,
-      isSettled: false,
       amount: parseInt(`${product.credit}`)
     })
     await income.save({ session });

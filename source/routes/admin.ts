@@ -7,13 +7,15 @@ import { Filter } from '../models/filter';
 import { Guideline } from '../models/guideline';
 const router = express.Router();
 
-router.post("/status/:code", async (req, res) => {
-  const code = req.params.code;
+router.post("/status", async (req, res) => {
+  const code: string = `${req.query.code}`;
+  const upload: boolean = req.query.upload === "true";
   // code -> 0 = 서버 정상
   // 1 -> 점검중
   // 2 -> 테스트 플라이트 전용
   let currentStatus = await Status.findOne({})
   currentStatus!.code = parseInt(code)
+  currentStatus!.canUpload = upload;
   await currentStatus?.save()
   res.status(200).send()
 })

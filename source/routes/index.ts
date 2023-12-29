@@ -28,7 +28,7 @@ router.get('/status', async(req, res) => {
     res.status(200).json({
       statusCode: 0,
       message: "Success",
-      result: currentStatus.code
+      result: currentStatus
     })
   }
 })

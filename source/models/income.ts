@@ -2,10 +2,13 @@ import mongoose, {Schema} from "mongoose"
 
 interface DBIncome {
   uid: string;
-  orderId: string;
-  isSettled: boolean;
+  product: mongoose.Schema.Types.ObjectId;
+  productType: string;
+  order: mongoose.Schema.Types.ObjectId;
+  status: string;
   createdAt: number;
   settledAt: number;
+  amount: number;
 }
 
 const IncomeSchema = new Schema<DBIncome>({
@@ -13,13 +16,26 @@ const IncomeSchema = new Schema<DBIncome>({
     required: true,
     type: String,
   },
-  orderId: {
-    required: true,
-    type: String
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    refPath: 'productType',
+    required: true
   },
-  isSettled: {
+  productType: {
     required: true,
-    type: Boolean,
+    type: String,
+    enum: ['Filter', 'Guideline']
+  },
+  order: {
+    required: true,
+    ref: 'Order',
+    type: mongoose.Schema.Types.ObjectId
+  },
+  status: {
+    required: true,
+    type: String,
+    enum: ["before", "processing", "complete"],
+    default: "before"
   },
   createdAt: {
     required: true,
@@ -28,6 +44,10 @@ const IncomeSchema = new Schema<DBIncome>({
   settledAt: {
     type: Number
   },
+  amount: {
+    required: true,
+    type: Number
+  }
 })
 
 const Income = mongoose.model<DBIncome>('Income', IncomeSchema, 'income');
