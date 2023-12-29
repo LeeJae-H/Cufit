@@ -23,6 +23,7 @@ router.get("/income/:idToken", async (req, res) => {
     })
     .populate("product")
     .populate("order");
+    console.log(result)
     res.status(200).json({
       statusCode: 0,
       message: "Successfully load incomes",
