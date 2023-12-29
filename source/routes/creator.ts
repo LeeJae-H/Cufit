@@ -15,7 +15,7 @@ router.get("/income/:idToken", async (req, res) => {
     const uid: String = decodedToken.uid;
     const status: string = `${req.query.status}`;
     const free: Boolean = req.query.free === "true";
-
+    console.log("before result")
     const result = await Income.find({
       uid: uid,
       status: status,
@@ -31,6 +31,7 @@ router.get("/income/:idToken", async (req, res) => {
     })
     return;
   } catch(error) {
+    console.error("error")
     console.error(error)
     res.status(200).json({
       statusCode: -1,
