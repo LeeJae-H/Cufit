@@ -227,16 +227,13 @@ router.get("/detail/:productId", async (req, res) => {
     const salingFilters = await Filter.getListFromCreatorUid(tUser.uid);
     const salingGuidelines = await Guideline.getListFromCreatorUid(tUser.uid);
     const reviews = await Review.find({productId: productId}).populate('user');
-    console.log("review count =", reviews.length)
-    console.log(reviews)
     let totalRating = 0;
     reviews.forEach(review => totalRating = totalRating + review.stars);
     if (reviews.length > 0) {
       avgRating = totalRating / reviews.length;
     }
-    latestReviews = reviews.splice(0, 5);
     reviewCount = reviews.length;
-    console.log("reviewCount =", reviewCount, "reviews length =", reviews.length);
+    latestReviews = reviews.splice(0, 5);
     user = tUser;
     user.salingFilters = salingFilters;
     user.salingGuidelines = salingGuidelines;
