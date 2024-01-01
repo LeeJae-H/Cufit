@@ -179,7 +179,7 @@ router.post("/review/:productId", async (req, res) => {
       createdAt: currentTime,
       transactionType: "REVIEW_REWARD"
     })
-    await review.save();
+    await review.save({session});
     await newCredit.save({session})
     await newTransaction.save({session})
     session.commitTransaction();
@@ -210,6 +210,8 @@ router.get("/detail/:productId", async (req, res) => {
   const cid = `${req.query.cid}`;
   const type = `${req.query.type}`;
   const productId = req.params.productId;
+  let avgRating = 0;
+  let latestReviews: any[] = [];
   if (!cid || !productId || !type) {
     res.status(401).json({
       error: "no essential data."
@@ -221,6 +223,11 @@ router.get("/detail/:productId", async (req, res) => {
     const tUser = await User.getFromUid(cid);
     const salingFilters = await Filter.getListFromCreatorUid(tUser.uid);
     const salingGuidelines = await Guideline.getListFromCreatorUid(tUser.uid);
+    const reviews = await Review.find({productId: productId});
+    let totalRating = 0;
+    reviews.forEach(review => totalRating = totalRating + review.stars);
+    avgRating = totalRating / reviews.length;
+    latestReviews = reviews.splice(0, 5);
     user = tUser;
     user.salingFilters = salingFilters;
     user.salingGuidelines = salingGuidelines;
@@ -238,7 +245,9 @@ router.get("/detail/:productId", async (req, res) => {
       isFollowed: false,
       isLiked: false,
       isWished: false,
-      isPurchased: false
+      isPurchased: false,
+      rating: avgRating,
+      latestReviews: latestReviews
     })
     return
   }
@@ -254,7 +263,9 @@ router.get("/detail/:productId", async (req, res) => {
     isLiked,
     isWished,
     isPurchased,
-    review
+    review,
+    rating: avgRating,
+    latestReviews: latestReviews
   })
 })
 
