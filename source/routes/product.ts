@@ -10,6 +10,7 @@ import { Guideline } from '../models/guideline';
 import { Review } from '../models/review';
 import { Credit, CreditTransaction } from '../models/credit';
 import * as admin from "firebase-admin";
+import { Double } from 'aws-sdk/clients/apigateway';
 // router 객체
 const router = express.Router();
 
@@ -210,7 +211,7 @@ router.get("/detail/:productId", async (req, res) => {
   const cid = `${req.query.cid}`;
   const type = `${req.query.type}`;
   const productId = req.params.productId;
-  let avgRating = 0;
+  let avgRating: Double = 0;
   let latestReviews: any[] = [];
   if (!cid || !productId || !type) {
     res.status(401).json({
@@ -244,13 +245,17 @@ router.get("/detail/:productId", async (req, res) => {
   
   if (!uid || uid === "") {
     res.status(200).json({
-      creator: user,
-      isFollowed: false,
-      isLiked: false,
-      isWished: false,
-      isPurchased: false,
-      rating: avgRating,
-      latestReviews: latestReviews
+      statusCode: 0,
+      message: "Success",
+      result: {
+        creator: user,
+        isFollowed: false,
+        isLiked: false,
+        isWished: false,
+        isPurchased: false,
+        rating: avgRating,
+        latestReviews: latestReviews
+      }
     })
     return
   }
@@ -261,14 +266,18 @@ router.get("/detail/:productId", async (req, res) => {
   let review = await Review.findOne({uid, productId});
   
   res.status(200).json({
-    creator: user,
-    isFollowed,
-    isLiked,
-    isWished,
-    isPurchased,
-    review,
-    rating: avgRating,
-    latestReviews: latestReviews
+    statusCode: 0,
+    message: "Success",
+    result: {
+      creator: user,
+      isFollowed,
+      isLiked,
+      isWished,
+      isPurchased,
+      review,
+      rating: avgRating,
+      latestReviews: latestReviews
+    }
   })
 })
 
