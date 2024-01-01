@@ -42,5 +42,12 @@ const ReviewSchema = new Schema<DBReview>({
   }
 })
 
+ReviewSchema.virtual('user', {
+  ref: 'User',
+  localField: 'uid',
+  foreignField: 'uid',
+  justOne: true
+})
+
 const Review = mongoose.model<DBReview>('Review', ReviewSchema, 'review')
 export { Review, ReviewSchema };
