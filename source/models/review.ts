@@ -40,6 +40,13 @@ const ReviewSchema = new Schema<DBReview>({
   comment: {
     type: String
   }
+}, {
+  toObject: {
+    virtuals: true
+  },
+  toJSON: {
+    virtuals: true
+  }
 })
 
 ReviewSchema.virtual('user', {
