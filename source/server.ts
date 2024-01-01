@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import routes from './routes/index';
 import mongoose from 'mongoose';
@@ -12,13 +13,22 @@ const uri = 'mongodb+srv://jhlee:jhlee@imicainstance.h807wuk.mongodb.net/Cufit?r
 
 const app = express();
 const port = 3030;
+let setCache = function (req: Request, res: Response, next: NextFunction) {
+  const period = 60 * 5;
+  if (req.method == 'GET') {
+    res.set('Cache-control', `public, max-age=${period}`);
+  } else {
+    res.set('Cache-control', 'no-store');
+  }
 
+  next();
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors({ origin: true, credentials: true }));
 
 app.use('/', routes);
-
+app.use(setCache);
 try {
   mongoose.connect(uri);
 } catch(error) {
