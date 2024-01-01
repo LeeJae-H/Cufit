@@ -213,7 +213,7 @@ router.get("/detail/:productId", async (req, res) => {
   const type = `${req.query.type}`;
   const productId = req.params.productId;
   let avgRating: Double = 0;
-  let reviewCount: Number = 0;
+  let reviewCount = 0;
   let latestReviews: any[] = [];
   if (!cid || !productId || !type) {
     res.status(401).json({
@@ -236,7 +236,7 @@ router.get("/detail/:productId", async (req, res) => {
     }
     latestReviews = reviews.splice(0, 5);
     reviewCount = reviews.length;
-    console.log("reviewCount =", reviewCount);
+    console.log("reviewCount =", reviewCount, "reviews length =", reviews.length);
     user = tUser;
     user.salingFilters = salingFilters;
     user.salingGuidelines = salingGuidelines;
