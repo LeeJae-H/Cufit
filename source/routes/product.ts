@@ -212,6 +212,7 @@ router.get("/detail/:productId", async (req, res) => {
   const type = `${req.query.type}`;
   const productId = req.params.productId;
   let avgRating: Double = 0;
+  let reviewCount: Number = 0;
   let latestReviews: any[] = [];
   if (!cid || !productId || !type) {
     res.status(401).json({
@@ -231,6 +232,7 @@ router.get("/detail/:productId", async (req, res) => {
       avgRating = totalRating / reviews.length;
     }
     latestReviews = reviews.splice(0, 5);
+    reviewCount = reviews.length;
     user = tUser;
     user.salingFilters = salingFilters;
     user.salingGuidelines = salingGuidelines;
@@ -253,6 +255,7 @@ router.get("/detail/:productId", async (req, res) => {
         isWished: false,
         isPurchased: false,
         rating: avgRating,
+        reviewCount,
         latestReviews: latestReviews
       }
     })
@@ -275,6 +278,7 @@ router.get("/detail/:productId", async (req, res) => {
       isPurchased,
       review,
       rating: avgRating,
+      reviewCount,
       latestReviews: latestReviews
     }
   })
