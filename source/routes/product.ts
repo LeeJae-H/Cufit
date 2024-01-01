@@ -226,12 +226,11 @@ router.get("/detail/:productId", async (req, res) => {
     const salingGuidelines = await Guideline.getListFromCreatorUid(tUser.uid);
     const reviews = await Review.find({productId: productId});
     let totalRating = 0;
-    console.log(avgRating, "평균 별")
     reviews.forEach(review => totalRating = totalRating + review.stars);
-    avgRating = totalRating / reviews.length;
-    console.log(reviews)
+    if (reviews.length > 0) {
+      avgRating = totalRating / reviews.length;
+    }
     latestReviews = reviews.splice(0, 5);
-    console.log(latestReviews)
     user = tUser;
     user.salingFilters = salingFilters;
     user.salingGuidelines = salingGuidelines;
