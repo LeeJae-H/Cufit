@@ -68,6 +68,7 @@ router.get("/profile/uid/:uid", async (req, res) => {
 
 router.delete("/user", async (req, res) => {
   const { idToken } = req.body;
+  console.log(idToken);
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
