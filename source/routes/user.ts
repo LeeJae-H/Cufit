@@ -72,7 +72,7 @@ router.delete("/user", async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
+    console.log(uid);
     await admin.auth().deleteUser(uid)
     await User.deleteOne({uid});
 
@@ -82,6 +82,7 @@ router.delete("/user", async (req, res) => {
       result: {}
     })
   } catch(error) {
+    console.log("try failed due to:");
     console.error(error)
     res.status(200).json({
       statusCode: -1,
