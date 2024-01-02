@@ -66,6 +66,31 @@ router.get("/profile/uid/:uid", async (req, res) => {
   }  
 })
 
+router.delete("/user", async (req, res) => {
+  const { idToken } = req.body;
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await admin.auth().deleteUser(uid)
+    await User.deleteOne({uid});
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "success",
+      result: {}
+    })
+  } catch(error) {
+    console.error(error)
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+  }
+})
+
 router.post("/faq", async (req, res) => {
   const { uid, title, content, type } = req.body;
   if (!uid || !title || !content || !type) {
