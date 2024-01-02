@@ -128,12 +128,13 @@ UserSchema.statics.getFromObjId = async function(_id: string) {
 }
 
 UserSchema.statics.createNewUser = async function(token: DecodedIdToken) {
-  const bio = `안녕하세요 ${token.name}입니다.`;
+  const displayName = token.name ?? `큐핏${token.uid.substring(0, 4)}`;
+  const bio = `안녕하세요 ${displayName}입니다.`;
   const signupDate = Date.now();
   const newUser = new this({
     uid: token.uid,
     email: token.email,
-    displayName: token.name,
+    displayName: displayName,
     photoURL: token.picture,
     bio: bio,
     signupDate: signupDate,
