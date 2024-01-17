@@ -27,6 +27,7 @@ rwc-report.html
 *.swp
 build.json
 *.actual
+.env
 tests/webTestServer.js
 tests/webTestServer.js.map
 tests/webhost/*.d.ts
