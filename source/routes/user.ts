@@ -25,7 +25,8 @@ router.post("/auth", async (req, res) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
+    console.log(decodedToken)
+    console.log(uid)
     // 데이터베이스에서 uid 조회
     const userData = await User.getFromUid(uid);
     if (userData) {
@@ -64,6 +65,32 @@ router.get("/profile/uid/:uid", async (req, res) => {
       error: error
     });
   }  
+})
+
+router.delete("/user", async (req, res) => {
+  const { idToken } = req.body;
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await admin.auth().deleteUser(uid)
+    await User.deleteOne({uid});
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "success",
+      result: {}
+    })
+  } catch(error) {
+    console.log("try failed due to:");
+    console.error(error)
+    res.status(200).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+  }
 })
 
 router.post("/faq", async (req, res) => {
