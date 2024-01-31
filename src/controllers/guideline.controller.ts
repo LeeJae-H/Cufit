@@ -5,19 +5,22 @@ import { Auth } from '../models/auth.model';
 import mongoose from 'mongoose';
 
 export const uploadGuideline = async (req: Request, res: Response) => {
-  const title = req.body.title;
-  const createdAt = Date.now();
+  const {
+    title,
+    shortDescription,
+    description,
+    credit,
+    creatorUid,
+    originalImageUrl,
+    guidelineImageUrl,
+    placeName, // nullable
+  } = req.body;
   const tagsString = req.body.tags;
-  const shortDescription = req.body.shortDescription;
-  const description = req.body.description;
-  const credit = req.body.credit;
-  const creatorUid = req.body.creatorUid;
-  const originalImageUrl = req.body.originalImageUrl;
-  const guidelineImageUrl = req.body.guidelineImageUrl;
-  const placeName = req.body.placeName; // nullable
   const locationString = req.body.location;
+  const createdAt = Date.now();
+
   if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !originalImageUrl || ! guidelineImageUrl) {
-    res.status(200).json({
+    res.status(400).json({
       statusCode: -1,
       message: "essential data not found.",
       result: {}
@@ -79,7 +82,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
 };
 
 export const getGuidelineTop5 = async (req: Request, res: Response) => {
-  const contents = await Contents.findOne({ type : "Guideline" }).sort({ _id : -1 })
+  const contents = await Contents.getGuidelineContents();
   const list: any[] = contents?.list ?? []
   let result = []
   for(var item of list) {
@@ -163,25 +166,10 @@ export const getGuidelineByDistance = async (req: Request, res: Response) => {
   const lng = parseFloat(req.query.lng as string);
   const distanceString = req.query.distance === undefined ? "1000" : `${req.query.distance}`
   const distance = parseFloat(distanceString);
-  const result = await Guideline.find({
-      location: {
-        $near: {
-            $maxDistance: distance,
-            $geometry: {
-              type: "Point",
-              coordinates: [lng, lat]
-          }
-        }
-      }
-    })
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('creator')
-    .populate('authStatus');
-    res.status(200).json({
-        statusCode: 0,
-        message: "Success",
-        result
-    })
+  const result = await Guideline.findByDistance(lat, lng, distance);
+  res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result
+  })
 };

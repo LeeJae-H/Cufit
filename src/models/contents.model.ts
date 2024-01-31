@@ -10,7 +10,8 @@ interface DBContentsDocument extends DBContents, Document {
 }
 
 interface DBContentsModel extends Model<DBContentsDocument> {
-  
+  getGuidelineContents: () => Promise<DBContentsDocument>;
+  getFilterContents: () => Promise<DBContentsDocument>;
 }
 
 const ContentsSchema = new Schema<DBContentsDocument>({
@@ -34,6 +35,26 @@ const ContentsSchema = new Schema<DBContentsDocument>({
    * s -> sort(a: asc, d: dsc)
    *  */ 
 });
+
+ContentsSchema.statics.getGuidelineContents = async function(){
+  try{
+    const result = Contents.findOne({ type: "Guideline" }).sort({ _id: -1 });
+    return result;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+}
+
+ContentsSchema.statics.getFilterContents = async function(){
+  try{
+    const result = Contents.findOne({ type: "Filter" }).sort({ _id: -1 });
+    return result;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error;
+  }
+}
 
 const Contents = mongoose.model<DBContentsDocument, DBContentsModel>("Contents", ContentsSchema, "contents");
 export { Contents, ContentsSchema };

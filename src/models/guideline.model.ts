@@ -44,6 +44,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   top5: () => Promise<[DBGuidelineDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBGuidelineDocument]>;
   newSearch: (keyword: string) => Promise<[DBGuidelineDocument]>;
+  findByDistance(lat: number, lng: number, distance: number): Promise<DBGuidelineDocument[]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -229,6 +230,26 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
     return result
   }
 }
+
+GuidelineSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
+  const result = Guideline.find({
+    location: {
+      $near: {
+        $maxDistance: distance,
+        $geometry: {
+          type: 'Point',
+          coordinates: [lng, lat],
+        },
+      },
+    },
+  })
+    .populate('likedCount')
+    .populate('wishedCount')
+    .populate('usedCount')
+    .populate('creator')
+    .populate('authStatus');
+  return result;
+};
 
 GuidelineSchema.virtual('likedCount', {
   ref: 'Like',
