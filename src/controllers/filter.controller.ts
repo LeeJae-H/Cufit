@@ -5,16 +5,19 @@ import { Auth } from '../models/auth.model';
 import mongoose from 'mongoose';
 
 export const uploadFilter = async (req: Request, res: Response) => {
-  const title = req.body.title;
+  const {
+    title,
+    shortDescription,
+    description,
+    credit,
+    creatorUid,
+    adjustment,
+    originalImageUrl,
+    filteredImageUrl,
+  } = req.body;
   const createdAt = Date.now();
   const tagsString = req.body.tags;
-  const shortDescription = req.body.shortDescription;
-  const description = req.body.description;
-  const credit = req.body.credit;
-  const creatorUid = req.body.creatorUid;
-  const adjustment = req.body.adjustment;
-  const originalImageUrl = req.body.originalImageUrl;
-  const filteredImageUrl = req.body.filteredImageUrl;
+
   if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !adjustment || !originalImageUrl || ! filteredImageUrl) {
     res.status(400).json({
       error: "essential data not found."
@@ -79,7 +82,7 @@ export const uploadFilter = async (req: Request, res: Response) => {
 };
 
 export const getFilterTop5 = async (req: Request, res: Response) => {
-  const contents = await Contents.findOne({ type : "Filter" }).sort({ _id : -1 })
+  const contents = await Contents.getFilterContents();
   const list: any[] = contents?.list ?? []
   let result = []
   for(var item of list) {
