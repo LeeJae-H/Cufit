@@ -282,11 +282,13 @@ export const getWishlistByUid = async (req: Request, res: Response) => {
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
+    .populate('authStatus')
     .populate('creator');
   const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
+    .populate('authStatus')
     .populate('creator');
   res.status(200).json({
     filters: filters,
@@ -306,11 +308,13 @@ export const getLikelistByUid = async (req: Request, res: Response) => {
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
+    .populate('authStatus')
     .populate('creator');
   const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
     .populate('likedCount')
     .populate('wishedCount')
     .populate('usedCount')
+    .populate('authStatus')
     .populate('creator');
   res.status(200).json({
     filters: filters,

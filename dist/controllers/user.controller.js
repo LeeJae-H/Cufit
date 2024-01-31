@@ -316,11 +316,13 @@ const getWishlistByUid = (req, res) => __awaiter(void 0, void 0, void 0, functio
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
+        .populate('authStatus')
         .populate('creator');
     const guidelines = yield guideline_model_1.Guideline.find({ _id: { $in: guidelineIds } })
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
+        .populate('authStatus')
         .populate('creator');
     res.status(200).json({
         filters: filters,
@@ -340,11 +342,13 @@ const getLikelistByUid = (req, res) => __awaiter(void 0, void 0, void 0, functio
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
+        .populate('authStatus')
         .populate('creator');
     const guidelines = yield guideline_model_1.Guideline.find({ _id: { $in: guidelineIds } })
         .populate('likedCount')
         .populate('wishedCount')
         .populate('usedCount')
+        .populate('authStatus')
         .populate('creator');
     res.status(200).json({
         filters: filters,
