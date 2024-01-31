@@ -239,6 +239,27 @@ GuidelineSchema.statics.search = function (keyword, sort, sortby, cost) {
         }
     });
 };
+GuidelineSchema.statics.findByDistance = function (lat, lng, distance) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = Guideline.find({
+            location: {
+                $near: {
+                    $maxDistance: distance,
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: [lng, lat],
+                    },
+                },
+            },
+        })
+            .populate('likedCount')
+            .populate('wishedCount')
+            .populate('usedCount')
+            .populate('creator')
+            .populate('authStatus');
+        return result;
+    });
+};
 GuidelineSchema.virtual('likedCount', {
     ref: 'Like',
     localField: '_id',

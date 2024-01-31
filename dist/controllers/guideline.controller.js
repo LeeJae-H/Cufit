@@ -18,19 +18,13 @@ const contents_model_1 = require("../models/contents.model");
 const auth_model_1 = require("../models/auth.model");
 const mongoose_1 = __importDefault(require("mongoose"));
 const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const title = req.body.title;
-    const createdAt = Date.now();
+    const { title, shortDescription, description, credit, creatorUid, originalImageUrl, guidelineImageUrl, placeName, // nullable
+     } = req.body;
     const tagsString = req.body.tags;
-    const shortDescription = req.body.shortDescription;
-    const description = req.body.description;
-    const credit = req.body.credit;
-    const creatorUid = req.body.creatorUid;
-    const originalImageUrl = req.body.originalImageUrl;
-    const guidelineImageUrl = req.body.guidelineImageUrl;
-    const placeName = req.body.placeName; // nullable
     const locationString = req.body.location;
+    const createdAt = Date.now();
     if (!title || !tagsString || !shortDescription || !description || !credit || !creatorUid || !originalImageUrl || !guidelineImageUrl) {
-        res.status(200).json({
+        res.status(400).json({
             statusCode: -1,
             message: "essential data not found.",
             result: {}
@@ -96,7 +90,7 @@ const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.uploadGuideline = uploadGuideline;
 const getGuidelineTop5 = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const contents = yield contents_model_1.Contents.findOne({ type: "Guideline" }).sort({ _id: -1 });
+    const contents = yield contents_model_1.Contents.getGuidelineContents();
     const list = (_a = contents === null || contents === void 0 ? void 0 : contents.list) !== null && _a !== void 0 ? _a : [];
     let result = [];
     for (var item of list) {
@@ -182,22 +176,7 @@ const getGuidelineByDistance = (req, res) => __awaiter(void 0, void 0, void 0, f
     const lng = parseFloat(req.query.lng);
     const distanceString = req.query.distance === undefined ? "1000" : `${req.query.distance}`;
     const distance = parseFloat(distanceString);
-    const result = yield guideline_model_1.Guideline.find({
-        location: {
-            $near: {
-                $maxDistance: distance,
-                $geometry: {
-                    type: "Point",
-                    coordinates: [lng, lat]
-                }
-            }
-        }
-    })
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('creator')
-        .populate('authStatus');
+    const result = yield guideline_model_1.Guideline.findByDistance(lat, lng, distance);
     res.status(200).json({
         statusCode: 0,
         message: "Success",

@@ -14,24 +14,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteImage = exports.uploadImage = void 0;
 const storage_1 = __importDefault(require("../config/storage"));
-const uuid_1 = require("uuid");
 const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
+        const type = req.body.type;
         const file = req.file;
         const { originalname, buffer } = file;
-        const key = `${(0, uuid_1.v4)()}_${originalname}`;
+        const fileType = originalname.split('.').pop();
         const params = {
             Bucket: "cufit-staging-image-bucket",
-            Key: key,
+            Key: `${type}/${Date.now()}.${fileType}`,
             Body: buffer,
             ContentType: file.mimetype,
         };
         const uploadResult = yield storage_1.default.upload(params).promise();
-        const imageKey = uploadResult.Key;
-        res.json(imageKey);
+        const imageUrl = uploadResult.Location;
+        res.json({
+            statusCode: 0,
+            message: "Image uploaded successfully.",
+            result: {
+                url: imageUrl,
+                type: type
+            }
+        });
     }
     catch (error) {
         console.error(error);
@@ -40,13 +47,18 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.uploadImage = uploadImage;
 const deleteImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const key = req.body.key;
+    const fileName = req.body.fileName;
+    const type = req.body.type;
     try {
         const result = yield storage_1.default.deleteObject({
             Bucket: 'cufit-staging-image-bucket',
-            Key: key
+            Key: `${type}/${fileName}.png`
         }).promise();
-        res.json(result);
+        res.json({
+            statusCode: 0,
+            message: "Success",
+            result
+        });
     }
     catch (error) {
         console.error(error);
