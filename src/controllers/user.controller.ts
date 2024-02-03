@@ -278,14 +278,22 @@ export const getWishlistByUid = async (req: Request, res: Response) => {
     const wishlistData = await Wish.getWishlist(uid);
 
     res.status(200).json({
-      filters: wishlistData.filters,
-      guidelines: wishlistData.guidelines,
-      message: 'Successfully read wishlist.'
+      statusCode: 0,
+      message: 'Successfully read wishlist.',
+      result:{
+        filters: wishlistData.filters,
+        guidelines: wishlistData.guidelines,
+      }
     });
   } catch (error) {
     console.error('Error :', error);
     res.status(500).json({
-      message: 'Internal Server Error',
+      statusCode: -1,
+      message: error,
+      result:{
+        filters:[],
+        guidelines: []
+      }
     });
   }
 };
@@ -297,14 +305,22 @@ export const getLikelistByUid = async (req: Request, res: Response) => {
     const likelistData = await Like.getLikelist(uid);
 
     res.status(200).json({
-      filters: likelistData.filters,
-      guidelines: likelistData.guidelines,
-      message: 'Successfully read likelist.'
+      statusCode: 0,
+      message: 'Successfully read likelist.',
+      result:{
+        filters: likelistData.filters,
+        guidelines: likelistData.guidelines,
+      }
     });
   } catch (error) {
     console.error('Error :', error);
     res.status(500).json({
-      message: 'Internal Server Error',
+      statusCode: -1,
+      message: error,
+      result:{
+        filters:[],
+        guidelines: []
+      }
     });
   }
 };
