@@ -494,4 +494,4 @@ async function getByLatest(tag: string, sort: string) {
 }
 
 const Filter = mongoose.model<DBFilterDocument, DBFilterModel>("Filter", FilterSchema, "filter");
-export { Filter, FilterSchema };
+export { Filter, FilterSchema, DBFilterDocument };
