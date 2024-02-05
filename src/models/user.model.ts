@@ -188,4 +188,4 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
 
 const User = mongoose.model<DBUserDocument, DBUserModel>("User", UserSchema, "user");
 
-export { User, UserSchema };
+export { User, UserSchema, DBUserDocument };

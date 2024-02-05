@@ -244,26 +244,36 @@ export const checkFollow = async (req: Request, res: Response) => {
 export const getFollower = async (req: Request, res: Response) => {
   try {
     const uid = req.params.uid;
-    const follower = await Follow.find({ dstUid: uid }).select('srcUid');
-    const followerIds = follower.map(follower => follower.srcUid);
-    const followerList = await User.find({ uid: { $in: followerIds } });
-    res.json(followerList);
+    const followerList = await Follow.getFollowerList(uid);
+    res.json({
+      statusCode: 0,
+      message: "successfully get follower list",
+      result: followerList
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      statusCode: -1,
+      message: error
+     });
   }
 };
 
 export const getFollowing = async (req: Request, res: Response) => {
   try {
     const uid = req.params.uid;
-    const following = await Follow.find({ srcUid: uid }).select('dstUid');
-    const followingIds = following.map(following => following.dstUid);
-    const followingList = await User.find({ uid: { $in: followingIds } });
-    res.json(followingList);
-  } catch (error) {
+    const followingList = await Follow.getFollowingList(uid);
+    res.json({
+      statusCode: 0,
+      message: "successfully get following list",
+      result: followingList
+    });
+    } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      statusCode: -1,
+      message: error
+     });  
   }
 };
 
