@@ -511,4 +511,4 @@ async function getByLatest(tag: string, sort: string) {
 }
 
 const Guideline = mongoose.model<DBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");
-export { Guideline, GuidelineSchema };
+export { Guideline, GuidelineSchema, DBGuidelineDocument };

@@ -273,54 +273,56 @@ export const getProductsByUid = async (req: Request, res: Response) => {
 
 export const getWishlistByUid = async (req: Request, res: Response) => {
   const uid = req.params.uid;
-  const wishlist = await Wish.find({uid: uid});
-  const filterIds = wishlist.filter(wish => wish.productType === "Filter")
-  .map(wish => wish.productId)
-  const guidelineIds = wishlist.filter(wish => wish.productType === "Guideline")
-  .map(wish => wish.productId)
-  const filters = await Filter.find({_id: { $in: filterIds }})
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('authStatus')
-    .populate('creator');
-  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('authStatus')
-    .populate('creator');
-  res.status(200).json({
-    filters: filters,
-    guidelines: guidelines,
-    message: "Successfully read wishlist."
-  })
+
+  try {
+    const wishlistData = await Wish.getWishlist(uid);
+
+    res.status(200).json({
+      statusCode: 0,
+      message: 'Successfully read wishlist.',
+      result:{
+        filters: wishlistData.filters,
+        guidelines: wishlistData.guidelines,
+      }
+    });
+  } catch (error) {
+    console.error('Error :', error);
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result:{
+        filters:[],
+        guidelines: []
+      }
+    });
+  }
 };
 
 export const getLikelistByUid = async (req: Request, res: Response) => {
   const uid = req.params.uid;
-  const likelist = await Like.find({uid: uid});
-  const filterIds = likelist.filter(like => like.productType === "Filter")
-  .map(like => like.productId);
-  const guidelineIds = likelist.filter(like => like.productType === "Guideline")
-  .map(like => like.productId)
-  const filters = await Filter.find({_id: { $in: filterIds }})
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('authStatus')
-    .populate('creator');
-  const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('authStatus')
-    .populate('creator');
-  res.status(200).json({
-    filters: filters,
-    guidelines: guidelines,
-    message: "Successfully read wishlist."
-  })
+
+  try {
+    const likelistData = await Like.getLikelist(uid);
+
+    res.status(200).json({
+      statusCode: 0,
+      message: 'Successfully read likelist.',
+      result:{
+        filters: likelistData.filters,
+        guidelines: likelistData.guidelines,
+      }
+    });
+  } catch (error) {
+    console.error('Error :', error);
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result:{
+        filters:[],
+        guidelines: []
+      }
+    });
+  }
 };
 
 export const getCreditTransaction = async (req: Request, res: Response) => {
