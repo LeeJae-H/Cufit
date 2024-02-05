@@ -241,6 +241,32 @@ export const checkFollow = async (req: Request, res: Response) => {
   }
 };
 
+export const getFollower = async (req: Request, res: Response) => {
+  try {
+    const uid = req.params.uid;
+    const follower = await Follow.find({ dstUid: uid }).select('srcUid');
+    const followerIds = follower.map(follower => follower.srcUid);
+    const followerList = await User.find({ uid: { $in: followerIds } });
+    res.json(followerList);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const getFollowing = async (req: Request, res: Response) => {
+  try {
+    const uid = req.params.uid;
+    const following = await Follow.find({ srcUid: uid }).select('dstUid');
+    const followingIds = following.map(following => following.dstUid);
+    const followingList = await User.find({ uid: { $in: followingIds } });
+    res.json(followingList);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 export const getProductsByUid = async (req: Request, res: Response) => {
   const idToken = req.body.idToken;
   try {
