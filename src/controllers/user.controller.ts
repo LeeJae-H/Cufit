@@ -241,6 +241,42 @@ export const checkFollow = async (req: Request, res: Response) => {
   }
 };
 
+export const getFollower = async (req: Request, res: Response) => {
+  try {
+    const uid = req.params.uid;
+    const followerList = await Follow.getFollowerList(uid);
+    res.json({
+      statusCode: 0,
+      message: "successfully get follower list",
+      result: followerList
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      statusCode: -1,
+      message: error
+     });
+  }
+};
+
+export const getFollowing = async (req: Request, res: Response) => {
+  try {
+    const uid = req.params.uid;
+    const followingList = await Follow.getFollowingList(uid);
+    res.json({
+      statusCode: 0,
+      message: "successfully get following list",
+      result: followingList
+    });
+    } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      statusCode: -1,
+      message: error
+     });  
+  }
+};
+
 export const getProductsByUid = async (req: Request, res: Response) => {
   const idToken = req.body.idToken;
   try {

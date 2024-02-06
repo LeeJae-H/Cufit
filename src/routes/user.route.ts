@@ -1,7 +1,7 @@
 import express from 'express';
 import { login, getProfileByUid, fixProfile, deleteUser, 
     faqUpload, getFaq, findProducts, 
-    follow, checkFollow,
+    follow, checkFollow, getFollower, getFollowing,
     getProductsByUid, getWishlistByUid, getLikelistByUid, getCreditTransaction,
     getAdrewardAmount, getAdreward, purchaseCredit, purchaseProduct 
 } from '../controllers/user.controller';
@@ -17,6 +17,8 @@ router.get('/faq/list/:uid', getFaq);
 router.post("/products", findProducts);
 router.post("/follow", follow); // follow 하기
 router.get("/follow/check", checkFollow); // follow 되었는지 확인하기
+router.get("/:uid/follower", getFollower); // 팔로워 리스트 가져오기
+router.get("/:uid/following", getFollowing); // 팔로잉 리스트 가져오기
 router.post("/manage/products", getProductsByUid); // 사용자가 올린 가이드라인, 필터 조회
 router.get("/wishlist/:uid", getWishlistByUid); // uid로 wishlist 조회
 router.get("/likelist/:uid", getLikelistByUid); // uid로 likelist 조회
