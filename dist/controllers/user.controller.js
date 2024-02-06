@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchaseProduct = exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.getLikelistByUid = exports.getWishlistByUid = exports.getProductsByUid = exports.checkFollow = exports.follow = exports.findProducts = exports.getFaq = exports.faqUpload = exports.deleteUser = exports.fixProfile = exports.getProfileByUid = exports.login = void 0;
+exports.purchaseProduct = exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.getLikelistByUid = exports.getWishlistByUid = exports.getProductsByUid = exports.getFollowing = exports.getFollower = exports.checkFollow = exports.follow = exports.findProducts = exports.getFaq = exports.faqUpload = exports.deleteUser = exports.fixProfile = exports.getProfileByUid = exports.login = void 0;
 const admin = __importStar(require("firebase-admin"));
 const user_model_1 = require("../models/user.model");
 const faq_model_1 = require("../models/faq.model");
@@ -276,6 +276,44 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.checkFollow = checkFollow;
+const getFollower = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const uid = req.params.uid;
+        const followerList = yield follow_model_1.Follow.getFollowerList(uid);
+        res.json({
+            statusCode: 0,
+            message: "successfully get follower list",
+            result: followerList
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({
+            statusCode: -1,
+            message: error
+        });
+    }
+});
+exports.getFollower = getFollower;
+const getFollowing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const uid = req.params.uid;
+        const followingList = yield follow_model_1.Follow.getFollowingList(uid);
+        res.json({
+            statusCode: 0,
+            message: "successfully get following list",
+            result: followingList
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({
+            statusCode: -1,
+            message: error
+        });
+    }
+});
+exports.getFollowing = getFollowing;
 const getProductsByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const idToken = req.body.idToken;
     try {
@@ -307,54 +345,54 @@ const getProductsByUid = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.getProductsByUid = getProductsByUid;
 const getWishlistByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
-    const wishlist = yield wish_model_1.Wish.find({ uid: uid });
-    const filterIds = wishlist.filter(wish => wish.productType === "Filter")
-        .map(wish => wish.productId);
-    const guidelineIds = wishlist.filter(wish => wish.productType === "Guideline")
-        .map(wish => wish.productId);
-    const filters = yield filter_model_1.Filter.find({ _id: { $in: filterIds } })
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('authStatus')
-        .populate('creator');
-    const guidelines = yield guideline_model_1.Guideline.find({ _id: { $in: guidelineIds } })
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('authStatus')
-        .populate('creator');
-    res.status(200).json({
-        filters: filters,
-        guidelines: guidelines,
-        message: "Successfully read wishlist."
-    });
+    try {
+        const wishlistData = yield wish_model_1.Wish.getWishlist(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: 'Successfully read wishlist.',
+            result: {
+                filters: wishlistData.filters,
+                guidelines: wishlistData.guidelines,
+            }
+        });
+    }
+    catch (error) {
+        console.error('Error :', error);
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {
+                filters: [],
+                guidelines: []
+            }
+        });
+    }
 });
 exports.getWishlistByUid = getWishlistByUid;
 const getLikelistByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
-    const likelist = yield like_model_1.Like.find({ uid: uid });
-    const filterIds = likelist.filter(like => like.productType === "Filter")
-        .map(like => like.productId);
-    const guidelineIds = likelist.filter(like => like.productType === "Guideline")
-        .map(like => like.productId);
-    const filters = yield filter_model_1.Filter.find({ _id: { $in: filterIds } })
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('authStatus')
-        .populate('creator');
-    const guidelines = yield guideline_model_1.Guideline.find({ _id: { $in: guidelineIds } })
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('authStatus')
-        .populate('creator');
-    res.status(200).json({
-        filters: filters,
-        guidelines: guidelines,
-        message: "Successfully read wishlist."
-    });
+    try {
+        const likelistData = yield like_model_1.Like.getLikelist(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: 'Successfully read likelist.',
+            result: {
+                filters: likelistData.filters,
+                guidelines: likelistData.guidelines,
+            }
+        });
+    }
+    catch (error) {
+        console.error('Error :', error);
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {
+                filters: [],
+                guidelines: []
+            }
+        });
+    }
 });
 exports.getLikelistByUid = getLikelistByUid;
 const getCreditTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

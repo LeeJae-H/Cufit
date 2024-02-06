@@ -34,6 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FollowSchema = exports.Follow = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
+const user_model_1 = require("./user.model");
 const FollowSchema = new mongoose_1.Schema({
     srcUid: {
         required: true,
@@ -77,6 +78,32 @@ FollowSchema.statics.isFollowed = function (srcUid, dstUid) {
         try {
             const findResult = yield Follow.exists({ srcUid: srcUid, dstUid: dstUid });
             return findResult !== null;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
+FollowSchema.statics.getFollowerList = function (dstUid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const follower = yield Follow.find({ dstUid }).select('srcUid');
+            const followerIds = follower.map(follower => follower.srcUid);
+            const followerList = yield user_model_1.User.find({ uid: { $in: followerIds } });
+            return followerList;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
+FollowSchema.statics.getFollowingList = function (srcUid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const following = yield Follow.find({ srcUid }).select('dstUid');
+            const followingIds = following.map(following => following.dstUid);
+            const followingList = yield user_model_1.User.find({ uid: { $in: followingIds } });
+            return followingList;
         }
         catch (error) {
             throw error;

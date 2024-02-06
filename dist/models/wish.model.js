@@ -34,6 +34,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WishSchema = exports.Wish = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
+const filter_model_1 = require("./filter.model");
+const guideline_model_1 = require("./guideline.model");
 const WishSchema = new mongoose_1.Schema({
     uid: {
         required: true,
@@ -63,6 +65,36 @@ WishSchema.statics.isExist = function (pid, uid, type) {
         }
         else {
             return false;
+        }
+    });
+};
+WishSchema.statics.getWishlist = function (uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const wishlist = yield Wish.find({ uid: uid });
+            const filterIds = wishlist
+                .filter((wish) => wish.productType === "Filter")
+                .map((wish) => wish.productId);
+            const guidelineIds = wishlist
+                .filter((wish) => wish.productType === "Guideline")
+                .map((wish) => wish.productId);
+            const filters = yield filter_model_1.Filter.find({ _id: { $in: filterIds } })
+                .populate('likedCount')
+                .populate('wishedCount')
+                .populate('usedCount')
+                .populate('authStatus')
+                .populate('creator');
+            const guidelines = yield guideline_model_1.Guideline.find({ _id: { $in: guidelineIds } })
+                .populate('likedCount')
+                .populate('wishedCount')
+                .populate('usedCount')
+                .populate('authStatus')
+                .populate('creator');
+            return { filters, guidelines };
+        }
+        catch (error) {
+            console.error('Error in getWishlistByUid:', error);
+            throw error;
         }
     });
 };
