@@ -1,0 +1,26 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const admin_route_1 = __importDefault(require("./admin.route"));
+const creator_route_1 = __importDefault(require("./creator.route"));
+const filter_route_1 = __importDefault(require("./filter.route"));
+const guideline_route_1 = __importDefault(require("./guideline.route"));
+const image_route_1 = __importDefault(require("./image.route"));
+const product_route_1 = __importDefault(require("./product.route"));
+const search_route_1 = __importDefault(require("./search.route"));
+const status_route_1 = __importDefault(require("./status.route"));
+const user_route_1 = __importDefault(require("./user.route"));
+const router = express_1.default.Router();
+router.use('/admin', admin_route_1.default);
+router.use('/creator', creator_route_1.default);
+router.use('/filter', filter_route_1.default);
+router.use('/guideline', guideline_route_1.default);
+router.use('/image', image_route_1.default);
+router.use('/product', product_route_1.default);
+router.use('/search', search_route_1.default);
+router.use('/status', status_route_1.default);
+router.use('/user', user_route_1.default);
+exports.default = router;
