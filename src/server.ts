@@ -21,7 +21,7 @@ app.use(express.json()); // application/json
 app.use(express.urlencoded({ extended: false })); // application/x-www-form-urlencoded
 // multipart/form-data 를 위해서 multer를 사용하는데, multer는 서버 전체에 적용되지 않고 필요한 부분에서만 사용한다.
 
-app.use(cache);
+// app.use(cache);
 
 // 미들웨어 : 라우터 설정 -> 코드를 모듈화하여 코드 관리하기 용이해지며, 특정 경로에 대한 요청 처리를 분리한다.
 app.use('/', routes);
