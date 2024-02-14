@@ -213,10 +213,11 @@ export const follow = async (req: Request, res: Response) => {
     
     const result = await Follow.follow(srcUid, dstUid);
     const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
+    const isFollowed = result ? true : false;
     res.status(200).json({
       statusCode: 0,
       message: followMessage,
-      result: {}
+      result: isFollowed
     });
   } catch(error) {
     res.status(500).json({
@@ -258,10 +259,11 @@ export const checkFollow = async (req: Request, res: Response) => {
     
     const result = await Follow.isFollowed(srcUid, dstUid);
     const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
+    const isFollowed = result ? true : false;
     res.status(200).json({
       statusCode: 0,
       message: followMessage,
-      result: {},
+      result: isFollowed,
     });
   } catch(error) {
     res.status(500).json({
@@ -401,7 +403,7 @@ export const getCreditTransaction = async (req: Request, res: Response) => {
     res.status(200).json({
       statusCode: 0,
       message: "Successfully updated",
-      transactions
+      result: transactions
     });
   } catch(error) {
     res.status(500).json({ 
