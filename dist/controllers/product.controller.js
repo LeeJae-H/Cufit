@@ -56,83 +56,96 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let reviewCount = 0;
     let latestReviews = [];
     if (!cid || !productId || !type) {
-        res.status(401).json({
-            error: "no essential data."
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
         });
-        return;
     }
-    let user;
     try {
-        const tUser = yield user_model_1.User.getFromUid(cid);
-        const salingFilters = yield filter_model_1.Filter.getListFromCreatorUid(tUser.uid);
-        const salingGuidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(tUser.uid);
-        const reviews = yield review_model_1.Review.find({ productId: productId }).populate('user');
-        let totalRating = 0;
-        reviews.forEach(review => totalRating = totalRating + review.stars);
-        if (reviews.length > 0) {
-            avgRating = totalRating / reviews.length;
+        let user;
+        try {
+            const tUser = yield user_model_1.User.getFromUid(cid);
+            const salingFilters = yield filter_model_1.Filter.getListFromCreatorUid(tUser.uid);
+            const salingGuidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(tUser.uid);
+            const reviews = yield review_model_1.Review.find({ productId: productId }).populate('user');
+            let totalRating = 0;
+            reviews.forEach(review => totalRating = totalRating + review.stars);
+            if (reviews.length > 0) {
+                avgRating = totalRating / reviews.length;
+            }
+            reviewCount = reviews.length;
+            latestReviews = reviews.splice(0, 5);
+            user = tUser;
+            user.salingFilters = salingFilters;
+            user.salingGuidelines = salingGuidelines;
         }
-        reviewCount = reviews.length;
-        latestReviews = reviews.splice(0, 5);
-        user = tUser;
-        user.salingFilters = salingFilters;
-        user.salingGuidelines = salingGuidelines;
-    }
-    catch (error) {
-        console.error("error while find creator info.");
-        console.error(error);
-        res.status(400).json({
-            error: error
-        });
-    }
-    if (!uid || uid === "") {
+        catch (error) {
+            throw new Error("error while find creator info");
+        }
+        if (!uid || uid === "") {
+            return res.status(200).json({
+                statusCode: 0,
+                message: "Success",
+                result: {
+                    creator: user,
+                    isFollowed: false,
+                    isLiked: false,
+                    isWished: false,
+                    isPurchased: false,
+                    rating: avgRating,
+                    reviewCount,
+                    latestReviews: latestReviews
+                }
+            });
+        }
+        let isFollowed = yield follow_model_1.Follow.isFollowed(uid, cid);
+        let isLiked = yield like_model_1.Like.isExist(productId, uid, type);
+        let isWished = yield wish_model_1.Wish.isExist(productId, uid, type);
+        let isPurchased = yield order_model_1.Order.isExist(productId, uid, type);
+        let review = yield review_model_1.Review.findOne({ uid, productId });
         res.status(200).json({
             statusCode: 0,
             message: "Success",
             result: {
                 creator: user,
-                isFollowed: false,
-                isLiked: false,
-                isWished: false,
-                isPurchased: false,
+                isFollowed,
+                isLiked,
+                isWished,
+                isPurchased,
+                review,
                 rating: avgRating,
                 reviewCount,
                 latestReviews: latestReviews
             }
         });
-        return;
     }
-    let isFollowed = yield follow_model_1.Follow.isFollowed(uid, cid);
-    let isLiked = yield like_model_1.Like.isExist(productId, uid, type);
-    let isWished = yield wish_model_1.Wish.isExist(productId, uid, type);
-    let isPurchased = yield order_model_1.Order.isExist(productId, uid, type);
-    let review = yield review_model_1.Review.findOne({ uid, productId });
-    res.status(200).json({
-        statusCode: 0,
-        message: "Success",
-        result: {
-            creator: user,
-            isFollowed,
-            isLiked,
-            isWished,
-            isPurchased,
-            review,
-            rating: avgRating,
-            reviewCount,
-            latestReviews: latestReviews
-        }
-    });
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
 });
 exports.getDetail = getDetail;
 const getReview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = req.params.productId;
-    const reviews = yield review_model_1.Review.find({ productId })
-        .populate('user');
-    res.status(200).json({
-        statusCode: 0,
-        message: "Success",
-        result: reviews
-    });
+    try {
+        const reviews = yield review_model_1.Review.find({ productId }).populate('user');
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: reviews
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
 });
 exports.getReview = getReview;
 const writeReview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -142,21 +155,13 @@ const writeReview = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const stars = req.body.stars;
     const comment = req.body.comment;
     const imageUrl = req.body.imageUrl;
-    const session = yield mongoose_1.default.startSession();
     try {
         const decodedToken = yield admin.auth().verifyIdToken(idToken);
         const uid = decodedToken.uid;
         const currentTime = Date.now();
-        session.startTransaction();
         const existReview = yield review_model_1.Review.findOne({ uid, productId });
         if (existReview) {
-            console.log(existReview);
-            res.status(200).json({
-                statusCode: 1,
-                message: "Review already submitted.",
-                result: existReview
-            });
-            return;
+            throw new Error("Review already submitted");
         }
         const review = new review_model_1.Review({
             uid: uid,
@@ -181,31 +186,37 @@ const writeReview = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             createdAt: currentTime,
             transactionType: "REVIEW_REWARD"
         });
-        yield review.save({ session });
-        yield newCredit.save({ session });
-        yield newTransaction.save({ session });
-        session.commitTransaction();
-        const resultUser = yield user_model_1.User.getFromUid(uid);
-        res.status(200).json({
-            statusCode: 0,
-            message: "Review saved.",
-            result: {
-                user: resultUser,
-                review
-            }
-        });
+        const session = yield mongoose_1.default.startSession();
+        session.startTransaction();
+        try {
+            yield review.save({ session });
+            yield newCredit.save({ session });
+            yield newTransaction.save({ session });
+            session.commitTransaction();
+            const resultUser = yield user_model_1.User.getFromUid(uid);
+            res.status(200).json({
+                statusCode: 0,
+                message: "Successfully review saved",
+                result: {
+                    user: resultUser,
+                    review: review
+                }
+            });
+        }
+        catch (error) {
+            session.abortTransaction();
+            throw new Error("Failed transaction");
+        }
+        finally {
+            session.endSession();
+        }
     }
     catch (error) {
-        session.abortTransaction();
-        console.error(error);
-        res.status(200).json({
+        res.status(500).json({
             statusCode: -1,
             message: error,
             result: {}
         });
-    }
-    finally {
-        session.endSession();
     }
 });
 exports.writeReview = writeReview;
@@ -214,56 +225,63 @@ const like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.body.uid;
     const type = req.body.type;
     const createdAt = Date.now();
-    let isLiked = yield like_model_1.Like.isExist(productId, uid, type);
-    if (type === "Filter") {
-        if (isLiked) {
-            yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
-            res.status(200).json({
-                result: false
-            });
-            return;
+    try {
+        let isLiked = yield like_model_1.Like.isExist(productId, uid, type);
+        if (type === "Filter") {
+            if (isLiked) {
+                yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter like deleted",
+                    result: false
+                });
+            }
+            else {
+                const like = new like_model_1.Like({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield like.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter like registed",
+                    result: true
+                });
+            }
         }
-        else {
-            const like = new like_model_1.Like({
-                productId: productId,
-                uid: uid,
-                productType: type,
-                createdAt: createdAt
-            });
-            yield like.save();
-            res.status(200).json({
-                result: true
-            });
-            return;
+        else if (type === "Guideline") {
+            if (isLiked) {
+                yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline like deleted",
+                    result: false
+                });
+            }
+            else {
+                const like = new like_model_1.Like({
+                    productId: new mongoose_1.default.Types.ObjectId(productId),
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield like.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline like registed",
+                    result: true
+                });
+            }
         }
     }
-    else if (type === "Guideline") {
-        if (isLiked) {
-            yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
-            res.status(200).json({
-                result: false
-            });
-            return;
-        }
-        else {
-            const like = new like_model_1.Like({
-                productId: new mongoose_1.default.Types.ObjectId(productId),
-                uid: uid,
-                productType: type,
-                createdAt: createdAt
-            });
-            yield like.save();
-            res.status(200).json({
-                result: true
-            });
-            return;
-        }
-    }
-    else {
-        res.status(201).json({
-            message: "type needed"
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
         });
-        return;
     }
 });
 exports.like = like;
@@ -272,56 +290,63 @@ const wish = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.body.uid;
     const type = req.body.type;
     const createdAt = Date.now();
-    let isWished = yield wish_model_1.Wish.isExist(productId, uid, type);
-    if (type === "Filter") {
-        if (isWished) {
-            yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
-            res.status(200).json({
-                result: false
-            });
-            return;
+    try {
+        let isWished = yield wish_model_1.Wish.isExist(productId, uid, type);
+        if (type === "Filter") {
+            if (isWished) {
+                yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter wish deleted",
+                    result: false
+                });
+            }
+            else {
+                const wish = new wish_model_1.Wish({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield wish.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter wish registed",
+                    result: true
+                });
+            }
         }
-        else {
-            const wish = new wish_model_1.Wish({
-                productId: productId,
-                uid: uid,
-                productType: type,
-                createdAt: createdAt
-            });
-            yield wish.save();
-            res.status(200).json({
-                result: true
-            });
-            return;
+        else if (type === 'Guideline') {
+            if (isWished) {
+                yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline wish deleted",
+                    result: false
+                });
+            }
+            else {
+                const wish = new wish_model_1.Wish({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield wish.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline wish registed",
+                    result: true
+                });
+            }
         }
     }
-    else if (type === 'Guideline') {
-        if (isWished) {
-            yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
-            res.status(200).json({
-                result: false
-            });
-            return;
-        }
-        else {
-            const wish = new wish_model_1.Wish({
-                productId: productId,
-                uid: uid,
-                productType: type,
-                createdAt: createdAt
-            });
-            yield wish.save();
-            res.status(200).json({
-                result: true
-            });
-            return;
-        }
-    }
-    else {
-        res.status(201).json({
-            message: "type needed"
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
         });
-        return;
     }
 });
 exports.wish = wish;

@@ -22,93 +22,105 @@ const uploadFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const createdAt = Date.now();
     const tagsString = req.body.tags;
     if (!title || !tagsString || !shortDescription || !description || !credit || !creatorUid || !adjustment || !originalImageUrl || !filteredImageUrl) {
-        res.status(400).json({
-            error: "essential data not found."
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
         });
-        return;
     }
-    console.log(adjustment);
-    let adjustmentObject;
     try {
-        adjustmentObject = JSON.parse(adjustment);
+        let adjustmentObject;
+        try {
+            adjustmentObject = JSON.parse(adjustment);
+        }
+        catch (error) {
+            throw new Error("Error while parsing adjustment");
+        }
+        const newFilter = new filter_model_1.Filter({
+            title: title,
+            type: "Filter",
+            createdAt: createdAt,
+            credit: parseInt(credit),
+            tags: tagsString.split(','),
+            shortDescription,
+            description,
+            creatorUid,
+            adjustment: adjustmentObject,
+            originalImageUrl: originalImageUrl,
+            filteredImageUrl: filteredImageUrl
+        });
+        const newAuthStatus = new auth_model_1.Auth({
+            productId: newFilter._id,
+            productType: 'Filter',
+            code: 'unauthorized',
+            message: 'In process....',
+            createdAt: createdAt,
+            lastAt: createdAt
+        });
+        const session = yield mongoose_1.default.startSession();
+        try {
+            session.startTransaction();
+            const result = yield newFilter.save({ session });
+            yield newAuthStatus.save({ session });
+            yield session.commitTransaction();
+            res.status(200).json({
+                statusCode: 0,
+                message: "Successfully uploaded",
+                result: result
+            });
+        }
+        catch (error) {
+            yield session.abortTransaction();
+            throw new Error("Failed transaction");
+        }
+        finally {
+            session.endSession();
+        }
     }
     catch (error) {
-        console.error("error while parsing adjustment.");
-        console.error(error);
-        res.status(400).json({
-            error: error
-        });
-    }
-    const newFilter = new filter_model_1.Filter({
-        title: title,
-        type: "Filter",
-        createdAt: createdAt,
-        credit: parseInt(credit),
-        tags: tagsString.split(','),
-        shortDescription,
-        description,
-        creatorUid,
-        adjustment: adjustmentObject,
-        originalImageUrl: originalImageUrl,
-        filteredImageUrl: filteredImageUrl
-    });
-    const newAuthStatus = new auth_model_1.Auth({
-        productId: newFilter._id,
-        productType: 'Filter',
-        code: 'unauthorized',
-        message: 'In process....',
-        createdAt: createdAt,
-        lastAt: createdAt
-    });
-    const session = yield mongoose_1.default.startSession();
-    try {
-        session.startTransaction();
-        const result = yield newFilter.save({ session });
-        yield newAuthStatus.save({ session });
-        yield session.commitTransaction();
-        res.json({
-            statusCode: 0,
-            message: "successfully uploaded!",
-            result
-        });
-    }
-    catch (error) {
-        yield session.abortTransaction();
-        console.error(error);
-        res.status(200).json({
+        res.status(500).json({
             statusCode: -1,
             message: error,
             result: {}
         });
     }
-    finally {
-        session.endSession();
-    }
 });
 exports.uploadFilter = uploadFilter;
 const getFilterTop5 = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const contents = yield contents_model_1.Contents.getFilterContents();
-    const list = (_a = contents === null || contents === void 0 ? void 0 : contents.list) !== null && _a !== void 0 ? _a : [];
-    let result = [];
-    for (var item of list) {
-        const tag = item.t;
-        const sortBy = item.b;
-        const sort = item.s;
-        const filters = yield filter_model_1.Filter.getListFromTagWithSort(tag, sortBy, sort);
-        const data = {
-            title: item.d,
-            tag: tag,
-            list: filters
-        };
-        result.push(data);
+    try {
+        const contents = yield contents_model_1.Contents.getFilterContents();
+        const list = (_a = contents === null || contents === void 0 ? void 0 : contents.list) !== null && _a !== void 0 ? _a : [];
+        let result = [];
+        for (var item of list) {
+            const tag = item.t;
+            const sortBy = item.b;
+            const sort = item.s;
+            const filters = yield filter_model_1.Filter.getListFromTagWithSort(tag, sortBy, sort);
+            const data = {
+                title: item.d,
+                tag: tag,
+                list: filters
+            };
+            result.push(data);
+        }
+        let top = yield filter_model_1.Filter.top5();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully read main contents",
+            result: {
+                top: top,
+                contents: result
+            }
+        });
     }
-    let top = yield filter_model_1.Filter.top5();
-    res.status(200).json({
-        message: "Successfully read main contents.",
-        top: top,
-        contents: result
-    });
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
 });
 exports.getFilterTop5 = getFilterTop5;
 const getFilterById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -116,14 +128,16 @@ const getFilterById = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const result = yield filter_model_1.Filter.getFromObjId(_id);
         res.status(200).json({
-            result
+            statusCode: 0,
+            message: "Success",
+            result: result
         });
     }
     catch (error) {
-        console.error("error in find by _id.");
-        console.error(error);
-        res.status(401).json({
-            error: error
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
         });
     }
 });
@@ -133,14 +147,16 @@ const getFilterByCreatorId = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const result = yield filter_model_1.Filter.getListFromCreatorId(cid);
         res.status(200).json({
-            result
+            statusCode: 0,
+            message: "Success",
+            result: result
         });
     }
     catch (error) {
-        console.error("error in find by uid.");
-        console.error(error);
-        res.status(401).json({
-            error: error
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
         });
     }
 });
@@ -150,14 +166,16 @@ const getFilterByUid = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const result = yield filter_model_1.Filter.getListFromCreatorUid(uid);
         res.status(200).json({
-            result
+            statusCode: 0,
+            message: "Success",
+            result: result
         });
     }
     catch (error) {
-        console.error("error in find by uid.");
-        console.error(error);
-        res.status(401).json({
-            error: error
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
         });
     }
 });
@@ -168,14 +186,26 @@ const getFilterByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, funct
     const sortby = `${req.query.sortby}`;
     const cost = `${req.query.cost}`;
     if (!keyword || !sort || !sortby || !cost) {
-        res.status(201).json({
-            message: "essential data not found"
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
         });
-        return;
     }
-    const result = yield filter_model_1.Filter.search(keyword, sort, sortby, cost);
-    res.status(200).json({
-        result
-    });
+    try {
+        const result = yield filter_model_1.Filter.search(keyword, sort, sortby, cost);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: result
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
 });
 exports.getFilterByKeyword = getFilterByKeyword;

@@ -42,7 +42,6 @@ const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const uid = decodedToken.uid;
         const status = `${req.query.status}`;
         const free = req.query.free === "true";
-        console.log("before result");
         const result = yield income_model_1.Income.find({
             uid: uid,
             status: status,
@@ -50,18 +49,14 @@ const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         })
             .populate("product")
             .populate("order");
-        console.log(result);
         res.status(200).json({
             statusCode: 0,
             message: "Successfully load incomes",
-            result
+            result: result
         });
-        return;
     }
     catch (error) {
-        console.error("error");
-        console.error(error);
-        res.status(200).json({
+        res.status(500).json({
             statusCode: -1,
             message: error,
             result: {}
