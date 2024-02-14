@@ -20,21 +20,23 @@ export const login = async (req: Request, res: Response) => {
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-    console.log(decodedToken)
-    console.log(uid)
-    // 데이터베이스에서 uid 조회
-    const userData = await User.getFromUid(uid);
-    if (userData) {
-      // 이미 해당 uid를 가지는 사용자 정보가 있는 경우
-      res.status(200).json(userData);
-    } else {
-      // 해당 uid를 가지는 사용자 정보가 없는 경우
-      const newUser = await User.createNewUser(decodedToken);
-      res.status(200).json(newUser);
+
+    let userData = await User.getFromUid(uid);
+    if (!userData) {
+      userData = await User.createNewUser(decodedToken);
     }
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully login",
+      result: userData
+    });
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ error: error });
+    res.status(500).json({
+      statusCode: -1,
+      message: error, // error.message
+      result: {}
+    });
   }
 };
 
@@ -42,21 +44,25 @@ export const getProfileByUid = async (req: Request, res: Response) => {
   const uid = req.params.uid;
 
   try {
-    // 데이터베이스에서 uid 조회
-    const user = await User.getFromUid(uid);
+    const user = await User.getFromUid(uid);  // 데이터베이스에서 uid 조회
     if (user) {
       res.status(200).json({
+        statusCode: 0,
+        message: "Success",
         user: user
       });
     } else {
-      res.status(201).json({
-        message: "User not found"
+      res.status(400).json({
+        statusCode: -1,
+        message: "User not found",
+        result: {}
       });
     }
   } catch (error) {
-    console.error(error);
-    res.status(401).json({
-      error: error
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}    
     });
   }  
 };
@@ -71,22 +77,19 @@ export const fixProfile = async (req: Request, res: Response) => {
     youtubeName: youtubeName,
     photoURL: photoURL
   }
+
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
-    // 데이터베이스에서 uid 조회
-    await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });
+    await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });  // 데이터베이스에서 uid 조회
     const result = await User.getFromUid(uid);
-    console.log(result)
     res.status(200).json({
       statusCode: 0,
-      message: "Successfully updated!",
+      message: "Successfully updated",
       result: result
     });
   } catch (error) {
-    console.error(error)
-    res.status(200).json({
+    res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
@@ -104,13 +107,11 @@ export const deleteUser = async (req: Request, res: Response) => {
     await User.deleteOne({uid});
     res.status(200).json({
       statusCode: 0,
-      message: "success",
+      message: "Successfully deleted",
       result: {}
     })
   } catch(error) {
-    console.log("try failed due to:");
-    console.error(error)
-    res.status(200).json({
+    res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
@@ -120,85 +121,109 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const faqUpload = async (req: Request, res: Response) => {
   const { uid, title, content, type } = req.body;
-
   if (!uid || !title || !content || !type) {
-    res.status(200).json({
+    return res.status(400).json({
       statusCode: -1,
-      message: "essential data not found.",
+      message: "Lack of essential data",
+      result: {}
+    });
+  }
+
+  try {
+    const faqData = {
+      uid, title, content, faqType: type, createdAt: Date.now()
+    }
+    const newFaq = new Faq(faqData);
+    await newFaq.save();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully upload",
+      result: newFaq
+    })
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
       result: {}
     })
   }
-  const faqData = {
-    uid, title, content, faqType: type, createdAt: Date.now()
-  }
-  const newFaq = new Faq(faqData);
-  await newFaq.save();
-  res.status(200).json({
-    statusCode: 0,
-    message: "faq uploaded successfully.",
-    result: newFaq
-  })
 };
 
 export const getFaq = async (req: Request, res: Response) => {
   const uid = req.params.uid;
 
-  const result = await Faq.getFromUid(uid);
-  res.status(200).json({
-    statusCode: 0,
-    message: "List read.",
-    result
-  })
+  try {
+    const result = await Faq.getFromUid(uid);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: result
+    })
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+  } 
 };
 
 export const findProducts = async (req: Request, res: Response) => {
   const productInUse = req.body.productInUse;
   const idToken = req.body.idToken;
+
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
-
     const result = await User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
-
     res.status(200).json({
-      message: "Successfully updated!",
+      statusCode: 0,
+      message: "Successfully updated",
       result: result
     });
   } catch(error) {
-    res.status(401).json({
-      error: error
-    });
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
   }
 };
 
 export const follow = async (req: Request, res: Response) => {
   const { srcUid, dstUid } = req.body;
+
   try {
     const srcExist = await User.exists({ uid: srcUid });
     const dstExist = await User.exists({ uid: dstUid });
     if (!srcExist) {
-      res.status(201).json({
-        message: "Source user not found."
+      return res.status(400).json({
+        statusCode: -1,
+        message: "User not found for provided source uid",
+        result: {}
       });
-      return;
     }
     if (!dstExist) {
-      res.status(202).json({
-        message: "Destination user not found."
+      return res.status(400).json({
+        statusCode: -1,
+        message: "User not found for provided destination uid",
+        result: {}
       });
-      return;
     }
     
     const result = await Follow.follow(srcUid, dstUid);
+    const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
     res.status(200).json({
-      message: result ? "Successfully followed" : "Successfully unfollowed",
-      following: result,
-      dstUid: dstUid
+      statusCode: 0,
+      message: followMessage,
+      result: {}
     });
   } catch(error) {
-    res.status(401).json({
-      error: error
-    });
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
   }
 };
 
@@ -206,97 +231,104 @@ export const checkFollow = async (req: Request, res: Response) => {
   const srcUid = req.query.src as string;
   const dstUid = req.query.dst as string;
   if (!srcUid || !dstUid) {
-    console.error("src or dst not found");
-    res.status(202).json({
-      message: "query not found."
-    })
-    return;
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Query not found",
+      result: {}
+    });
   }
+
   try {
     const srcExist = await User.exists({ uid: srcUid });
     const dstExist = await User.exists({ uid: dstUid });
     if (!srcExist) {
-      res.status(201).json({
-        message: "Source user not found."
+      return res.status(400).json({
+        statusCode: -1,
+        message: "User not found for provided source uid",
+        result: {}
       });
-      return;
     }
     if (!dstExist) {
-      res.status(202).json({
-        message: "Destination user not found."
+      return res.status(400).json({
+        statusCode: -1,
+        message: "User not found for provided destination uid",
+        result: {}      
       });
-      return;
     }
     
     const result = await Follow.isFollowed(srcUid, dstUid);
+    const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
     res.status(200).json({
-      message: result ? "Successfully followed" : "Successfully unfollowed",
-      following: result,
-      dstUid: dstUid
+      statusCode: 0,
+      message: followMessage,
+      result: {},
     });
   } catch(error) {
-    res.status(401).json({
-      error: error
-    });
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
   }
 };
 
 export const getFollower = async (req: Request, res: Response) => {
+  const uid = req.params.uid;
+
   try {
-    const uid = req.params.uid;
     const followerList = await Follow.getFollowerList(uid);
-    res.json({
+    res.status(200).json({
       statusCode: 0,
-      message: "successfully get follower list",
+      message: "Success",
       result: followerList
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ 
       statusCode: -1,
-      message: error
+      message: error,
+      result: {}
      });
   }
 };
 
 export const getFollowing = async (req: Request, res: Response) => {
+  const uid = req.params.uid;
+
   try {
-    const uid = req.params.uid;
     const followingList = await Follow.getFollowingList(uid);
-    res.json({
+    res.status(200).json({
       statusCode: 0,
-      message: "successfully get following list",
+      message: "Success",
       result: followingList
     });
-    } catch (error) {
-    console.error(error);
+  } catch (error) {
     res.status(500).json({ 
       statusCode: -1,
-      message: error
+      message: error,
+      result: {}
      });  
   }
 };
 
 export const getProductsByUid = async (req: Request, res: Response) => {
   const idToken = req.body.idToken;
+
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
     const filters = await Filter.getListFromCreatorUid(uid);
     const guidelines = await Guideline.getListFromCreatorUid(uid);
-
     res.status(200).json({
       statusCode: 0,
-      message: "successfully read products",
+      message: "Successfully read product list",
       result: {
-        filters,
-        guidelines
+        filters: filters,
+        guidelines: guidelines
       }
     })
   } catch(error) {
-    console.error(error);
-    res.status(200).json({
+    res.status(500).json({
       statusCode: -1,
       message: error,
       result: {
@@ -312,17 +344,15 @@ export const getWishlistByUid = async (req: Request, res: Response) => {
 
   try {
     const wishlistData = await Wish.getWishlist(uid);
-
     res.status(200).json({
       statusCode: 0,
-      message: 'Successfully read wishlist.',
+      message: 'Successfully read wishlist',
       result:{
         filters: wishlistData.filters,
         guidelines: wishlistData.guidelines,
       }
     });
   } catch (error) {
-    console.error('Error :', error);
     res.status(500).json({
       statusCode: -1,
       message: error,
@@ -339,17 +369,15 @@ export const getLikelistByUid = async (req: Request, res: Response) => {
 
   try {
     const likelistData = await Like.getLikelist(uid);
-
     res.status(200).json({
       statusCode: 0,
-      message: 'Successfully read likelist.',
+      message: 'Successfully read likelist',
       result:{
         filters: likelistData.filters,
         guidelines: likelistData.guidelines,
       }
     });
   } catch (error) {
-    console.error('Error :', error);
     res.status(500).json({
       statusCode: -1,
       message: error,
@@ -363,21 +391,24 @@ export const getLikelistByUid = async (req: Request, res: Response) => {
 
 export const getCreditTransaction = async (req: Request, res: Response) => {
   const idToken = req.params.idToken;
+
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
     const credits = await Credit.find({uid: uid})
     const transactions = await CreditTransaction.find({creditId: { $in: credits.map(credit => credit._id)}})
-
     res.status(200).json({
-      message: "Successfully updated!",
+      statusCode: 0,
+      message: "Successfully updated",
       transactions
     });
   } catch(error) {
-    res.status(401).json({
-      error: error
-    });
+    res.status(500).json({ 
+      statusCode: -1,
+      message: error,
+      result: {}
+     }); 
   }
 };
 
@@ -391,10 +422,12 @@ export const getAdrewardAmount = async (req: Request, res: Response) => {
 
 export const getAdreward = async (req: Request, res: Response) => {
   const idToken = req.body.idToken;
+
   const session = await mongoose.startSession();
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
+
     session.startTransaction();
     const currentTime = Date.now();
     const creditInfo = {
@@ -422,7 +455,6 @@ export const getAdreward = async (req: Request, res: Response) => {
     })
   } catch(error) {
     session.abortTransaction();
-    console.error(error);
     res.status(200).json({
       statusCode: -1,
       message: error,
@@ -434,10 +466,9 @@ export const getAdreward = async (req: Request, res: Response) => {
 };
 
 export const purchaseCredit = async (req: Request, res: Response) => {
-  try {
-    const { uid, atid } = req.body;
+  const { uid, atid, receiptData } = req.body;
 
-    const receiptData = req.body.receiptData;
+  try {
     const appleProductionURL = 'https://buy.itunes.apple.com/verifyReceipt'; // Production URL
     const appleSandboxURL = 'https://sandbox.itunes.apple.com/verifyReceipt'; // Sandbox URL
     const password = '71ede09526bb4a599f1e777e1f25c98e';
@@ -454,11 +485,13 @@ export const purchaseCredit = async (req: Request, res: Response) => {
       try {
         const existOrder = await Credit.find({ uid: uid, atid: atid }).session(session);
         if (existOrder.length > 0) {
-          res.status(400).json({
-            error: "this transaction already created."
-          })
-          return;
+          return res.status(400).json({
+            statusCode: -1,
+            message: "This transaction already created.",
+            result: {}
+          });
         }
+
         const receipts = verificationResult.receipt.in_app
         const availableReceipts = receipts.filter((element: any) => {
           return element.original_transaction_id === atid;
@@ -483,27 +516,36 @@ export const purchaseCredit = async (req: Request, res: Response) => {
         await newCredit.save({session})
         await newTransaction.save({session})
         await session.commitTransaction();
-        res.status(200).json({ message: 'Credit purchase verified and saved successfully', newCredit, newTransaction });
+        res.status(200).json({ 
+          statusCode: 0,
+          message: 'Successfully credit purchase verified and saved', 
+          result: {
+            newCredit: newCredit, 
+            newTransaction: newTransaction 
+          }
+        });
       } catch(error) {
         await session.abortTransaction();
         throw error
       } finally {
         session.endSession();
       }
+
     } else if (verificationResult.status === 21007) { // Sandbox용 결제인 경우 Sandbox URL로 재검증 요청
       const existOrder = await Credit.find({ uid: uid, atid: atid });
       if (existOrder.length > 0) {
-        res.status(400).json({
-          error: "this transaction already created."
-        })
-        return;
+        return res.status(400).json({
+          statusCode: -1,
+          message: "This transaction already created.",
+          result: {}
+        });
       }
+
       const sandboxResponse = await axios.post(appleSandboxURL, {
         "receipt-data": receiptData,
         "password": password
       })
       const sandboxVerificationResult = await sandboxResponse.data;
-
       if (sandboxVerificationResult.status === 0) {
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -532,166 +574,183 @@ export const purchaseCredit = async (req: Request, res: Response) => {
           await newCredit.save({session})
           await newTransaction.save({session})
           await session.commitTransaction();
-          res.status(200).json({ message: 'Credit purchase verified and saved successfully', newCredit, newTransaction });
+          res.status(200).json({ 
+            statusCode: 0,
+            message: 'Successfully credit purchase verified and saved', 
+            result: {
+              newCredit: newCredit, 
+              newTransaction: newTransaction 
+            }
+          });
         } catch(error) {
           await session.abortTransaction();
-          throw error
+          throw new Error("Failed transaction")
         } finally {
           session.endSession();
         }
       } else {
-        res.status(400).json({ error: 'Invalid receipt even in Sandbox', details: sandboxVerificationResult });
+        res.status(400).json({ 
+          statusCode: -1,
+          message: 'Invalid receipt even in Sandbox', 
+          result: {
+            sandboxVerificationResult: sandboxVerificationResult 
+          }
+        });
       }
-    
     } else {
-      console.log(verificationResult)
-      res.status(400).json({ error: 'Invalid receipt', details: verificationResult });
+      res.status(400).json({ 
+        statusCode: -1,
+        message: 'Invalid receipt', 
+        result: {
+          verificationResult: verificationResult 
+        }
+      });
     }
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred while verifying credit purchase', details: error });
+    res.status(500).json({ 
+      statusCode: -1,
+      message: error, 
+      result: {}
+    });
   }
 };
 
 export const purchaseProduct = async (req: Request, res: Response) => {
-  const idToken = req.body.idToken;
-  const productId = req.body.productId;
-  const productType = req.body.productType;
+  const { idToken, productId, productType } = req.body;
   let uid: string = "";
+
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     uid = decodedToken.uid;
-  } catch(error) {
-    console.error("error while verify ifToken.")
-    console.error(error);
-    res.status(401).json({error});
-  }
-  if (uid === "") {
-    res.status(401).json({
-      error: "Cannot verify idToken."
-    })
-  }
-  // 이미 구매한 제품인지 확인하는 프로세스
-  const existOrder = await Order.findOne({ uid: uid, productId: productId, productType: productType })
-  if (existOrder) {
-    res.status(202).json({
-      message: "User already purchased this product.",
-      productId,
-      productType,
-      uid
-    })
-    return;
-  }
-  let product: any = {};
-  try {
+    if (uid === "") {
+      throw new Error("Failed to verify idToken");
+    }
+
+    // 이미 구매한 제품인지 확인하는 프로세스
+    const existOrder = await Order.findOne({ uid: uid, productId: productId, productType: productType })
+    if (existOrder) {
+      return res.status(400).json({
+        statusCode: -1,
+        message: "User already purchased this product",
+        result: {
+          productId: productId,
+          productType: productType,
+          uid: uid
+        }
+      })
+    }
+
+    let product: any = {};
     if (productType === "Filter") {
       product = await Filter.getFromObjId(productId);
     } else if (productType === "Guideline") {
       product = await Guideline.getFromObjId(productId);
     }
-  } catch(error) {
-    console.error("Error while load product data");
-    console.error(`productType=${productType}, productId=${productId}`);
-    console.error(error);
-    res.status(402).json({
-      productType,
-      productId,
-      error
-    })
-  }
-  let productPrice = parseInt(`${product.credit}`);
-  const currentTime = Date.now();
-  let credits = await Credit.find({
-    uid: uid,
-    amount: { $gt: 0 },
-    $or: [
-      { expireAt: { $gt: currentTime } }, 
-      { expireAt: -1 } 
-    ]
-  }).sort({ expireAt: 1 });
-  let transactionObjects: any[] = []
-  for (let i = 0; i < credits.length; i++) {
-    let credit = credits[i];
-    const result = credit.amount - productPrice;
-    if (result >= 0) {
-      credits[i].amount -= productPrice;
-      let transaction = {
-        creditId: credits[i]._id,
-        amount: -productPrice,
-        transactionType: "PURCHASE_PRODUCT",
-        createdAt: currentTime
-      }
-      transactionObjects.push(transaction);
-      productPrice = 0;
-      break;
-    } else {
-      productPrice -= credits[i].amount;
-      let transaction = {
-        creditId: credits[i]._id,
-        amount: -credits[i].amount,
-        transactionType: "PURCHASE_PRODUCT",
-        createdAt: currentTime
-      }
-      transactionObjects.push(transaction);
-      credits[i].amount = 0;
-    }
-  }
-  if (productPrice > 0) {
-    res.status(201).json({
-      message: "Not enough credits to purchase this product.",
-      credits_of: productPrice
-    })
-    return;
-  }
-  let orderId: string = "";
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    for (let credit of credits) {
-      await credit.save({ session });
-    }
-  
-    for (let data of transactionObjects) {
-      const transaction = new CreditTransaction(data);
-      await transaction.save({ session });
-    }
-    const order = new Order({
+    
+    let productPrice = parseInt(`${product.credit}`);
+    const currentTime = Date.now();
+    let credits = await Credit.find({
       uid: uid,
-      productId: productId,
-      productType: productType,
-      createdAt: currentTime,
-      orderType: "CREDIT"
+      amount: { $gt: 0 },
+      $or: [
+        { expireAt: { $gt: currentTime } }, 
+        { expireAt: -1 } 
+      ]
+    }).sort({ expireAt: 1 });
+    let transactionObjects: any[] = []
+    for (let i = 0; i < credits.length; i++) {
+      let credit = credits[i];
+      const result = credit.amount - productPrice;
+      if (result >= 0) {
+        credits[i].amount -= productPrice;
+        let transaction = {
+          creditId: credits[i]._id,
+          amount: -productPrice,
+          transactionType: "PURCHASE_PRODUCT",
+          createdAt: currentTime
+        }
+        transactionObjects.push(transaction);
+        productPrice = 0;
+        break;
+      } else {
+        productPrice -= credits[i].amount;
+        let transaction = {
+          creditId: credits[i]._id,
+          amount: -credits[i].amount,
+          transactionType: "PURCHASE_PRODUCT",
+          createdAt: currentTime
+        }
+        transactionObjects.push(transaction);
+        credits[i].amount = 0;
+      }
+    }
+
+    if (productPrice > 0) {
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Not enough credits to purchase this product.",
+        result: {
+          credits_of: productPrice
+        }
+      })
+    }
+
+    let orderId: string = "";
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      for (let credit of credits) {
+        await credit.save({ session });
+      }
+    
+      for (let data of transactionObjects) {
+        const transaction = new CreditTransaction(data);
+        await transaction.save({ session });
+      }
+      const order = new Order({
+        uid: uid,
+        productId: productId,
+        productType: productType,
+        createdAt: currentTime,
+        orderType: "CREDIT"
+      })
+      await order.save({ session });
+      orderId = `${order._id}`;
+      const income = new Income({
+        uid: product.creatorUid,
+        product: productId,
+        productType: productType,
+        order: order._id,
+        createdAt: currentTime,
+        amount: parseInt(`${product.credit}`)
+      })
+      await income.save({ session });
+      await session.commitTransaction();
+    } catch(error) {
+      await session.abortTransaction();
+      throw new Error("Failed purchase transaction");
+    } finally {
+      session.endSession();
+    }
+    
+    const user = await User.getFromUid(uid);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully purchase product",
+      result: {
+        user: user,
+        productId: productId,
+        productPrice: product.credit,
+        productType: productType,
+        purchasedAt: currentTime,
+        orderId: orderId
+      }
     })
-    await order.save({ session });
-    orderId = `${order._id}`;
-    const income = new Income({
-      uid: product.creatorUid,
-      product: productId,
-      productType: productType,
-      order: order._id,
-      createdAt: currentTime,
-      amount: parseInt(`${product.credit}`)
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
     })
-    await income.save({ session });
-    await session.commitTransaction();
-  } catch(error) {
-    await session.abortTransaction();
-    console.error("purchase transaction failed.")
-    console.error("Due to :")
-    console.error(error)
-    res.status(400).json({
-      error
-    })
-  } finally {
-    session.endSession();
   }
-  const user = await User.getFromUid(uid);
-  res.status(200).json({
-    message: "Successfully purchase product!",
-    user,
-    productId,
-    productPrice: product.credit,
-    productType,
-    purchasedAt: currentTime,
-    orderId: orderId
-  })
 };

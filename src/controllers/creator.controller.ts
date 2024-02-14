@@ -4,12 +4,12 @@ import * as admin from "firebase-admin";
 
 export const getIncome = async (req: Request, res: Response) => {
   const idToken: string = req.params.idToken;
+
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid: String = decodedToken.uid;
     const status: string = `${req.query.status}`;
     const free: Boolean = req.query.free === "true";
-    console.log("before result")
     const result = await Income.find({
       uid: uid,
       status: status,
@@ -17,17 +17,13 @@ export const getIncome = async (req: Request, res: Response) => {
     })
     .populate("product")
     .populate("order");
-    console.log(result)
     res.status(200).json({
       statusCode: 0,
       message: "Successfully load incomes",
-      result
+      result: result
     })
-    return;
   } catch(error) {
-    console.error("error")
-    console.error(error)
-    res.status(200).json({
+    res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
