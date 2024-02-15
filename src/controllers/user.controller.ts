@@ -69,7 +69,8 @@ export const getUserProfile = async (req: Request, res: Response) => {
 };
 
 export const updateUserProfile = async (req: Request, res: Response) => {
-  const { idToken, bio, displayName, instagramName, tiktokName, youtubeName, photoURL } = req.body;
+  const uid = req.uid!;  
+  const { bio, displayName, instagramName, tiktokName, youtubeName, photoURL } = req.body;
   const newUserData = {
     bio: bio,
     displayName: displayName,
@@ -80,8 +81,6 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   }
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
     await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });  // 데이터베이스에서 uid 조회
     const result = await User.getFromUid(uid);
     res.status(200).json({
@@ -99,11 +98,8 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
-  const { idToken } = req.body;
-
+  const uid = req.uid!;
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
     await admin.auth().deleteUser(uid)
     await User.deleteOne({uid});
     res.status(200).json({
@@ -492,16 +488,10 @@ export const wishProduct = async (req: Request, res: Response) => {
 };
 
 export const buyProduct = async (req: Request, res: Response) => {
-  const { idToken, productId, productType } = req.body;
-  let uid: string = "";
+  const uid = req.uid!;  
+  const { productId, productType } = req.body;
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    uid = decodedToken.uid;
-    if (uid === "") {
-      throw new Error("Failed to verify idToken");
-    }
-
     // 이미 구매한 제품인지 확인하는 프로세스
     const existOrder = await Order.findOne({ uid: uid, productId: productId, productType: productType })
     if (existOrder) {
@@ -633,11 +623,9 @@ export const buyProduct = async (req: Request, res: Response) => {
 
 export const useProduct = async (req: Request, res: Response) => {
   const productInUse = req.body.productInUse;
-  const idToken = req.body.idToken;
+  const uid = req.uid!;  
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
     const result = await User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
     res.status(200).json({
       statusCode: 0,
@@ -655,15 +643,13 @@ export const useProduct = async (req: Request, res: Response) => {
 
 export const reviewProduct = async (req: Request, res: Response) => {
   const productId = req.body.productId;
-  const idToken = req.body.idToken;
+  const uid = req.uid!;  
   const productType = req.body.productType;
   const stars = req.body.stars;
   const comment = req.body.comment;
   const imageUrl = req.body.imageUrl;
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
     const currentTime = Date.now();
     const existReview = await Review.findOne({ uid, productId });
     if (existReview) {
@@ -726,12 +712,9 @@ export const reviewProduct = async (req: Request, res: Response) => {
 };
 
 export const getCreditTransaction = async (req: Request, res: Response) => {
-  const idToken = req.body.idToken;
+  const uid = req.uid!;  
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-
     const credits = await Credit.find({uid: uid})
     const transactions = await CreditTransaction.find({creditId: { $in: credits.map(credit => credit._id)}})
     res.status(200).json({
@@ -757,13 +740,9 @@ export const getAdrewardAmount = async (req: Request, res: Response) => {
 };
 
 export const getAdreward = async (req: Request, res: Response) => {
-  const idToken = req.body.idToken;
-
+  const uid = req.uid!;  
   const session = await mongoose.startSession();
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-
     session.startTransaction();
     const currentTime = Date.now();
     const creditInfo = {
