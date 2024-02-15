@@ -3,7 +3,7 @@ import { User } from '../models/user.model';
 import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
 
-export const getSomethingByKeyword = async (req: Request, res: Response) => {
+export const getAnything = async (req: Request, res: Response) => {
   const keyword = req.params.keyword;
 
   try{

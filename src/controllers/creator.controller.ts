@@ -3,7 +3,7 @@ import { Income } from '../models/income.model';
 import * as admin from "firebase-admin";
 
 export const getIncome = async (req: Request, res: Response) => {
-  const idToken: string = req.params.idToken;
+  const idToken: string = req.body.idToken;
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);

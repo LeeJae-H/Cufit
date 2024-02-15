@@ -5,10 +5,10 @@ import { uploadGuideline, getGuidelineTop5,
 
 const router = express.Router();
 
-router.post('/upload', uploadGuideline);
-router.get("/main", getGuidelineTop5);
+router.post('/', uploadGuideline);
+router.get("/", getGuidelineTop5);
 router.get("/:id", getGuidelineById);
-router.get("/uid/:uid", getGuidelineByUid);
+router.get("/:uid", getGuidelineByUid);
 router.get("/search/:keyword", getGuidelineByKeyword);
 router.get("/near", getGuidelineByDistance);
 
