@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/customRequest';
 import admin from 'firebase-admin';
 
-const verifyIdToken = async (req: Request, res: Response, next: NextFunction) => {
+const verifyIdToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { idToken } = req.body;
 
   try {

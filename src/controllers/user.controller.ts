@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { CustomRequest } from '../types/customRequest';
 import * as admin from "firebase-admin";
 import { User } from '../models/user.model';
 import { Faq } from '../models/faq.model';
@@ -68,7 +69,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
   }  
 };
 
-export const updateUserProfile = async (req: Request, res: Response) => {
+export const updateUserProfile = async (req: CustomRequest, res: Response) => {
   const uid = req.uid!;  
   const { bio, displayName, instagramName, tiktokName, youtubeName, photoURL } = req.body;
   const newUserData = {
@@ -97,7 +98,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+export const deleteUser = async (req: CustomRequest, res: Response) => {
   const uid = req.uid!;
   try {
     await admin.auth().deleteUser(uid)
@@ -487,7 +488,7 @@ export const wishProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const buyProduct = async (req: Request, res: Response) => {
+export const buyProduct = async (req: CustomRequest, res: Response) => {
   const uid = req.uid!;  
   const { productId, productType } = req.body;
 
@@ -621,7 +622,7 @@ export const buyProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const useProduct = async (req: Request, res: Response) => {
+export const useProduct = async (req: CustomRequest, res: Response) => {
   const productInUse = req.body.productInUse;
   const uid = req.uid!;  
 
@@ -641,7 +642,7 @@ export const useProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const reviewProduct = async (req: Request, res: Response) => {
+export const reviewProduct = async (req: CustomRequest, res: Response) => {
   const productId = req.body.productId;
   const uid = req.uid!;  
   const productType = req.body.productType;
@@ -711,7 +712,7 @@ export const reviewProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const getCreditTransaction = async (req: Request, res: Response) => {
+export const getCreditTransaction = async (req: CustomRequest, res: Response) => {
   const uid = req.uid!;  
 
   try {
@@ -739,7 +740,7 @@ export const getAdrewardAmount = async (req: Request, res: Response) => {
   })
 };
 
-export const getAdreward = async (req: Request, res: Response) => {
+export const getAdreward = async (req: CustomRequest, res: Response) => {
   const uid = req.uid!;  
   const session = await mongoose.startSession();
   try {

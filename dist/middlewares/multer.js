@@ -5,5 +5,5 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const multer_1 = __importDefault(require("multer")); // multipart/form-data
 const storage = multer_1.default.memoryStorage();
-const multerMiddleware = (0, multer_1.default)({ storage: storage });
-exports.default = multerMiddleware;
+const upload = (0, multer_1.default)({ storage: storage });
+exports.default = upload;

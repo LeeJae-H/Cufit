@@ -14,18 +14,16 @@ const servserStatus_model_1 = require("../models/servserStatus.model");
 const getStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const currentStatus = yield servserStatus_model_1.Status.findOne({});
     if (!currentStatus) {
-        res.status(200).json({
+        return res.status(500).json({
             statusCode: -1,
             message: "Error",
-            result: -1
+            result: {}
         });
     }
-    else {
-        res.status(200).json({
-            statusCode: 0,
-            message: "Success",
-            result: currentStatus
-        });
-    }
+    res.status(200).json({
+        statusCode: 0,
+        message: "Success",
+        result: currentStatus
+    });
 });
 exports.getStatus = getStatus;

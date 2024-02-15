@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es2016",                                 
     "module": "commonjs",                            
-
     "esModuleInterop": true,                         // TypeScript가 생성하는 코드에 추가 JavaScript를 삽입하여 모듈 간 호환성을 향상시킴
     "forceConsistentCasingInFileNames": true,        // 파일 이름의 대소문자 일관성 강제 
     "strict": true,                                  // 모든 엄격한 타입 체킹 옵션 활성화                                  
