@@ -288,7 +288,7 @@ export const checkFollow = async (req: Request, res: Response) => {
     res.status(200).json({
       statusCode: 0,
       message: followMessage,
-      result: isFollowed,
+      result: isFollowed
     });
   } catch(error) {
     res.status(500).json({
@@ -326,7 +326,7 @@ export const toggleFollow = async (req: Request, res: Response) => {
     res.status(200).json({
       statusCode: 0,
       message: followMessage,
-      result: isFollowed
+      result: isFollowed,
     });
   } catch(error) {
     res.status(500).json({
