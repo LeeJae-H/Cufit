@@ -15,6 +15,7 @@ const adReward = 1;
 import axios from 'axios';
 import { Order } from '../models/order.model';
 import { Income } from "../models/income.model";
+import logger from '../config/logger';
 
 export const login = async (req: Request, res: Response) => {
   const { idToken } = req.body;
@@ -60,12 +61,14 @@ export const getUserProfile = async (req: Request, res: Response) => {
         result: {}
       });
     }
+    logger.info('Get user profile successfully.');
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}    
     });
+    logger.error(`Error getting user profile: ${error}`);
   }  
 };
 
