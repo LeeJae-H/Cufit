@@ -4,7 +4,7 @@ import initFirebase from './config/firebase';
 import express from 'express';
 import cors from 'cors';
 import routes from './routes/index'
-import cache from './middlewares/cache';
+// import cache from './middlewares/cache';
 
 connectDB(); // 데이터베이스 연결
 
