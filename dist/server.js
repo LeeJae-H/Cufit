@@ -10,6 +10,7 @@ const firebase_1 = __importDefault(require("./config/firebase"));
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const index_1 = __importDefault(require("./routes/index"));
+// import cache from './middlewares/cache';
 (0, database_1.default)(); // 데이터베이스 연결
 (0, firebase_1.default)(); // Firebase Admin SDK 초기화
 // express 애플리케이션 객체 생성 -> express 애플리케이션 객체는 미들웨어 추가, 라우팅 설정 등의 다양한 기능을 제공한다.

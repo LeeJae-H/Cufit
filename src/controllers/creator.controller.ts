@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
+import { CustomRequest } from '../types/customRequest';
 import { Income } from '../models/income.model';
-import * as admin from "firebase-admin";
 
-export const getIncome = async (req: Request, res: Response) => {
-  const idToken: string = req.body.idToken;
+export const getIncome = async (req: CustomRequest, res: Response) => {
+  const uid = req.uid!;
+  const status: string = `${req.query.status}`;
+  const free: Boolean = req.query.free === "true";
 
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid: String = decodedToken.uid;
-    const status: string = `${req.query.status}`;
-    const free: Boolean = req.query.free === "true";
     const result = await Income.find({
       uid: uid,
       status: status,

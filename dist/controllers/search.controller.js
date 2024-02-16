@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSomethingByKeyword = void 0;
+exports.getAnything = void 0;
 const user_model_1 = require("../models/user.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
-const getSomethingByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     try {
         // creator, guideline, filter
@@ -41,4 +41,4 @@ const getSomethingByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
 });
-exports.getSomethingByKeyword = getSomethingByKeyword;
+exports.getAnything = getAnything;

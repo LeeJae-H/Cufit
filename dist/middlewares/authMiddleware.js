@@ -8,33 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getIncome = void 0;
-const income_model_1 = require("../models/income.model");
-const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const uid = req.uid;
-    const status = `${req.query.status}`;
-    const free = req.query.free === "true";
+const firebase_admin_1 = __importDefault(require("firebase-admin"));
+const verifyIdToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { idToken } = req.body;
     try {
-        const result = yield income_model_1.Income.find({
-            uid: uid,
-            status: status,
-            amount: free ? { $gte: 0 } : { $gt: 0 }
-        })
-            .populate("product")
-            .populate("order");
-        res.status(200).json({
-            statusCode: 0,
-            message: "Successfully load incomes",
-            result: result
-        });
+        const decodedToken = yield firebase_admin_1.default.auth().verifyIdToken(idToken);
+        req.uid = decodedToken.uid;
+        next();
     }
     catch (error) {
-        res.status(500).json({
+        res.status(400).json({
             statusCode: -1,
-            message: error,
+            message: 'Invalid or expired token',
             result: {}
         });
     }
 });
-exports.getIncome = getIncome;
+exports.default = verifyIdToken;

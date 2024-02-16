@@ -35,13 +35,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchaseProduct = exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.getLikelistByUid = exports.getWishlistByUid = exports.getProductsByUid = exports.getFollowing = exports.getFollower = exports.checkFollow = exports.follow = exports.findProducts = exports.getFaq = exports.faqUpload = exports.deleteUser = exports.fixProfile = exports.getProfileByUid = exports.login = void 0;
+exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.useProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
 const admin = __importStar(require("firebase-admin"));
 const user_model_1 = require("../models/user.model");
 const faq_model_1 = require("../models/faq.model");
 const follow_model_1 = require("../models/follow.model");
 const guideline_model_1 = require("../models/guideline.model");
 const filter_model_1 = require("../models/filter.model");
+const review_model_1 = require("../models/review.model");
 const wish_model_1 = require("../models/wish.model");
 const like_model_1 = require("../models/like.model");
 const credit_model_1 = require("../models/credit.model");
@@ -74,7 +75,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
-const getProfileByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
     try {
         const user = yield user_model_1.User.getFromUid(uid); // 데이터베이스에서 uid 조회
@@ -101,9 +102,10 @@ const getProfileByUid = (req, res) => __awaiter(void 0, void 0, void 0, function
         });
     }
 });
-exports.getProfileByUid = getProfileByUid;
-const fixProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { idToken, bio, displayName, instagramName, tiktokName, youtubeName, photoURL } = req.body;
+exports.getUserProfile = getUserProfile;
+const updateUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.uid;
+    const { bio, displayName, instagramName, tiktokName, youtubeName, photoURL } = req.body;
     const newUserData = {
         bio: bio,
         displayName: displayName,
@@ -113,8 +115,6 @@ const fixProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         photoURL: photoURL
     };
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
         yield user_model_1.User.findOneAndUpdate({ uid: uid }, { $set: newUserData }); // 데이터베이스에서 uid 조회
         const result = yield user_model_1.User.getFromUid(uid);
         res.status(200).json({
@@ -131,12 +131,10 @@ const fixProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
 });
-exports.fixProfile = fixProfile;
+exports.updateUserProfile = updateUserProfile;
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { idToken } = req.body;
+    const uid = req.uid;
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
         yield admin.auth().deleteUser(uid);
         yield user_model_1.User.deleteOne({ uid });
         res.status(200).json({
@@ -154,25 +152,14 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteUser = deleteUser;
-const faqUpload = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { uid, title, content, type } = req.body;
-    if (!uid || !title || !content || !type) {
-        return res.status(400).json({
-            statusCode: -1,
-            message: "Lack of essential data",
-            result: {}
-        });
-    }
+const getFollowerList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
     try {
-        const faqData = {
-            uid, title, content, faqType: type, createdAt: Date.now()
-        };
-        const newFaq = new faq_model_1.Faq(faqData);
-        yield newFaq.save();
+        const followerList = yield follow_model_1.Follow.getFollowerList(uid);
         res.status(200).json({
             statusCode: 0,
-            message: "Successfully upload",
-            result: newFaq
+            message: "Success",
+            result: followerList
         });
     }
     catch (error) {
@@ -183,8 +170,27 @@ const faqUpload = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 });
-exports.faqUpload = faqUpload;
-const getFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getFollowerList = getFollowerList;
+const getFollowingList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
+    try {
+        const followingList = yield follow_model_1.Follow.getFollowingList(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: followingList
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
+});
+exports.getFollowingList = getFollowingList;
+const getFaqList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
     try {
         const result = yield faq_model_1.Faq.getFromUid(uid);
@@ -202,65 +208,83 @@ const getFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 });
-exports.getFaq = getFaq;
-const findProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const productInUse = req.body.productInUse;
-    const idToken = req.body.idToken;
+exports.getFaqList = getFaqList;
+const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
-        const result = yield user_model_1.User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
+        const filters = yield filter_model_1.Filter.getListFromCreatorUid(uid);
+        const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid);
         res.status(200).json({
             statusCode: 0,
-            message: "Successfully updated",
-            result: result
+            message: "Successfully read product list",
+            result: {
+                filters: filters,
+                guidelines: guidelines
+            }
         });
     }
     catch (error) {
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {}
+            result: {
+                filters: [],
+                guidelines: []
+            }
         });
     }
 });
-exports.findProducts = findProducts;
-const follow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { srcUid, dstUid } = req.body;
+exports.getProductList = getProductList;
+const getLikeList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
     try {
-        const srcExist = yield user_model_1.User.exists({ uid: srcUid });
-        const dstExist = yield user_model_1.User.exists({ uid: dstUid });
-        if (!srcExist) {
-            return res.status(400).json({
-                statusCode: -1,
-                message: "User not found for provided source uid",
-                result: {}
-            });
-        }
-        if (!dstExist) {
-            return res.status(400).json({
-                statusCode: -1,
-                message: "User not found for provided destination uid",
-                result: {}
-            });
-        }
-        const result = yield follow_model_1.Follow.follow(srcUid, dstUid);
-        const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
+        const likelistData = yield like_model_1.Like.getLikelist(uid);
         res.status(200).json({
             statusCode: 0,
-            message: followMessage,
-            result: {}
+            message: 'Successfully read likelist',
+            result: {
+                filters: likelistData.filters,
+                guidelines: likelistData.guidelines,
+            }
         });
     }
     catch (error) {
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {}
+            result: {
+                filters: [],
+                guidelines: []
+            }
         });
     }
 });
-exports.follow = follow;
+exports.getLikeList = getLikeList;
+const getWishList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
+    try {
+        const wishlistData = yield wish_model_1.Wish.getWishlist(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: 'Successfully read wishlist',
+            result: {
+                filters: wishlistData.filters,
+                guidelines: wishlistData.guidelines,
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {
+                filters: [],
+                guidelines: []
+            }
+        });
+    }
+});
+exports.getWishList = getWishList;
 const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const srcUid = req.query.src;
     const dstUid = req.query.dst;
@@ -290,10 +314,11 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         }
         const result = yield follow_model_1.Follow.isFollowed(srcUid, dstUid);
         const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
+        const isFollowed = result ? true : false;
         res.status(200).json({
             statusCode: 0,
             message: followMessage,
-            result: {},
+            result: isFollowed
         });
     }
     catch (error) {
@@ -305,14 +330,32 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.checkFollow = checkFollow;
-const getFollower = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const uid = req.params.uid;
+const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { srcUid, dstUid } = req.body;
     try {
-        const followerList = yield follow_model_1.Follow.getFollowerList(uid);
+        const srcExist = yield user_model_1.User.exists({ uid: srcUid });
+        const dstExist = yield user_model_1.User.exists({ uid: dstUid });
+        if (!srcExist) {
+            return res.status(400).json({
+                statusCode: -1,
+                message: "User not found for provided source uid",
+                result: {}
+            });
+        }
+        if (!dstExist) {
+            return res.status(400).json({
+                statusCode: -1,
+                message: "User not found for provided destination uid",
+                result: {}
+            });
+        }
+        const result = yield follow_model_1.Follow.follow(srcUid, dstUid);
+        const followMessage = result ? "Successfully followed" : "Successfully unfollowed";
+        const isFollowed = result ? true : false;
         res.status(200).json({
             statusCode: 0,
-            message: "Success",
-            result: followerList
+            message: followMessage,
+            result: isFollowed,
         });
     }
     catch (error) {
@@ -323,15 +366,26 @@ const getFollower = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
 });
-exports.getFollower = getFollower;
-const getFollowing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const uid = req.params.uid;
+exports.toggleFollow = toggleFollow;
+const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { uid, title, content, type } = req.body;
+    if (!uid || !title || !content || !type) {
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
     try {
-        const followingList = yield follow_model_1.Follow.getFollowingList(uid);
+        const faqData = {
+            uid, title, content, faqType: type, createdAt: Date.now()
+        };
+        const newFaq = new faq_model_1.Faq(faqData);
+        yield newFaq.save();
         res.status(200).json({
             statusCode: 0,
-            message: "Success",
-            result: followingList
+            message: "Successfully upload",
+            result: newFaq
         });
     }
     catch (error) {
@@ -342,20 +396,257 @@ const getFollowing = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
     }
 });
-exports.getFollowing = getFollowing;
-const getProductsByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const idToken = req.body.idToken;
+exports.uploadFaq = uploadFaq;
+const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const productId = req.body.productId;
+    const uid = req.body.uid;
+    const type = req.body.type;
+    const createdAt = Date.now();
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
-        const filters = yield filter_model_1.Filter.getListFromCreatorUid(uid);
-        const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid);
+        let isLiked = yield like_model_1.Like.isExist(productId, uid, type);
+        if (type === "Filter") {
+            if (isLiked) {
+                yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter like deleted",
+                    result: false
+                });
+            }
+            else {
+                const like = new like_model_1.Like({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield like.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter like registed",
+                    result: true
+                });
+            }
+        }
+        else if (type === "Guideline") {
+            if (isLiked) {
+                yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline like deleted",
+                    result: false
+                });
+            }
+            else {
+                const like = new like_model_1.Like({
+                    productId: new mongoose_1.default.Types.ObjectId(productId),
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield like.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline like registed",
+                    result: true
+                });
+            }
+        }
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
+});
+exports.likeProduct = likeProduct;
+const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const productId = req.body.productId;
+    const uid = req.body.uid;
+    const type = req.body.type;
+    const createdAt = Date.now();
+    try {
+        let isWished = yield wish_model_1.Wish.isExist(productId, uid, type);
+        if (type === "Filter") {
+            if (isWished) {
+                yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter wish deleted",
+                    result: false
+                });
+            }
+            else {
+                const wish = new wish_model_1.Wish({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield wish.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully filter wish registed",
+                    result: true
+                });
+            }
+        }
+        else if (type === 'Guideline') {
+            if (isWished) {
+                yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline wish deleted",
+                    result: false
+                });
+            }
+            else {
+                const wish = new wish_model_1.Wish({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield wish.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully guideline wish registed",
+                    result: true
+                });
+            }
+        }
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
+});
+exports.wishProduct = wishProduct;
+const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.uid;
+    const { productId, productType } = req.body;
+    try {
+        // 이미 구매한 제품인지 확인하는 프로세스
+        const existOrder = yield order_model_1.Order.findOne({ uid: uid, productId: productId, productType: productType });
+        if (existOrder) {
+            return res.status(400).json({
+                statusCode: -1,
+                message: "User already purchased this product",
+                result: {
+                    productId: productId,
+                    productType: productType,
+                    uid: uid
+                }
+            });
+        }
+        let product = {};
+        if (productType === "Filter") {
+            product = yield filter_model_1.Filter.getFromObjId(productId);
+        }
+        else if (productType === "Guideline") {
+            product = yield guideline_model_1.Guideline.getFromObjId(productId);
+        }
+        let productPrice = parseInt(`${product.credit}`);
+        const currentTime = Date.now();
+        let credits = yield credit_model_1.Credit.find({
+            uid: uid,
+            amount: { $gt: 0 },
+            $or: [
+                { expireAt: { $gt: currentTime } },
+                { expireAt: -1 }
+            ]
+        }).sort({ expireAt: 1 });
+        let transactionObjects = [];
+        for (let i = 0; i < credits.length; i++) {
+            let credit = credits[i];
+            const result = credit.amount - productPrice;
+            if (result >= 0) {
+                credits[i].amount -= productPrice;
+                let transaction = {
+                    creditId: credits[i]._id,
+                    amount: -productPrice,
+                    transactionType: "PURCHASE_PRODUCT",
+                    createdAt: currentTime
+                };
+                transactionObjects.push(transaction);
+                productPrice = 0;
+                break;
+            }
+            else {
+                productPrice -= credits[i].amount;
+                let transaction = {
+                    creditId: credits[i]._id,
+                    amount: -credits[i].amount,
+                    transactionType: "PURCHASE_PRODUCT",
+                    createdAt: currentTime
+                };
+                transactionObjects.push(transaction);
+                credits[i].amount = 0;
+            }
+        }
+        if (productPrice > 0) {
+            return res.status(400).json({
+                statusCode: -1,
+                message: "Not enough credits to purchase this product.",
+                result: {
+                    credits_of: productPrice
+                }
+            });
+        }
+        let orderId = "";
+        const session = yield mongoose_1.default.startSession();
+        session.startTransaction();
+        try {
+            for (let credit of credits) {
+                yield credit.save({ session });
+            }
+            for (let data of transactionObjects) {
+                const transaction = new credit_model_1.CreditTransaction(data);
+                yield transaction.save({ session });
+            }
+            const order = new order_model_1.Order({
+                uid: uid,
+                productId: productId,
+                productType: productType,
+                createdAt: currentTime,
+                orderType: "CREDIT"
+            });
+            yield order.save({ session });
+            orderId = `${order._id}`;
+            const income = new income_model_1.Income({
+                uid: product.creatorUid,
+                product: productId,
+                productType: productType,
+                order: order._id,
+                createdAt: currentTime,
+                amount: parseInt(`${product.credit}`)
+            });
+            yield income.save({ session });
+            yield session.commitTransaction();
+        }
+        catch (error) {
+            yield session.abortTransaction();
+            throw new Error("Failed purchase transaction");
+        }
+        finally {
+            session.endSession();
+        }
+        const user = yield user_model_1.User.getFromUid(uid);
         res.status(200).json({
             statusCode: 0,
-            message: "Successfully read product list",
+            message: "Successfully purchase product",
             result: {
-                filters: filters,
-                guidelines: guidelines
+                user: user,
+                productId: productId,
+                productPrice: product.credit,
+                productType: productType,
+                purchasedAt: currentTime,
+                orderId: orderId
             }
         });
     }
@@ -363,75 +654,110 @@ const getProductsByUid = (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {
-                filters: [],
-                guidelines: []
-            }
+            result: {}
         });
     }
 });
-exports.getProductsByUid = getProductsByUid;
-const getWishlistByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const uid = req.params.uid;
+exports.buyProduct = buyProduct;
+const useProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const productInUse = req.body.productInUse;
+    const uid = req.uid;
     try {
-        const wishlistData = yield wish_model_1.Wish.getWishlist(uid);
+        const result = yield user_model_1.User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
         res.status(200).json({
             statusCode: 0,
-            message: 'Successfully read wishlist',
-            result: {
-                filters: wishlistData.filters,
-                guidelines: wishlistData.guidelines,
-            }
+            message: "Successfully updated",
+            result: result
         });
     }
     catch (error) {
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {
-                filters: [],
-                guidelines: []
-            }
+            result: {}
         });
     }
 });
-exports.getWishlistByUid = getWishlistByUid;
-const getLikelistByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const uid = req.params.uid;
+exports.useProduct = useProduct;
+const reviewProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const productId = req.body.productId;
+    const uid = req.uid;
+    const productType = req.body.productType;
+    const stars = req.body.stars;
+    const comment = req.body.comment;
+    const imageUrl = req.body.imageUrl;
     try {
-        const likelistData = yield like_model_1.Like.getLikelist(uid);
-        res.status(200).json({
-            statusCode: 0,
-            message: 'Successfully read likelist',
-            result: {
-                filters: likelistData.filters,
-                guidelines: likelistData.guidelines,
-            }
+        const currentTime = Date.now();
+        const existReview = yield review_model_1.Review.findOne({ uid, productId });
+        if (existReview) {
+            throw new Error("Review already submitted");
+        }
+        const review = new review_model_1.Review({
+            uid: uid,
+            imageUrl: imageUrl,
+            stars: stars,
+            productId: new mongoose_1.default.Types.ObjectId(productId),
+            productType: productType,
+            comment: comment,
+            createdAt: currentTime
         });
+        const creditInfo = {
+            uid: uid,
+            amount: 1,
+            createdAt: currentTime,
+            expireAt: -1,
+            creditType: "REVIEW"
+        };
+        const newCredit = new credit_model_1.Credit(creditInfo);
+        const newTransaction = new credit_model_1.CreditTransaction({
+            creditId: newCredit._id,
+            amount: 1,
+            createdAt: currentTime,
+            transactionType: "REVIEW_REWARD"
+        });
+        const session = yield mongoose_1.default.startSession();
+        session.startTransaction();
+        try {
+            yield review.save({ session });
+            yield newCredit.save({ session });
+            yield newTransaction.save({ session });
+            session.commitTransaction();
+            const resultUser = yield user_model_1.User.getFromUid(uid);
+            res.status(200).json({
+                statusCode: 0,
+                message: "Successfully review saved",
+                result: {
+                    user: resultUser,
+                    review: review
+                }
+            });
+        }
+        catch (error) {
+            session.abortTransaction();
+            throw new Error("Failed transaction");
+        }
+        finally {
+            session.endSession();
+        }
     }
     catch (error) {
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {
-                filters: [],
-                guidelines: []
-            }
+            result: {}
         });
     }
 });
-exports.getLikelistByUid = getLikelistByUid;
+exports.reviewProduct = reviewProduct;
 const getCreditTransaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const idToken = req.params.idToken;
+    const uid = req.uid;
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
         const credits = yield credit_model_1.Credit.find({ uid: uid });
         const transactions = yield credit_model_1.CreditTransaction.find({ creditId: { $in: credits.map(credit => credit._id) } });
         res.status(200).json({
             statusCode: 0,
             message: "Successfully updated",
-            transactions
+            result: transactions
         });
     }
     catch (error) {
@@ -452,11 +778,9 @@ const getAdrewardAmount = (req, res) => __awaiter(void 0, void 0, void 0, functi
 });
 exports.getAdrewardAmount = getAdrewardAmount;
 const getAdreward = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const idToken = req.body.idToken;
+    const uid = req.uid;
     const session = yield mongoose_1.default.startSession();
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
         session.startTransaction();
         const currentTime = Date.now();
         const creditInfo = {
@@ -648,140 +972,3 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.purchaseCredit = purchaseCredit;
-const purchaseProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { idToken, productId, productType } = req.body;
-    let uid = "";
-    try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        uid = decodedToken.uid;
-        if (uid === "") {
-            throw new Error("Failed to verify idToken");
-        }
-        // 이미 구매한 제품인지 확인하는 프로세스
-        const existOrder = yield order_model_1.Order.findOne({ uid: uid, productId: productId, productType: productType });
-        if (existOrder) {
-            return res.status(400).json({
-                statusCode: -1,
-                message: "User already purchased this product",
-                result: {
-                    productId: productId,
-                    productType: productType,
-                    uid: uid
-                }
-            });
-        }
-        let product = {};
-        if (productType === "Filter") {
-            product = yield filter_model_1.Filter.getFromObjId(productId);
-        }
-        else if (productType === "Guideline") {
-            product = yield guideline_model_1.Guideline.getFromObjId(productId);
-        }
-        let productPrice = parseInt(`${product.credit}`);
-        const currentTime = Date.now();
-        let credits = yield credit_model_1.Credit.find({
-            uid: uid,
-            amount: { $gt: 0 },
-            $or: [
-                { expireAt: { $gt: currentTime } },
-                { expireAt: -1 }
-            ]
-        }).sort({ expireAt: 1 });
-        let transactionObjects = [];
-        for (let i = 0; i < credits.length; i++) {
-            let credit = credits[i];
-            const result = credit.amount - productPrice;
-            if (result >= 0) {
-                credits[i].amount -= productPrice;
-                let transaction = {
-                    creditId: credits[i]._id,
-                    amount: -productPrice,
-                    transactionType: "PURCHASE_PRODUCT",
-                    createdAt: currentTime
-                };
-                transactionObjects.push(transaction);
-                productPrice = 0;
-                break;
-            }
-            else {
-                productPrice -= credits[i].amount;
-                let transaction = {
-                    creditId: credits[i]._id,
-                    amount: -credits[i].amount,
-                    transactionType: "PURCHASE_PRODUCT",
-                    createdAt: currentTime
-                };
-                transactionObjects.push(transaction);
-                credits[i].amount = 0;
-            }
-        }
-        if (productPrice > 0) {
-            return res.status(400).json({
-                statusCode: -1,
-                message: "Not enough credits to purchase this product.",
-                result: {
-                    credits_of: productPrice
-                }
-            });
-        }
-        let orderId = "";
-        const session = yield mongoose_1.default.startSession();
-        session.startTransaction();
-        try {
-            for (let credit of credits) {
-                yield credit.save({ session });
-            }
-            for (let data of transactionObjects) {
-                const transaction = new credit_model_1.CreditTransaction(data);
-                yield transaction.save({ session });
-            }
-            const order = new order_model_1.Order({
-                uid: uid,
-                productId: productId,
-                productType: productType,
-                createdAt: currentTime,
-                orderType: "CREDIT"
-            });
-            yield order.save({ session });
-            orderId = `${order._id}`;
-            const income = new income_model_1.Income({
-                uid: product.creatorUid,
-                product: productId,
-                productType: productType,
-                order: order._id,
-                createdAt: currentTime,
-                amount: parseInt(`${product.credit}`)
-            });
-            yield income.save({ session });
-            yield session.commitTransaction();
-        }
-        catch (error) {
-            yield session.abortTransaction();
-            throw new Error("Failed purchase transaction");
-        }
-        finally {
-            session.endSession();
-        }
-        const user = yield user_model_1.User.getFromUid(uid);
-        res.status(200).json({
-            statusCode: 0,
-            message: "Successfully purchase product",
-            result: {
-                user: user,
-                productId: productId,
-                productPrice: product.credit,
-                productType: productType,
-                purchasedAt: currentTime,
-                orderId: orderId
-            }
-        });
-    }
-    catch (error) {
-        res.status(500).json({
-            statusCode: -1,
-            message: error,
-            result: {}
-        });
-    }
-});
-exports.purchaseProduct = purchaseProduct;
