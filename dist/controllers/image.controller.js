@@ -31,9 +31,9 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         };
         const uploadResult = yield storage_1.default.upload(params).promise();
         const imageUrl = uploadResult.Location;
-        res.json({
+        res.status(200).json({
             statusCode: 0,
-            message: "Image uploaded successfully.",
+            message: "Successfully image uploaded",
             result: {
                 url: imageUrl,
                 type: type
@@ -41,8 +41,11 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
     catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
     }
 });
 exports.uploadImage = uploadImage;
@@ -54,15 +57,18 @@ const deleteImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             Bucket: 'cufit-staging-image-bucket',
             Key: `${type}/${fileName}.png`
         }).promise();
-        res.json({
+        res.status(200).json({
             statusCode: 0,
-            message: "Success",
-            result
+            message: "Successfully image deleted",
+            result: result
         });
     }
     catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
     }
 });
 exports.deleteImage = deleteImage;
