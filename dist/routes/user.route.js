@@ -8,7 +8,7 @@ const authMiddleware_1 = __importDefault(require("../middlewares/authMiddleware"
 const user_controller_1 = require("../controllers/user.controller");
 const router = express_1.default.Router();
 router.post("/login", user_controller_1.login); // idtoken 받아서 앱에 로그인
-router.get("/:uid", user_controller_1.getUserProfile); // uid로 사용자 정보 조회
+router.get("/:uid/profile", user_controller_1.getUserProfile); // uid로 사용자 정보 조회
 router.post("/", authMiddleware_1.default, user_controller_1.updateUserProfile); // idtoken 받아서 사용자 정보 수정
 router.delete("/", authMiddleware_1.default, user_controller_1.deleteUser); // idtoken 받아서 사용자 정보 삭제
 router.get("/:uid/follower-list", user_controller_1.getFollowerList); // 팔로워 리스트 가져오기
