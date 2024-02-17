@@ -7,9 +7,8 @@ const router = express.Router();
 
 router.post('/', uploadFilter);
 router.get("/", getFilterTop5);
-router.get("/:id", getFilterById);
-router.get("/:cid", getFilterByCreatorId);
-router.get("/:uid", getFilterByUid);
+router.get("/id/:id", getFilterById);
+router.get("/uid/:uid", getFilterByUid);
 router.get("/search/:keyword", getFilterByKeyword);
 
 export default router;

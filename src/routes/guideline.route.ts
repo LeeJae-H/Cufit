@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.post('/', uploadGuideline);
 router.get("/", getGuidelineTop5);
-router.get("/:id", getGuidelineById);
-router.get("/:uid", getGuidelineByUid);
+router.get("/id/:id", getGuidelineById);
+router.get("/uid/:uid", getGuidelineByUid);
 router.get("/search/:keyword", getGuidelineByKeyword);
 router.get("/near", getGuidelineByDistance);
 
