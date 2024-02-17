@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFilterByKeyword = exports.getFilterByUid = exports.getFilterByCreatorId = exports.getFilterById = exports.getFilterTop5 = exports.uploadFilter = void 0;
+exports.getFilterByKeyword = exports.getFilterByUid = exports.getFilterById = exports.getFilterTop5 = exports.uploadFilter = void 0;
 const filter_model_1 = require("../models/filter.model");
 const contents_model_1 = require("../models/contents.model");
 const auth_model_1 = require("../models/auth.model");
@@ -142,25 +142,6 @@ const getFilterById = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getFilterById = getFilterById;
-const getFilterByCreatorId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const cid = req.params.cid;
-    try {
-        const result = yield filter_model_1.Filter.getListFromCreatorId(cid);
-        res.status(200).json({
-            statusCode: 0,
-            message: "Success",
-            result: result
-        });
-    }
-    catch (error) {
-        res.status(500).json({
-            statusCode: -1,
-            message: error,
-            result: {}
-        });
-    }
-});
-exports.getFilterByCreatorId = getFilterByCreatorId;
 const getFilterByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
     try {

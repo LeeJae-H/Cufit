@@ -12,10 +12,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIncome = void 0;
 const income_model_1 = require("../models/income.model");
 const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.uid;
+    const status = `${req.query.status}`;
+    const free = req.query.free === "true";
     try {
-        const uid = req.uid;
-        const status = `${req.query.status}`;
-        const free = req.query.free === "true";
         const result = yield income_model_1.Income.find({
             uid: uid,
             status: status,
