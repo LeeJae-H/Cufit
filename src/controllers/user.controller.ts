@@ -622,26 +622,6 @@ export const buyProduct = async (req: CustomRequest, res: Response) => {
   }
 };
 
-export const useProduct = async (req: CustomRequest, res: Response) => {
-  const productInUse = req.body.productInUse;
-  const uid = req.uid!;  
-
-  try {
-    const result = await User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
-    res.status(200).json({
-      statusCode: 0,
-      message: "Successfully updated",
-      result: result
-    });
-  } catch(error) {
-    res.status(500).json({
-      statusCode: -1,
-      message: error,
-      result: {}
-    })
-  }
-};
-
 export const reviewProduct = async (req: CustomRequest, res: Response) => {
   const productId = req.body.productId;
   const uid = req.uid!;  

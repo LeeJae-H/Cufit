@@ -133,25 +133,6 @@ export const getFilterById = async (req: Request, res: Response) => {
   }
 };
 
-export const getFilterByCreatorId = async (req: Request, res: Response) => {
-  const cid = req.params.cid;
-
-  try {
-    const result = await Filter.getListFromCreatorId(cid);
-    res.status(200).json({
-      statusCode: 0,
-      message: "Success",
-      result: result
-    });
-  } catch(error) {
-    res.status(500).json({
-      statusCode: -1,
-      message: error,
-      result: {}
-    })
-  }
-};
-
 export const getFilterByUid = async (req: Request, res: Response) => {
   const uid = req.params.uid;
 

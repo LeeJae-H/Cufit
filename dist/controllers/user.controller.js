@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.useProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
+exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
 const admin = __importStar(require("firebase-admin"));
 const user_model_1 = require("../models/user.model");
 const faq_model_1 = require("../models/faq.model");
@@ -659,26 +659,6 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.buyProduct = buyProduct;
-const useProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const productInUse = req.body.productInUse;
-    const uid = req.uid;
-    try {
-        const result = yield user_model_1.User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
-        res.status(200).json({
-            statusCode: 0,
-            message: "Successfully updated",
-            result: result
-        });
-    }
-    catch (error) {
-        res.status(500).json({
-            statusCode: -1,
-            message: error,
-            result: {}
-        });
-    }
-});
-exports.useProduct = useProduct;
 const reviewProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = req.body.productId;
     const uid = req.uid;

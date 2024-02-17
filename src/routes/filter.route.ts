@@ -1,6 +1,6 @@
 import express from 'express';
 import { uploadFilter, getFilterTop5, 
-    getFilterById, getFilterByCreatorId, getFilterByUid, getFilterByKeyword 
+    getFilterById, getFilterByUid, getFilterByKeyword 
 } from '../controllers/filter.controller';
 
 const router = express.Router();
