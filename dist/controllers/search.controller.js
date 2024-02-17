@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAnything = void 0;
 const user_model_1 = require("../models/user.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
+const logger_1 = __importDefault(require("../config/logger"));
 const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     try {
@@ -32,6 +36,7 @@ const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 filter: filter
             }
         });
+        logger_1.default.info("Successfully get anything");
     }
     catch (error) {
         res.status(500).json({
@@ -39,6 +44,7 @@ const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get anything: ${error}`);
     }
 });
 exports.getAnything = getAnything;

@@ -8,12 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStatus = void 0;
 const servserStatus_model_1 = require("../models/servserStatus.model");
+const logger_1 = __importDefault(require("../config/logger"));
 const getStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const currentStatus = yield servserStatus_model_1.Status.findOne({});
     if (!currentStatus) {
+        logger_1.default.error("Error get status");
         return res.status(500).json({
             statusCode: -1,
             message: "Error",
@@ -25,5 +30,6 @@ const getStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         message: "Success",
         result: currentStatus
     });
+    logger_1.default.info("Successfully get status");
 });
 exports.getStatus = getStatus;

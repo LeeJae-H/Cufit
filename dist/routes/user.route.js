@@ -24,7 +24,7 @@ router.post("/product/like", user_controller_1.likeProduct); // product like 하
 router.post("/product/wish", user_controller_1.wishProduct); // product wish 하기
 router.post("/product/buy", authMiddleware_1.default, user_controller_1.buyProduct); // product 구매
 router.post("/product/review", authMiddleware_1.default, user_controller_1.reviewProduct); // product review 쓰기
-// verifyIdToken 미들웨어를 거치는 api는 모두 post 요청으로 (단순조회를 하더라도)
+// veryfyIdToken 미들웨어를 거치는 api는 모두 post 요청으로 (단순조회를 하더라도)
 router.post("/transaction-credit", authMiddleware_1.default, user_controller_1.getCreditTransaction); // idtoken 받아서 credit transaction 조회 
 router.get("/reward-advertisement", user_controller_1.getAdrewardAmount); // 광고 시청으로 얻을 수 있는 credit 양
 router.post("/credit-advertisement", authMiddleware_1.default, user_controller_1.getAdreward); // 광고 시청으로 얻은 credit

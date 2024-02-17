@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const firebase_admin_1 = __importDefault(require("firebase-admin"));
+const logger_1 = __importDefault(require("../config/logger"));
 const verifyIdToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { idToken } = req.body;
     try {
@@ -26,6 +27,7 @@ const verifyIdToken = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             message: 'Invalid or expired token',
             result: {}
         });
+        logger_1.default.error(`Invalid or expired token: ${error}`);
     }
 });
 exports.default = verifyIdToken;

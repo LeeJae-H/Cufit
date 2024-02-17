@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteImage = exports.uploadImage = void 0;
 const storage_1 = __importDefault(require("../config/storage"));
+const logger_1 = __importDefault(require("../config/logger"));
 const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!req.file) {
@@ -39,6 +40,7 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 type: type
             }
         });
+        logger_1.default.info("Successfully upload image");
     }
     catch (error) {
         res.status(500).json({
@@ -46,6 +48,7 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error upload image: ${error}`);
     }
 });
 exports.uploadImage = uploadImage;
@@ -62,6 +65,7 @@ const deleteImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: "Successfully image deleted",
             result: result
         });
+        logger_1.default.info("Successfully delete image");
     }
     catch (error) {
         res.status(500).json({
@@ -69,6 +73,7 @@ const deleteImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error delete image: ${error}`);
     }
 });
 exports.deleteImage = deleteImage;

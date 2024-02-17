@@ -108,7 +108,6 @@ UserSchema.statics.getFromUid = function (uid) {
             const filters = yield purchasedFilters(uid);
             result.filters = filters;
             result.guidelines = guidelines;
-            console.log(result);
             return result;
         }
         catch (error) {

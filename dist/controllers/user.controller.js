@@ -51,6 +51,7 @@ const adReward = 1;
 const axios_1 = __importDefault(require("axios"));
 const order_model_1 = require("../models/order.model");
 const income_model_1 = require("../models/income.model");
+const logger_1 = __importDefault(require("../config/logger"));
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idToken } = req.body;
     try {
@@ -65,6 +66,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: "Successfully login",
             result: userData
         });
+        logger_1.default.info('Successfully login');
     }
     catch (error) {
         res.status(500).json({
@@ -72,6 +74,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: error, // error.message
             result: {}
         });
+        logger_1.default.error(`Error login: ${error}`);
     }
 });
 exports.login = login;
@@ -93,6 +96,7 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 result: {}
             });
         }
+        logger_1.default.info('Successfully get user profile');
     }
     catch (error) {
         res.status(500).json({
@@ -100,6 +104,7 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get user profile: ${error}`);
     }
 });
 exports.getUserProfile = getUserProfile;
@@ -122,6 +127,7 @@ const updateUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Successfully updated",
             result: result
         });
+        logger_1.default.info('Successfully update user profile');
     }
     catch (error) {
         res.status(500).json({
@@ -129,6 +135,7 @@ const updateUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error update user profile: ${error}`);
     }
 });
 exports.updateUserProfile = updateUserProfile;
@@ -142,6 +149,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             message: "Successfully deleted",
             result: {}
         });
+        logger_1.default.info('Successfully delete user');
     }
     catch (error) {
         res.status(500).json({
@@ -149,6 +157,7 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error delete user: ${error}`);
     }
 });
 exports.deleteUser = deleteUser;
@@ -161,6 +170,7 @@ const getFollowerList = (req, res) => __awaiter(void 0, void 0, void 0, function
             message: "Success",
             result: followerList
         });
+        logger_1.default.info('Successfully get follower list');
     }
     catch (error) {
         res.status(500).json({
@@ -168,6 +178,7 @@ const getFollowerList = (req, res) => __awaiter(void 0, void 0, void 0, function
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get follower list: ${error}`);
     }
 });
 exports.getFollowerList = getFollowerList;
@@ -180,6 +191,7 @@ const getFollowingList = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Success",
             result: followingList
         });
+        logger_1.default.info('Successfully get following list');
     }
     catch (error) {
         res.status(500).json({
@@ -187,6 +199,7 @@ const getFollowingList = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get following list: ${error}`);
     }
 });
 exports.getFollowingList = getFollowingList;
@@ -199,6 +212,7 @@ const getFaqList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             message: "Success",
             result: result
         });
+        logger_1.default.info('Successfully get faq list');
     }
     catch (error) {
         res.status(500).json({
@@ -206,6 +220,7 @@ const getFaqList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get faq list: ${error}`);
     }
 });
 exports.getFaqList = getFaqList;
@@ -222,6 +237,7 @@ const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 guidelines: guidelines
             }
         });
+        logger_1.default.info('Successfully get product list');
     }
     catch (error) {
         res.status(500).json({
@@ -232,6 +248,7 @@ const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 guidelines: []
             }
         });
+        logger_1.default.error(`Error get product list: ${error}`);
     }
 });
 exports.getProductList = getProductList;
@@ -247,6 +264,7 @@ const getLikeList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 guidelines: likelistData.guidelines,
             }
         });
+        logger_1.default.info('Successfully get like list');
     }
     catch (error) {
         res.status(500).json({
@@ -257,6 +275,7 @@ const getLikeList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 guidelines: []
             }
         });
+        logger_1.default.error(`Error get like list: ${error}`);
     }
 });
 exports.getLikeList = getLikeList;
@@ -272,6 +291,7 @@ const getWishList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 guidelines: wishlistData.guidelines,
             }
         });
+        logger_1.default.info('Successfully get wish list');
     }
     catch (error) {
         res.status(500).json({
@@ -282,23 +302,18 @@ const getWishList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 guidelines: []
             }
         });
+        logger_1.default.error(`Error get wish list: ${error}`);
     }
 });
 exports.getWishList = getWishList;
 const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const srcUid = req.query.src;
     const dstUid = req.query.dst;
-    if (!srcUid || !dstUid) {
-        return res.status(400).json({
-            statusCode: -1,
-            message: "Query not found",
-            result: {}
-        });
-    }
     try {
         const srcExist = yield user_model_1.User.exists({ uid: srcUid });
         const dstExist = yield user_model_1.User.exists({ uid: dstUid });
         if (!srcExist) {
+            logger_1.default.error("User not found for provided source uid");
             return res.status(400).json({
                 statusCode: -1,
                 message: "User not found for provided source uid",
@@ -306,6 +321,7 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             });
         }
         if (!dstExist) {
+            logger_1.default.error("User not found for provided destination uid");
             return res.status(400).json({
                 statusCode: -1,
                 message: "User not found for provided destination uid",
@@ -320,6 +336,7 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: followMessage,
             result: isFollowed
         });
+        logger_1.default.info(followMessage);
     }
     catch (error) {
         res.status(500).json({
@@ -327,6 +344,7 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error check follow: ${error}`);
     }
 });
 exports.checkFollow = checkFollow;
@@ -336,6 +354,7 @@ const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const srcExist = yield user_model_1.User.exists({ uid: srcUid });
         const dstExist = yield user_model_1.User.exists({ uid: dstUid });
         if (!srcExist) {
+            logger_1.default.error("User not found for provided source uid");
             return res.status(400).json({
                 statusCode: -1,
                 message: "User not found for provided source uid",
@@ -343,6 +362,7 @@ const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             });
         }
         if (!dstExist) {
+            logger_1.default.error("User not found for provided destination uid");
             return res.status(400).json({
                 statusCode: -1,
                 message: "User not found for provided destination uid",
@@ -357,6 +377,7 @@ const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: followMessage,
             result: isFollowed,
         });
+        logger_1.default.info(followMessage);
     }
     catch (error) {
         res.status(500).json({
@@ -364,12 +385,14 @@ const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error toggle follow: ${error}`);
     }
 });
 exports.toggleFollow = toggleFollow;
 const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { uid, title, content, type } = req.body;
     if (!uid || !title || !content || !type) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -387,6 +410,7 @@ const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: "Successfully upload",
             result: newFaq
         });
+        logger_1.default.info("Successfully upload faq");
     }
     catch (error) {
         res.status(500).json({
@@ -394,6 +418,7 @@ const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error upload faq: ${error}`);
     }
 });
 exports.uploadFaq = uploadFaq;
@@ -412,6 +437,7 @@ const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully filter like deleted",
                     result: false
                 });
+                logger_1.default.info("Successfully filter like deleted");
             }
             else {
                 const like = new like_model_1.Like({
@@ -426,6 +452,7 @@ const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully filter like registed",
                     result: true
                 });
+                logger_1.default.info("Successfully filter like registed");
             }
         }
         else if (type === "Guideline") {
@@ -436,6 +463,7 @@ const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully guideline like deleted",
                     result: false
                 });
+                logger_1.default.info("Successfully guideline like deleted");
             }
             else {
                 const like = new like_model_1.Like({
@@ -450,6 +478,7 @@ const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully guideline like registed",
                     result: true
                 });
+                logger_1.default.info("Successfully guideline like registed");
             }
         }
     }
@@ -459,6 +488,7 @@ const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error like product: ${error}`);
     }
 });
 exports.likeProduct = likeProduct;
@@ -477,6 +507,7 @@ const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully filter wish deleted",
                     result: false
                 });
+                logger_1.default.info("Successfully filter wish deleted");
             }
             else {
                 const wish = new wish_model_1.Wish({
@@ -491,6 +522,7 @@ const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully filter wish registed",
                     result: true
                 });
+                logger_1.default.info("Successfully filter wish registed");
             }
         }
         else if (type === 'Guideline') {
@@ -501,6 +533,7 @@ const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully guideline wish deleted",
                     result: false
                 });
+                logger_1.default.info("Successfully guideline wish deleted");
             }
             else {
                 const wish = new wish_model_1.Wish({
@@ -515,6 +548,7 @@ const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     message: "Successfully guideline wish registed",
                     result: true
                 });
+                logger_1.default.info("Successfully guideline wish registed");
             }
         }
     }
@@ -524,6 +558,7 @@ const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error wish product: ${error}`);
     }
 });
 exports.wishProduct = wishProduct;
@@ -534,6 +569,7 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         // 이미 구매한 제품인지 확인하는 프로세스
         const existOrder = yield order_model_1.Order.findOne({ uid: uid, productId: productId, productType: productType });
         if (existOrder) {
+            logger_1.default.error('User already purchased this product');
             return res.status(400).json({
                 statusCode: -1,
                 message: "User already purchased this product",
@@ -590,6 +626,7 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             }
         }
         if (productPrice > 0) {
+            logger_1.default.error('Not enough credits to purchase this product.');
             return res.status(400).json({
                 statusCode: -2,
                 message: "Not enough credits to purchase this product.",
@@ -649,6 +686,7 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 orderId: orderId
             }
         });
+        logger_1.default.info("Successfully purchase product");
     }
     catch (error) {
         res.status(500).json({
@@ -656,6 +694,7 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error buy product: ${error}`);
     }
 });
 exports.buyProduct = buyProduct;
@@ -711,6 +750,7 @@ const reviewProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                     review: review
                 }
             });
+            logger_1.default.info("Successfully review product");
         }
         catch (error) {
             session.abortTransaction();
@@ -726,6 +766,7 @@ const reviewProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error review product: ${error}`);
     }
 });
 exports.reviewProduct = reviewProduct;
@@ -739,6 +780,7 @@ const getCreditTransaction = (req, res) => __awaiter(void 0, void 0, void 0, fun
             message: "Successfully updated",
             result: transactions
         });
+        logger_1.default.info("Successfully get credit transaction");
     }
     catch (error) {
         res.status(500).json({
@@ -746,6 +788,7 @@ const getCreditTransaction = (req, res) => __awaiter(void 0, void 0, void 0, fun
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get credit transaction: ${error}`);
     }
 });
 exports.getCreditTransaction = getCreditTransaction;
@@ -755,6 +798,7 @@ const getAdrewardAmount = (req, res) => __awaiter(void 0, void 0, void 0, functi
         message: "Success",
         result: adReward
     });
+    logger_1.default.info("Successfully get adreward amount");
 });
 exports.getAdrewardAmount = getAdrewardAmount;
 const getAdreward = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -786,6 +830,7 @@ const getAdreward = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: "Success",
             result: resultUser
         });
+        logger_1.default.info("Successfully get adreward");
     }
     catch (error) {
         session.abortTransaction();
@@ -794,6 +839,7 @@ const getAdreward = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get adreward: ${error}`);
     }
     finally {
         session.endSession();
@@ -817,6 +863,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
             try {
                 const existOrder = yield credit_model_1.Credit.find({ uid: uid, atid: atid }).session(session);
                 if (existOrder.length > 0) {
+                    logger_1.default.error("This transaction already created.");
                     return res.status(400).json({
                         statusCode: -1,
                         message: "This transaction already created.",
@@ -855,6 +902,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         newTransaction: newTransaction
                     }
                 });
+                logger_1.default.info("Successfully purchase credit");
             }
             catch (error) {
                 yield session.abortTransaction();
@@ -867,6 +915,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
         else if (verificationResult.status === 21007) { // Sandbox용 결제인 경우 Sandbox URL로 재검증 요청
             const existOrder = yield credit_model_1.Credit.find({ uid: uid, atid: atid });
             if (existOrder.length > 0) {
+                logger_1.default.error("This transaction already created.");
                 return res.status(400).json({
                     statusCode: -1,
                     message: "This transaction already created.",
@@ -914,6 +963,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
                             newTransaction: newTransaction
                         }
                     });
+                    logger_1.default.info("Successfully purchase credit");
                 }
                 catch (error) {
                     yield session.abortTransaction();
@@ -931,6 +981,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         sandboxVerificationResult: sandboxVerificationResult
                     }
                 });
+                logger_1.default.error("Invalid receipt even in Sandbox");
             }
         }
         else {
@@ -941,6 +992,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     verificationResult: verificationResult
                 }
             });
+            logger_1.default.error("Invalid receipt");
         }
     }
     catch (error) {
@@ -949,6 +1001,7 @@ const purchaseCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error purchase credit: ${error}`);
     }
 });
 exports.purchaseCredit = purchaseCredit;

@@ -17,11 +17,13 @@ const filter_model_1 = require("../models/filter.model");
 const contents_model_1 = require("../models/contents.model");
 const auth_model_1 = require("../models/auth.model");
 const mongoose_1 = __importDefault(require("mongoose"));
+const logger_1 = __importDefault(require("../config/logger"));
 const uploadFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { title, shortDescription, description, credit, creatorUid, adjustment, originalImageUrl, filteredImageUrl, } = req.body;
     const createdAt = Date.now();
     const tagsString = req.body.tags;
     if (!title || !tagsString || !shortDescription || !description || !credit || !creatorUid || !adjustment || !originalImageUrl || !filteredImageUrl) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -68,6 +70,7 @@ const uploadFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 message: "Successfully uploaded",
                 result: result
             });
+            logger_1.default.info("Successfully upload filter");
         }
         catch (error) {
             yield session.abortTransaction();
@@ -83,6 +86,7 @@ const uploadFilter = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error upload filter: ${error}`);
     }
 });
 exports.uploadFilter = uploadFilter;
@@ -113,6 +117,7 @@ const getFilterTop5 = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 contents: result
             }
         });
+        logger_1.default.info("Successfully get filter main");
     }
     catch (error) {
         res.status(500).json({
@@ -120,6 +125,7 @@ const getFilterTop5 = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get filter main: ${error}`);
     }
 });
 exports.getFilterTop5 = getFilterTop5;
@@ -132,6 +138,7 @@ const getFilterById = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get filter by id");
     }
     catch (error) {
         res.status(500).json({
@@ -139,6 +146,7 @@ const getFilterById = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get filter by id: ${error}`);
     }
 });
 exports.getFilterById = getFilterById;
@@ -151,6 +159,7 @@ const getFilterByUid = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get filter by uid");
     }
     catch (error) {
         res.status(500).json({
@@ -158,6 +167,7 @@ const getFilterByUid = (req, res) => __awaiter(void 0, void 0, void 0, function*
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get filter by uid: ${error}`);
     }
 });
 exports.getFilterByUid = getFilterByUid;
@@ -167,6 +177,7 @@ const getFilterByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, funct
     const sortby = `${req.query.sortby}`;
     const cost = `${req.query.cost}`;
     if (!keyword || !sort || !sortby || !cost) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -180,6 +191,7 @@ const getFilterByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, funct
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get filter by keyword");
     }
     catch (error) {
         res.status(500).json({
@@ -187,6 +199,7 @@ const getFilterByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, funct
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get filter by keyword: ${error}`);
     }
 });
 exports.getFilterByKeyword = getFilterByKeyword;

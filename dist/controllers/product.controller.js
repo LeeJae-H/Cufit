@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getReview = exports.getDetail = void 0;
 const user_model_1 = require("../models/user.model");
@@ -18,6 +21,7 @@ const like_model_1 = require("../models/like.model");
 const wish_model_1 = require("../models/wish.model");
 const follow_model_1 = require("../models/follow.model");
 const order_model_1 = require("../models/order.model");
+const logger_1 = __importDefault(require("../config/logger"));
 const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = `${req.query.uid}`;
     const cid = `${req.query.cid}`;
@@ -27,6 +31,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let reviewCount = 0;
     let latestReviews = [];
     if (!cid || !productId || !type) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -90,6 +95,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 latestReviews: latestReviews
             }
         });
+        logger_1.default.info("Successfully get detail");
     }
     catch (error) {
         res.status(500).json({
@@ -97,6 +103,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get detail: ${error}`);
     }
 });
 exports.getDetail = getDetail;
@@ -109,6 +116,7 @@ const getReview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: "Success",
             result: reviews
         });
+        logger_1.default.info("Successfully get review");
     }
     catch (error) {
         res.status(500).json({
@@ -116,6 +124,7 @@ const getReview = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get review: ${error}`);
     }
 });
 exports.getReview = getReview;

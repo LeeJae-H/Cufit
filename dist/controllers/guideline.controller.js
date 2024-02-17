@@ -17,6 +17,7 @@ const guideline_model_1 = require("../models/guideline.model");
 const contents_model_1 = require("../models/contents.model");
 const auth_model_1 = require("../models/auth.model");
 const mongoose_1 = __importDefault(require("mongoose"));
+const logger_1 = __importDefault(require("../config/logger"));
 const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { title, shortDescription, description, credit, creatorUid, originalImageUrl, guidelineImageUrl, placeName, // nullable
      } = req.body;
@@ -24,6 +25,7 @@ const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
     const locationString = req.body.location;
     const createdAt = Date.now();
     if (!title || !tagsString || !shortDescription || !description || !credit || !creatorUid || !originalImageUrl || !guidelineImageUrl) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -79,6 +81,7 @@ const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
                 message: "Successfully uploaded",
                 result: result
             });
+            logger_1.default.info("Successfully upload guideline");
         }
         catch (error) {
             yield session.abortTransaction();
@@ -94,6 +97,7 @@ const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error upload guideline: ${error}`);
     }
 });
 exports.uploadGuideline = uploadGuideline;
@@ -124,6 +128,7 @@ const getGuidelineTop5 = (req, res) => __awaiter(void 0, void 0, void 0, functio
                 contents: result
             }
         });
+        logger_1.default.info("Successfully get guideline main");
     }
     catch (error) {
         res.status(500).json({
@@ -131,6 +136,7 @@ const getGuidelineTop5 = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get guideline main: ${error}`);
     }
 });
 exports.getGuidelineTop5 = getGuidelineTop5;
@@ -143,6 +149,7 @@ const getGuidelineById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get guideline by id");
     }
     catch (error) {
         res.status(500).json({
@@ -150,6 +157,7 @@ const getGuidelineById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get guideline by id: ${error}`);
     }
 });
 exports.getGuidelineById = getGuidelineById;
@@ -162,6 +170,7 @@ const getGuidelineByUid = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get guideline by uid");
     }
     catch (error) {
         res.status(500).json({
@@ -169,6 +178,7 @@ const getGuidelineByUid = (req, res) => __awaiter(void 0, void 0, void 0, functi
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get guideline by uid: ${error}`);
     }
 });
 exports.getGuidelineByUid = getGuidelineByUid;
@@ -178,6 +188,7 @@ const getGuidelineByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, fu
     const sortby = `${req.query.sortby}`;
     const cost = `${req.query.cost}`;
     if (!keyword || !sort || !sortby || !cost) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -191,6 +202,7 @@ const getGuidelineByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, fu
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get guideline by keyword");
     }
     catch (error) {
         res.status(500).json({
@@ -198,11 +210,13 @@ const getGuidelineByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, fu
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get guideline by keyword: ${error}`);
     }
 });
 exports.getGuidelineByKeyword = getGuidelineByKeyword;
 const getGuidelineByDistance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.query.lat || !req.query.lng) {
+        logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
             message: "Lack of essential data",
@@ -220,6 +234,7 @@ const getGuidelineByDistance = (req, res) => __awaiter(void 0, void 0, void 0, f
             message: "Success",
             result: result
         });
+        logger_1.default.info("Successfully get guideline by distance");
     }
     catch (error) {
         res.status(500).json({
@@ -227,6 +242,7 @@ const getGuidelineByDistance = (req, res) => __awaiter(void 0, void 0, void 0, f
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get guideline by distance: ${error}`);
     }
 });
 exports.getGuidelineByDistance = getGuidelineByDistance;

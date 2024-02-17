@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIncome = void 0;
 const income_model_1 = require("../models/income.model");
+const logger_1 = __importDefault(require("../config/logger"));
 const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.uid;
     const status = `${req.query.status}`;
@@ -28,6 +32,7 @@ const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: "Successfully load incomes",
             result: result
         });
+        logger_1.default.info("Successfully get income");
     }
     catch (error) {
         res.status(500).json({
@@ -35,6 +40,7 @@ const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get income: ${error}`);
     }
 });
 exports.getIncome = getIncome;
