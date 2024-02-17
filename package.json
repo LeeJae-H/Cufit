@@ -16,7 +16,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.11.0",
-    "@types/uuid": "^9.0.7",
+    "app-root-path": "^3.1.0",
     "aws-sdk": "^2.1536.0",
     "axios": "^1.6.7",
     "cors": "^2.8.5",
@@ -26,6 +26,7 @@
     "mongoose": "^8.0.4",
     "multer": "^1.4.5-lts.1",
     "ts-node": "^10.9.2",
-    "uuid": "^9.0.1"
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }

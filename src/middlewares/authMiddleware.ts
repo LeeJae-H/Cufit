@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/customRequest';
 import admin from 'firebase-admin';
+import logger from '../config/logger';
 
 const verifyIdToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
   const { idToken } = req.body;
@@ -15,6 +16,7 @@ const verifyIdToken = async (req: CustomRequest, res: Response, next: NextFuncti
       message: 'Invalid or expired token',
       result: {}
     });
+    logger.error(`Invalid or expired token: ${error}`);
   }
 };
 

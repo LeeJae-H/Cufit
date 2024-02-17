@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import s3 from '../config/storage';  
+import logger from '../config/logger';
 
 export const uploadImage = async (req: Request, res: Response) => {
   try {
@@ -26,12 +27,14 @@ export const uploadImage = async (req: Request, res: Response) => {
         type: type
       }
     });  
+    logger.info("Successfully upload image")
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message : error,
       result: {}
     });
+    logger.error(`Error upload image: ${error}`);
   }
 };
 
@@ -50,12 +53,14 @@ export const deleteImage = async (req: Request, res: Response) => {
       message: "Successfully image deleted",
       result: result
     });
+    logger.info("Successfully delete image");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message : error,
       result: {}
     });  
+    logger.error(`Error delete image: ${error}`);
   }
 };
 

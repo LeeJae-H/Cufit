@@ -3,6 +3,7 @@ import { Filter } from '../models/filter.model';
 import { Contents } from '../models/contents.model';
 import { Auth } from '../models/auth.model';
 import mongoose from 'mongoose';
+import logger from '../config/logger';
 
 export const uploadFilter = async (req: Request, res: Response) => {
   const {
@@ -18,6 +19,7 @@ export const uploadFilter = async (req: Request, res: Response) => {
   const createdAt = Date.now();
   const tagsString = req.body.tags;
   if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !adjustment || !originalImageUrl || ! filteredImageUrl) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -64,6 +66,7 @@ export const uploadFilter = async (req: Request, res: Response) => {
         message: "Successfully uploaded", 
         result: result
       });
+      logger.info("Successfully upload filter");
     } catch(error) {
       await session.abortTransaction();
       throw new Error("Failed transaction");
@@ -76,6 +79,7 @@ export const uploadFilter = async (req: Request, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error upload filter: ${error}`);
   }
 };
 
@@ -105,12 +109,14 @@ export const getFilterTop5 = async (req: Request, res: Response) => {
         contents: result
       }
     })
+    logger.info("Successfully get filter main");
   } catch (error){
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get filter main: ${error}`);
   }
 };
 
@@ -124,12 +130,14 @@ export const getFilterById = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     });
+    logger.info("Successfully get filter by id");
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get filter by id: ${error}`);
   }
 };
 
@@ -143,12 +151,14 @@ export const getFilterByUid = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     });
+    logger.info("Successfully get filter by uid");
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get filter by uid: ${error}`);
   }
 };
 
@@ -158,6 +168,7 @@ export const getFilterByKeyword = async (req: Request, res: Response) => {
   const sortby = `${req.query.sortby}`;
   const cost = `${req.query.cost}`;
   if (!keyword || !sort || !sortby || !cost) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -172,11 +183,13 @@ export const getFilterByKeyword = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     })
+    logger.info("Successfully get filter by keyword");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get filter by keyword: ${error}`);
   }
 };

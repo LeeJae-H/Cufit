@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { User } from '../models/user.model';
 import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
+import logger from '../config/logger';
 
 export const getAnything = async (req: Request, res: Response) => {
   const keyword = req.params.keyword;
@@ -23,11 +24,13 @@ export const getAnything = async (req: Request, res: Response) => {
         filter: filter
       }
     })
+    logger.info("Successfully get anything");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     });
+    logger.error(`Error get anything: ${error}`);
   }
 };

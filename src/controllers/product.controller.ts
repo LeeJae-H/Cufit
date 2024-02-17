@@ -8,6 +8,7 @@ import { Like } from '../models/like.model';
 import { Wish } from '../models/wish.model';
 import { Follow } from '../models/follow.model';
 import { Order } from '../models/order.model';
+import logger from '../config/logger';
 
 export const getDetail = async (req: Request, res: Response) => {
   const uid = `${req.query.uid}`;
@@ -18,6 +19,7 @@ export const getDetail = async (req: Request, res: Response) => {
   let reviewCount = 0;
   let latestReviews: any[] = [];
   if (!cid || !productId || !type) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -83,12 +85,14 @@ export const getDetail = async (req: Request, res: Response) => {
         latestReviews: latestReviews
       }
     })
+    logger.info("Successfully get detail");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get detail: ${error}`);
   }
 };
 
@@ -102,12 +106,14 @@ export const getReview = async (req: Request, res: Response) => {
       message: "Success",
       result: reviews
     })
+    logger.info("Successfully get review");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get review: ${error}`);
   }
 };
 

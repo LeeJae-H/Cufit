@@ -5,6 +5,7 @@ import { Status } from '../models/servserStatus.model';
 import { Auth } from '../models/auth.model';
 import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
+import logger from '../config/logger';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;
@@ -22,12 +23,14 @@ export const postStatus = async (req: Request, res: Response) => {
       message: "Success",
       result: {}
     })
+    logger.info("Successfully post status");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error post status: ${error}`);
   }
 };
 
@@ -42,12 +45,14 @@ export const getContent = async (req: Request, res: Response) => {
         message: "Empty content list",
         result: {}        
       })
+      logger.error("Empty content list");
     } else{
       res.status(200).json({
         statusCode: 0,
         message: "Successfully read content list",
         result: result
       });
+      logger.info("Successfully get content");
     }
   } catch (error) {
     res.status(500).json({
@@ -55,6 +60,7 @@ export const getContent = async (req: Request, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error get content: ${error}`);
   }
 };
 
@@ -66,15 +72,17 @@ export const getContents = async (req: Request, res: Response) => {
     if (!result) {
       res.status(400).json({
         statusCode: -1,
-        message: "Empty content list",
+        message: "Empty contents list",
         result: {}        
       })
+      logger.error("Empty contents list");
     } else{
       res.status(200).json({
         statusCode: 0,
-        message: "Successfully read content list",
+        message: "Successfully read contents list",
         result: result
       });
+      logger.info("Successfully get contents");
     }
   } catch (error) {
     res.status(500).json({
@@ -82,6 +90,7 @@ export const getContents = async (req: Request, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error get contents: ${error}`);
   }
 };
 
@@ -96,14 +105,15 @@ export const postContents = async (req: Request, res: Response) => {
       message: "Success",
       result: newContents
     });
+    logger.info("Successfully post contents");
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error post contents: ${error}`);
   }
-
 };
 
 export const getFaqs = async (req: Request, res: Response) => {
@@ -114,12 +124,14 @@ export const getFaqs = async (req: Request, res: Response) => {
       message: "Successfully faqs read.",
       result: faqs
     })
+    logger.info("Successfully get faqs");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get faqs: ${error}`);
   }
 };
 
@@ -163,12 +175,14 @@ export const getProducts = async (req: Request, res: Response) => {
         message: "Successfully load filters",
         result: result
       })
+      logger.info("Successfully get filters");
     } catch(error) {
       res.status(500).json({
         statusCode: -1,
         message: error,
         result: {}
       })
+      logger.error(`Error get filters: ${error}`);
     }
   } else if (type === "Guideline") {
     try {
@@ -204,15 +218,17 @@ export const getProducts = async (req: Request, res: Response) => {
         .populate('creator');
       res.status(200).json({
         statusCode: -1,
-        message: "Successfully load filters",
+        message: "Successfully load guidelines",
         result: result
       })
+      logger.info("Successfully get guidelines");
     } catch(error) {
       res.status(500).json({
         statusCode: -1,
         message: error,
         result: {}
       })
+      logger.error(`Error get guidelines: ${error}`);
     }
   }
 };
@@ -231,12 +247,14 @@ export const postFaqAnswer = async (req: Request, res: Response) => {
       message: "Successfully answer uploaded",
       result: newAnswer
     })
+    logger.info("Successfully post faq answer");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error post faq answer: ${error}`);
   }
 };
 
@@ -246,6 +264,7 @@ export const postAuth = async (req: Request, res: Response) => {
   const code = `${req.body.code}`;
   const message = req.body.message;
   if (!type || !productId || !code || !message) {
+    logger.error("essential data not found.");
     return res.status(200).json({
       statusCode: -1,
       message: "essential data not found.",
@@ -260,11 +279,13 @@ export const postAuth = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     })
+    logger.info("Successfully post auth");
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error post auth: ${error}`);
   }
 };

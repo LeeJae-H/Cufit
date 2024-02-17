@@ -99,7 +99,6 @@ UserSchema.statics.getFromUid = async function(uid: string) {
     const filters = await purchasedFilters(uid);
     result.filters = filters;
     result.guidelines = guidelines;
-    console.log(result)
     return result;
   } catch(error) {
     throw error;
