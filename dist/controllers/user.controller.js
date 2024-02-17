@@ -591,7 +591,7 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         if (productPrice > 0) {
             return res.status(400).json({
-                statusCode: -1,
+                statusCode: -2,
                 message: "Not enough credits to purchase this product.",
                 result: {
                     credits_of: productPrice
