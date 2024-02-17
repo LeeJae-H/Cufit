@@ -3,6 +3,7 @@ import { Guideline } from '../models/guideline.model';
 import { Contents } from '../models/contents.model';
 import { Auth } from '../models/auth.model';
 import mongoose from 'mongoose';
+import logger from '../config/logger';
 
 export const uploadGuideline = async (req: Request, res: Response) => {
   const {
@@ -19,6 +20,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
   const locationString = req.body.location;
   const createdAt = Date.now();
   if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !originalImageUrl || ! guidelineImageUrl) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -73,6 +75,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
         message: "Successfully uploaded", 
         result: result
       });
+      logger.info("Successfully upload guideline");
     } catch(error) {
       await session.abortTransaction();
       throw new Error("Failed transaction");
@@ -85,6 +88,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error upload guideline: ${error}`);
   }
 };
 
@@ -114,12 +118,14 @@ export const getGuidelineTop5 = async (req: Request, res: Response) => {
         contents: result
       }
     })
+    logger.info("Successfully get guideline main");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get guideline main: ${error}`);
   }
 };
 
@@ -133,12 +139,14 @@ export const getGuidelineById = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     });
+    logger.info("Successfully get guideline by id");
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get guideline by id: ${error}`);
   }
 };
 
@@ -152,12 +160,14 @@ export const getGuidelineByUid = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     });
+    logger.info("Successfully get guideline by uid");
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get guideline by uid: ${error}`);
   }
 };
 
@@ -167,6 +177,7 @@ export const getGuidelineByKeyword = async (req: Request, res: Response) => {
   const sortby = `${req.query.sortby}`;
   const cost = `${req.query.cost}`;
   if (!keyword || !sort || !sortby || !cost) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -181,17 +192,20 @@ export const getGuidelineByKeyword = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     })
+    logger.info("Successfully get guideline by keyword");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get guideline by keyword: ${error}`);
   }
 };
 
 export const getGuidelineByDistance = async (req: Request, res: Response) => {
   if (!req.query.lat || !req.query.lng) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -210,11 +224,13 @@ export const getGuidelineByDistance = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     })
+    logger.info("Successfully get guideline by distance");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get guideline by distance: ${error}`);
   }
 };

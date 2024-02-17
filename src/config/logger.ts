@@ -43,16 +43,16 @@ const logger = winston.createLogger({
       zippedArchive: true,
     }),
   ],
-  exceptionHandlers: [
-    new winstonDaily({
-        level: 'error',
-        datePattern: 'YYYY-MM-DD',
-        dirname: logDir + '/exception',
-        filename: '%DATE%.exception.log',
-        maxFiles: 30,
-        zippedArchive: true,
-    })
-  ]
+  // exceptionHandlers: [
+  //   new winstonDaily({
+  //       level: 'error',
+  //       datePattern: 'YYYY-MM-DD',
+  //       dirname: logDir + '/exception',
+  //       filename: '%DATE%.exception.log',
+  //       maxFiles: 30,
+  //       zippedArchive: true,
+  //   })
+  // ]
 });
 
 // Production 환경이 아닌 경우(dev 등) : 파일과 화면에도 log 출력

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CustomRequest } from '../types/customRequest';
 import { Income } from '../models/income.model';
+import logger from '../config/logger';
 
 export const getIncome = async (req: CustomRequest, res: Response) => {
   const uid = req.uid!;
@@ -20,11 +21,13 @@ export const getIncome = async (req: CustomRequest, res: Response) => {
       message: "Successfully load incomes",
       result: result
     })
+    logger.info("Successfully get income")
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get income: ${error}`);
   }
 }

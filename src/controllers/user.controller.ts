@@ -34,12 +34,14 @@ export const login = async (req: Request, res: Response) => {
       message: "Successfully login",
       result: userData
     });
+    logger.info('Successfully login');
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error, // error.message
       result: {}
     });
+    logger.error(`Error login: ${error}`);
   }
 };
 
@@ -61,14 +63,14 @@ export const getUserProfile = async (req: Request, res: Response) => {
         result: {}
       });
     }
-    logger.info('Get user profile successfully.');
+    logger.info('Successfully get user profile');
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}    
     });
-    logger.error(`Error getting user profile: ${error}`);
+    logger.error(`Error get user profile: ${error}`);
   }  
 };
 
@@ -92,12 +94,14 @@ export const updateUserProfile = async (req: CustomRequest, res: Response) => {
       message: "Successfully updated",
       result: result
     });
+    logger.info('Successfully update user profile');
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     });
+    logger.error(`Error update user profile: ${error}`);
   }
 };
 
@@ -111,12 +115,14 @@ export const deleteUser = async (req: CustomRequest, res: Response) => {
       message: "Successfully deleted",
       result: {}
     })
+    logger.info('Successfully delete user');
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error delete user: ${error}`);
   }
 };
 
@@ -130,12 +136,14 @@ export const getFollowerList = async (req: Request, res: Response) => {
       message: "Success",
       result: followerList
     });
+    logger.info('Successfully get follower list');
   } catch (error) {
     res.status(500).json({ 
       statusCode: -1,
       message: error,
       result: {}
      });
+     logger.error(`Error get follower list: ${error}`);
   }
 };
 
@@ -149,12 +157,14 @@ export const getFollowingList = async (req: Request, res: Response) => {
       message: "Success",
       result: followingList
     });
+    logger.info('Successfully get following list');
   } catch (error) {
     res.status(500).json({ 
       statusCode: -1,
       message: error,
       result: {}
      });  
+     logger.error(`Error get following list: ${error}`);
   }
 };
 
@@ -168,12 +178,14 @@ export const getFaqList = async (req: Request, res: Response) => {
       message: "Success",
       result: result
     })
+    logger.info('Successfully get faq list');
   } catch(error){
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error get faq list: ${error}`);
   } 
 };
 
@@ -191,6 +203,7 @@ export const getProductList = async (req: Request, res: Response) => {
         guidelines: guidelines
       }
     })
+    logger.info('Successfully get product list');
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
@@ -200,6 +213,7 @@ export const getProductList = async (req: Request, res: Response) => {
         guidelines: []
       }
     })
+    logger.error(`Error get product list: ${error}`);
   }
 };
 
@@ -216,6 +230,7 @@ export const getLikeList = async (req: Request, res: Response) => {
         guidelines: likelistData.guidelines,
       }
     });
+    logger.info('Successfully get like list');
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
@@ -225,6 +240,7 @@ export const getLikeList = async (req: Request, res: Response) => {
         guidelines: []
       }
     });
+    logger.error(`Error get like list: ${error}`);
   }
 };
 
@@ -241,6 +257,7 @@ export const getWishList = async (req: Request, res: Response) => {
         guidelines: wishlistData.guidelines,
       }
     });
+    logger.info('Successfully get wish list');
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
@@ -250,24 +267,19 @@ export const getWishList = async (req: Request, res: Response) => {
         guidelines: []
       }
     });
+    logger.error(`Error get wish list: ${error}`);
   }
 };
 
 export const checkFollow = async (req: Request, res: Response) => {
   const srcUid = req.query.src as string;
   const dstUid = req.query.dst as string;
-  if (!srcUid || !dstUid) {
-    return res.status(400).json({
-      statusCode: -1,
-      message: "Query not found",
-      result: {}
-    });
-  }
 
   try {
     const srcExist = await User.exists({ uid: srcUid });
     const dstExist = await User.exists({ uid: dstUid });
     if (!srcExist) {
+      logger.error("User not found for provided source uid");
       return res.status(400).json({
         statusCode: -1,
         message: "User not found for provided source uid",
@@ -275,6 +287,7 @@ export const checkFollow = async (req: Request, res: Response) => {
       });
     }
     if (!dstExist) {
+      logger.error("User not found for provided destination uid");
       return res.status(400).json({
         statusCode: -1,
         message: "User not found for provided destination uid",
@@ -290,12 +303,14 @@ export const checkFollow = async (req: Request, res: Response) => {
       message: followMessage,
       result: isFollowed
     });
+    logger.info(followMessage);
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error check follow: ${error}`);
   }
 };
 
@@ -306,6 +321,7 @@ export const toggleFollow = async (req: Request, res: Response) => {
     const srcExist = await User.exists({ uid: srcUid });
     const dstExist = await User.exists({ uid: dstUid });
     if (!srcExist) {
+      logger.error("User not found for provided source uid");
       return res.status(400).json({
         statusCode: -1,
         message: "User not found for provided source uid",
@@ -313,6 +329,7 @@ export const toggleFollow = async (req: Request, res: Response) => {
       });
     }
     if (!dstExist) {
+      logger.error("User not found for provided destination uid");
       return res.status(400).json({
         statusCode: -1,
         message: "User not found for provided destination uid",
@@ -328,18 +345,21 @@ export const toggleFollow = async (req: Request, res: Response) => {
       message: followMessage,
       result: isFollowed,
     });
+    logger.info(followMessage);
   } catch(error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error toggle follow: ${error}`);
   }
 };
 
 export const uploadFaq = async (req: Request, res: Response) => {
   const { uid, title, content, type } = req.body;
   if (!uid || !title || !content || !type) {
+    logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
@@ -358,12 +378,14 @@ export const uploadFaq = async (req: Request, res: Response) => {
       message: "Successfully upload",
       result: newFaq
     })
+    logger.info("Successfully upload faq");
   } catch(error){
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
+    logger.error(`Error upload faq: ${error}`);
   }
 };
 
@@ -383,6 +405,7 @@ export const likeProduct = async (req: Request, res: Response) => {
           message: "Successfully filter like deleted",
           result: false
         })
+        logger.info("Successfully filter like deleted");
       } else {
         const like = new Like({
           productId: productId,
@@ -396,6 +419,7 @@ export const likeProduct = async (req: Request, res: Response) => {
           message: "Successfully filter like registed",
           result: true
         })
+        logger.info("Successfully filter like registed");
       }
     } else if (type === "Guideline") {
       if(isLiked) {
@@ -405,6 +429,7 @@ export const likeProduct = async (req: Request, res: Response) => {
           message: "Successfully guideline like deleted",
           result: false
         })
+        logger.info("Successfully guideline like deleted");
       } else {
         const like = new Like({
           productId: new mongoose.Types.ObjectId(productId),
@@ -418,6 +443,7 @@ export const likeProduct = async (req: Request, res: Response) => {
           message: "Successfully guideline like registed",
           result: true
         })
+        logger.info("Successfully guideline like registed");
       }
     }
   } catch (error) {
@@ -426,6 +452,7 @@ export const likeProduct = async (req: Request, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error like product: ${error}`);
   }
 };
 
@@ -445,6 +472,7 @@ export const wishProduct = async (req: Request, res: Response) => {
           message: "Successfully filter wish deleted",
           result: false
         })
+        logger.info("Successfully filter wish deleted");
       } else {
         const wish = new Wish({
           productId: productId,
@@ -458,6 +486,7 @@ export const wishProduct = async (req: Request, res: Response) => {
           message: "Successfully filter wish registed",
           result: true
         })
+        logger.info("Successfully filter wish registed");
       }
     } else if (type === 'Guideline') {
       if(isWished) {
@@ -467,6 +496,7 @@ export const wishProduct = async (req: Request, res: Response) => {
           message: "Successfully guideline wish deleted",
           result: false
         })
+        logger.info("Successfully guideline wish deleted");
       } else {
         const wish = new Wish({
           productId: productId,
@@ -480,6 +510,7 @@ export const wishProduct = async (req: Request, res: Response) => {
           message: "Successfully guideline wish registed",
           result: true
         })
+        logger.info("Successfully guideline wish registed");
       }
     }
   } catch (error) {
@@ -488,6 +519,7 @@ export const wishProduct = async (req: Request, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error wish product: ${error}`);
   }
 };
 
@@ -499,6 +531,7 @@ export const buyProduct = async (req: CustomRequest, res: Response) => {
     // 이미 구매한 제품인지 확인하는 프로세스
     const existOrder = await Order.findOne({ uid: uid, productId: productId, productType: productType })
     if (existOrder) {
+      logger.error('User already purchased this product');
       return res.status(400).json({
         statusCode: -1,
         message: "User already purchased this product",
@@ -556,6 +589,7 @@ export const buyProduct = async (req: CustomRequest, res: Response) => {
     }
 
     if (productPrice > 0) {
+      logger.error('Not enough credits to purchase this product.');
       return res.status(400).json({
         statusCode: -1,
         message: "Not enough credits to purchase this product.",
@@ -616,32 +650,14 @@ export const buyProduct = async (req: CustomRequest, res: Response) => {
         orderId: orderId
       }
     })
+    logger.info("Successfully purchase product");
   } catch (error) {
     res.status(500).json({
       statusCode: -1,
       message: error,
       result: {}
     })
-  }
-};
-
-export const useProduct = async (req: CustomRequest, res: Response) => {
-  const productInUse = req.body.productInUse;
-  const uid = req.uid!;  
-
-  try {
-    const result = await User.findOneAndUpdate({ uid: uid }, { $set: { productInUse: productInUse } });
-    res.status(200).json({
-      statusCode: 0,
-      message: "Successfully updated",
-      result: result
-    });
-  } catch(error) {
-    res.status(500).json({
-      statusCode: -1,
-      message: error,
-      result: {}
-    })
+    logger.error(`Error buy product: ${error}`);
   }
 };
 
@@ -700,6 +716,7 @@ export const reviewProduct = async (req: CustomRequest, res: Response) => {
           review: review
         }
       })
+      logger.info("Successfully review product");
     } catch(error) {
       session.abortTransaction();
       throw new Error("Failed transaction");
@@ -712,6 +729,7 @@ export const reviewProduct = async (req: CustomRequest, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error review product: ${error}`);
   }
 };
 
@@ -726,12 +744,14 @@ export const getCreditTransaction = async (req: CustomRequest, res: Response) =>
       message: "Successfully updated",
       result: transactions
     });
+    logger.info("Successfully get credit transaction");
   } catch(error) {
     res.status(500).json({ 
       statusCode: -1,
       message: error,
       result: {}
      }); 
+     logger.error(`Error get credit transaction: ${error}`);
   }
 };
 
@@ -741,6 +761,7 @@ export const getAdrewardAmount = async (req: Request, res: Response) => {
     message: "Success",
     result: adReward
   })
+  logger.info("Successfully get adreward amount");
 };
 
 export const getAdreward = async (req: CustomRequest, res: Response) => {
@@ -772,6 +793,7 @@ export const getAdreward = async (req: CustomRequest, res: Response) => {
       message: "Success",
       result: resultUser
     })
+    logger.info("Successfully get adreward");
   } catch(error) {
     session.abortTransaction();
     res.status(200).json({
@@ -779,6 +801,7 @@ export const getAdreward = async (req: CustomRequest, res: Response) => {
       message: error,
       result: {}
     })
+    logger.error(`Error get adreward: ${error}`);
   } finally { 
     session.endSession();
   }
@@ -804,6 +827,7 @@ export const purchaseCredit = async (req: Request, res: Response) => {
       try {
         const existOrder = await Credit.find({ uid: uid, atid: atid }).session(session);
         if (existOrder.length > 0) {
+          logger.error("This transaction already created.")
           return res.status(400).json({
             statusCode: -1,
             message: "This transaction already created.",
@@ -843,6 +867,7 @@ export const purchaseCredit = async (req: Request, res: Response) => {
             newTransaction: newTransaction 
           }
         });
+        logger.info("Successfully purchase credit")
       } catch(error) {
         await session.abortTransaction();
         throw error
@@ -853,6 +878,7 @@ export const purchaseCredit = async (req: Request, res: Response) => {
     } else if (verificationResult.status === 21007) { // Sandbox용 결제인 경우 Sandbox URL로 재검증 요청
       const existOrder = await Credit.find({ uid: uid, atid: atid });
       if (existOrder.length > 0) {
+        logger.error("This transaction already created.");
         return res.status(400).json({
           statusCode: -1,
           message: "This transaction already created.",
@@ -901,6 +927,7 @@ export const purchaseCredit = async (req: Request, res: Response) => {
               newTransaction: newTransaction 
             }
           });
+          logger.info("Successfully purchase credit")
         } catch(error) {
           await session.abortTransaction();
           throw new Error("Failed transaction")
@@ -915,6 +942,7 @@ export const purchaseCredit = async (req: Request, res: Response) => {
             sandboxVerificationResult: sandboxVerificationResult 
           }
         });
+        logger.error("Invalid receipt even in Sandbox");
       }
     } else {
       res.status(400).json({ 
@@ -924,6 +952,7 @@ export const purchaseCredit = async (req: Request, res: Response) => {
           verificationResult: verificationResult 
         }
       });
+      logger.error("Invalid receipt");
     }
   } catch (error) {
     res.status(500).json({ 
@@ -931,5 +960,6 @@ export const purchaseCredit = async (req: Request, res: Response) => {
       message: error, 
       result: {}
     });
+    logger.error(`Error purchase credit: ${error}`);
   }
 };

@@ -2,7 +2,7 @@ import express from 'express';
 import verifyIdToken from '../middlewares/authMiddleware';
 import { login, getUserProfile, updateUserProfile, deleteUser, 
     getFollowerList, getFollowingList, getFaqList, getLikeList, getWishList, getProductList,
-    checkFollow, toggleFollow, uploadFaq, likeProduct, wishProduct, buyProduct, useProduct, reviewProduct,
+    checkFollow, toggleFollow, uploadFaq, likeProduct, wishProduct, buyProduct, reviewProduct,
     getCreditTransaction, getAdrewardAmount, getAdreward, purchaseCredit, 
 } from '../controllers/user.controller';
 
@@ -26,10 +26,10 @@ router.post("/faq", uploadFaq); // 문의하기
 router.post("/product/like", likeProduct); // product like 하기
 router.post("/product/wish", wishProduct); // product wish 하기
 router.post("/product/buy", verifyIdToken, buyProduct); // product 구매
-router.post("/product/use", verifyIdToken, useProduct); // 제품 사용
 router.post("/product/review", verifyIdToken, reviewProduct); // product review 쓰기
 
-router.get("/transaction-credit", verifyIdToken, getCreditTransaction); // idtoken 받아서 credit transaction 조회 
+// veryfyIdToken 미들웨어를 거치는 api는 모두 post 요청으로 (단순조회를 하더라도)
+router.post("/transaction-credit", verifyIdToken, getCreditTransaction); // idtoken 받아서 credit transaction 조회 
 router.get("/reward-advertisement", getAdrewardAmount); // 광고 시청으로 얻을 수 있는 credit 양
 router.post("/credit-advertisement", verifyIdToken, getAdreward); // 광고 시청으로 얻은 credit
 router.post('/credit-purchase', purchaseCredit); // 인앱 결제로 credit 구매
