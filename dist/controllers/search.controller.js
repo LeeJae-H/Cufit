@@ -8,34 +8,43 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSomethingByKeyword = void 0;
+exports.getAnything = void 0;
 const user_model_1 = require("../models/user.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
-const getSomethingByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const logger_1 = __importDefault(require("../config/logger"));
+const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
-    // creator, guideline, filter
-    if (keyword === "") {
+    try {
+        // creator, guideline, filter
+        if (keyword === "") {
+            throw new Error("Empty keyword");
+        }
+        const creator = yield user_model_1.User.search(keyword);
+        const guideline = yield guideline_model_1.Guideline.newSearch(keyword);
+        const filter = yield filter_model_1.Filter.newSearch(keyword);
         res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: {
+                creator: creator,
+                guideline: guideline,
+                filter: filter
+            }
+        });
+        logger_1.default.info("Successfully get anything");
+    }
+    catch (error) {
+        res.status(500).json({
             statusCode: -1,
-            message: "Empty keyword.",
+            message: error,
             result: {}
         });
-        return;
+        logger_1.default.error(`Error get anything: ${error}`);
     }
-    const creator = yield user_model_1.User.search(keyword);
-    const guideline = yield guideline_model_1.Guideline.newSearch(keyword);
-    const filter = yield filter_model_1.Filter.newSearch(keyword);
-    const result = {
-        creator,
-        guideline,
-        filter
-    };
-    res.status(200).json({
-        statusCode: 0,
-        message: "Success",
-        result: result
-    });
 });
-exports.getSomethingByKeyword = getSomethingByKeyword;
+exports.getAnything = getAnything;

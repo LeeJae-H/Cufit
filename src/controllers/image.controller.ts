@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import s3 from '../config/storage';  
+import logger from '../config/logger';
 
 export const uploadImage = async (req: Request, res: Response) => {
   try {
@@ -7,11 +8,9 @@ export const uploadImage = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
     const type = req.body.type;
-    
     const file = req.file;
     const { originalname, buffer } = file;
     const fileType = originalname.split('.').pop();
-
     const params = {
         Bucket: "cufit-staging-image-bucket",
         Key: `${type}/${Date.now()}.${fileType}`,
@@ -20,18 +19,22 @@ export const uploadImage = async (req: Request, res: Response) => {
     };
     const uploadResult = await s3.upload(params).promise();
     const imageUrl = uploadResult.Location;  
-    res.json({
+    res.status(200).json({
       statusCode: 0,
-      message: "Image uploaded successfully.",
+      message: "Successfully image uploaded",
       result: {
         url: imageUrl,
         type: type
       }
     });  
-
-} catch (error) {
-    console.error(error);
-    res.status(500).json({message : 'Server Error'});
+    logger.info("Successfully upload image")
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message : error,
+      result: {}
+    });
+    logger.error(`Error upload image: ${error}`);
   }
 };
 
@@ -45,15 +48,19 @@ export const deleteImage = async (req: Request, res: Response) => {
         Key: `${type}/${fileName}.png`
     }).promise();
 
-    res.json({
+    res.status(200).json({
       statusCode: 0,
-      message: "Success",
-      result
+      message: "Successfully image deleted",
+      result: result
     });
-
+    logger.info("Successfully delete image");
   } catch (error) {
-    console.error(error);
-    res.status(500).json({message : 'Server Error'});
+    res.status(500).json({
+      statusCode: -1,
+      message : error,
+      result: {}
+    });  
+    logger.error(`Error delete image: ${error}`);
   }
 };
 

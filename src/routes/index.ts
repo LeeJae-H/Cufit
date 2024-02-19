@@ -12,13 +12,13 @@ import user from './user.route';
 const router = express.Router();
 
 router.use('/admin', admin);
-router.use('/creator', creator);
-router.use('/filter', filter);
-router.use('/guideline', guideline);
-router.use('/image', image);
-router.use('/product', product);
+router.use('/creators', creator);
+router.use('/filters', filter);
+router.use('/guidelines', guideline);
+router.use('/images', image);
+router.use('/products', product);
 router.use('/search', search);
 router.use('/status', stts);
-router.use('/user', user);
+router.use('/users', user);
 
 export default router;

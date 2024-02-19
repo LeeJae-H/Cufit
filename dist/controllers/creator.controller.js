@@ -1,27 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -31,18 +8,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getIncome = void 0;
 const income_model_1 = require("../models/income.model");
-const admin = __importStar(require("firebase-admin"));
+const logger_1 = __importDefault(require("../config/logger"));
 const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const idToken = req.params.idToken;
+    const uid = req.uid;
+    const status = `${req.query.status}`;
+    const free = req.query.free === "true";
     try {
-        const decodedToken = yield admin.auth().verifyIdToken(idToken);
-        const uid = decodedToken.uid;
-        const status = `${req.query.status}`;
-        const free = req.query.free === "true";
-        console.log("before result");
         const result = yield income_model_1.Income.find({
             uid: uid,
             status: status,
@@ -50,22 +27,20 @@ const getIncome = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         })
             .populate("product")
             .populate("order");
-        console.log(result);
         res.status(200).json({
             statusCode: 0,
             message: "Successfully load incomes",
-            result
+            result: result
         });
-        return;
+        logger_1.default.info("Successfully get income");
     }
     catch (error) {
-        console.error("error");
-        console.error(error);
-        res.status(200).json({
+        res.status(500).json({
             statusCode: -1,
             message: error,
             result: {}
         });
+        logger_1.default.error(`Error get income: ${error}`);
     }
 });
 exports.getIncome = getIncome;

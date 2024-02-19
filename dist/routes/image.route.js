@@ -7,6 +7,6 @@ const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("../middlewares/multer"));
 const image_controller_1 = require("../controllers/image.controller");
 const router = express_1.default.Router();
-router.post('/upload', multer_1.default.single('image'), image_controller_1.uploadImage); // 이미지 업로드
-router.delete('/delete', image_controller_1.deleteImage); // 이미지 불러오기
+router.post('/', multer_1.default.single('image'), image_controller_1.uploadImage); // 이미지 업로드
+router.delete('/', image_controller_1.deleteImage); // 이미지 삭제
 exports.default = router;
