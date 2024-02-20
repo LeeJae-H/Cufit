@@ -7,7 +7,6 @@ import { Guideline } from './guideline.model';
 import { Order } from './order.model';
 Follow
 
-
 interface DBUser {
   uid: string;
   email?: string;
@@ -127,7 +126,7 @@ UserSchema.statics.getFromObjId = async function(_id: string) {
 }
 
 UserSchema.statics.createNewUser = async function(token: DecodedIdToken) {
-  const displayName = token.name ?? `큐핏${token.uid.substring(0, 4)}`;
+  const displayName = token.name ?? generateRandomKoreanName() + token.uid.substring(0, 4);
   const bio = `안녕하세요 ${displayName}입니다.`;
   const signupDate = Date.now();
   const newUser = new this({
@@ -183,6 +182,19 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
   .populate('creator')
   .populate('authStatus');
   return guidelines
+}
+
+function generateRandomKoreanName() {
+  const firstNames = ["바나나", "딸기", "사과", "귤", "복숭아", "수박", "파인애플", "레몬", "라임", "체리", "키위", "토마토", "포도", "오렌지", "망고", "자두", "자몽", "블루베리"];
+  const lastNames = ["코코", "쿠키", "우유", "밍밍", "삐약", "푸니", "꼬북", "뽀송", "토롤", "뿌잉", "삐약", "뽀송", "롤리", "슈슈", "토로", "야옹", "멍멍", "리리", "쪼꼬"];
+
+  const randomFirstNameIndex = Math.floor(Math.random() * firstNames.length);
+  const randomLastNameIndex = Math.floor(Math.random() * lastNames.length);
+
+  const firstName = firstNames[randomFirstNameIndex];
+  const lastName = lastNames[randomLastNameIndex];
+
+  return firstName + lastName;
 }
 
 const User = mongoose.model<DBUserDocument, DBUserModel>("User", UserSchema, "user");
