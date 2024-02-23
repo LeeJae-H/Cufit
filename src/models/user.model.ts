@@ -185,9 +185,9 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
 }
 
 function generateNickname() {
-  const subjects = ["바나나", "딸기", "사과", "귤", "복숭아"];
-  const adverbs = ["달콤한", "상큼한", "신선한", "맛있는", "향긋한"];
-  const nouns = ["사랑", "행복", "웃음", "꿈", "환상"];
+  const subjects = ["사랑을", "행복을", "아름다움을", "자유를", "기쁨을"];
+  const adverbs = ["추구하는", "삼키는", "쫓는", "알리는", "만끽하는"];
+  const nouns = ["고양이", "강아지", "아기새", "돌고래", "곰돌이"];
 
   const subject = subjects[Math.floor(Math.random() * subjects.length)];
   const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
