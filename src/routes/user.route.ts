@@ -9,7 +9,7 @@ import { login, getUserProfile, updateUserProfile, deleteUser,
 const router = express.Router();
 
 router.post("/login", login); // idtoken 받아서 앱에 로그인
-router.get("/:uid",getUserProfile); // uid로 사용자 정보 조회
+router.get("/:uid/profile",getUserProfile); // uid로 사용자 정보 조회
 router.post("/", verifyIdToken, updateUserProfile); // idtoken 받아서 사용자 정보 수정
 router.delete("/", verifyIdToken, deleteUser); // idtoken 받아서 사용자 정보 삭제
 
