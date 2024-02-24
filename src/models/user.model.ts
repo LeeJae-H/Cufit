@@ -7,7 +7,6 @@ import { Guideline } from './guideline.model';
 import { Order } from './order.model';
 Follow
 
-
 interface DBUser {
   uid: string;
   email?: string;
@@ -127,7 +126,7 @@ UserSchema.statics.getFromObjId = async function(_id: string) {
 }
 
 UserSchema.statics.createNewUser = async function(token: DecodedIdToken) {
-  const displayName = token.name ?? `큐핏${token.uid.substring(0, 4)}`;
+  const displayName = token.name ?? await checkAndReturnUniqueNickname();
   const bio = `안녕하세요 ${displayName}입니다.`;
   const signupDate = Date.now();
   const newUser = new this({
@@ -183,6 +182,38 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
   .populate('creator')
   .populate('authStatus');
   return guidelines
+}
+
+function generateNickname() {
+  const subjects = ["사랑을", "행복을", "아름다움을", "자유를", "기쁨을"];
+  const adverbs = ["추구하는", "삼키는", "쫓는", "알리는", "만끽하는"];
+  const nouns = ["고양이", "강아지", "아기새", "돌고래", "곰돌이"];
+
+  const subject = subjects[Math.floor(Math.random() * subjects.length)];
+  const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
+
+  return `${subject}${adverb}${noun}`;
+}
+
+async function checkAndReturnUniqueNickname(): Promise<string> {
+  // let count = 1;
+    // let existingUser = await User.findOne({ displayName: nickname });
+    // while (existingUser) {
+    //   nickname = `${nickname}#${count}`;
+    //   existingUser = await User.findOne({ displayName: nickname });
+    //   count++;
+    // }
+  try {
+    let nickname = generateNickname();
+    let usersWithNickname = await User.find({ "displayName": { $regex: new RegExp(nickname, "i") } });
+    const uniqueName = `${nickname}#${usersWithNickname.length}`; // 사랑을추구하는고양이#0, 사랑을추구하는고양이#1 , ... 
+
+    return uniqueName;
+
+  } catch (error) {
+    throw new Error(`Error return nickname: ${error}`);
+  }
 }
 
 const User = mongoose.model<DBUserDocument, DBUserModel>("User", UserSchema, "user");
