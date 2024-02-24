@@ -87,6 +87,15 @@ export const updateUserProfile = async (req: CustomRequest, res: Response) => {
   }
 
   try {
+    const existingUser = await User.findOne({ displayName: displayName });
+    if (existingUser && existingUser.uid !== uid) { 
+      return res.status(400).json({
+        statusCode: -1,
+        message: "DisplayName is already existed",
+        result: {}
+      });
+    }
+
     await User.findOneAndUpdate({ uid: uid }, { $set: newUserData });  // 데이터베이스에서 uid 조회
     const result = await User.getFromUid(uid);
     res.status(200).json({

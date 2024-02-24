@@ -197,19 +197,20 @@ function generateNickname() {
 }
 
 async function checkAndReturnUniqueNickname(): Promise<string> {
-  let nickname = generateNickname();
-  let count = 1;
-
+  // let count = 1;
+    // let existingUser = await User.findOne({ displayName: nickname });
+    // while (existingUser) {
+    //   nickname = `${nickname}#${count}`;
+    //   existingUser = await User.findOne({ displayName: nickname });
+    //   count++;
+    // }
   try {
-    let existingUser = await User.findOne({ displayName: nickname });
+    let nickname = generateNickname();
+    let usersWithNickname = await User.find({ "displayName": { $regex: new RegExp(nickname, "i") } });
+    const uniqueName = `${nickname}#${usersWithNickname.length}`; // 사랑을추구하는고양이#0, 사랑을추구하는고양이#1 , ... 
 
-    while (existingUser) {
-      nickname = `${nickname}#${count}`;
-      existingUser = await User.findOne({ displayName: nickname });
-      count++;
-    }
+    return uniqueName;
 
-    return nickname;
   } catch (error) {
     throw new Error(`Error return nickname: ${error}`);
   }
