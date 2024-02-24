@@ -126,7 +126,7 @@ UserSchema.statics.getFromObjId = async function(_id: string) {
 }
 
 UserSchema.statics.createNewUser = async function(token: DecodedIdToken) {
-  const displayName = token.name ?? generateRandomKoreanName() + token.uid.substring(0, 4);
+  const displayName = token.name ?? await checkAndReturnUniqueNickname();
   const bio = `안녕하세요 ${displayName}입니다.`;
   const signupDate = Date.now();
   const newUser = new this({
@@ -184,17 +184,36 @@ async function purchasedGuidelines(uid: string) : Promise<object[]> {
   return guidelines
 }
 
-function generateRandomKoreanName() {
-  const firstNames = ["바나나", "딸기", "사과", "귤", "복숭아", "수박", "파인애플", "레몬", "라임", "체리", "키위", "토마토", "포도", "오렌지", "망고", "자두", "자몽", "블루베리"];
-  const lastNames = ["코코", "쿠키", "우유", "밍밍", "삐약", "푸니", "꼬북", "뽀송", "토롤", "뿌잉", "삐약", "뽀송", "롤리", "슈슈", "토로", "야옹", "멍멍", "리리", "쪼꼬"];
+function generateNickname() {
+  const subjects = ["사랑을", "행복을", "아름다움을", "자유를", "기쁨을"];
+  const adverbs = ["추구하는", "삼키는", "쫓는", "알리는", "만끽하는"];
+  const nouns = ["고양이", "강아지", "아기새", "돌고래", "곰돌이"];
 
-  const randomFirstNameIndex = Math.floor(Math.random() * firstNames.length);
-  const randomLastNameIndex = Math.floor(Math.random() * lastNames.length);
+  const subject = subjects[Math.floor(Math.random() * subjects.length)];
+  const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
+  const noun = nouns[Math.floor(Math.random() * nouns.length)];
 
-  const firstName = firstNames[randomFirstNameIndex];
-  const lastName = lastNames[randomLastNameIndex];
+  return `${subject}${adverb}${noun}`;
+}
 
-  return firstName + lastName;
+async function checkAndReturnUniqueNickname(): Promise<string> {
+  // let count = 1;
+    // let existingUser = await User.findOne({ displayName: nickname });
+    // while (existingUser) {
+    //   nickname = `${nickname}#${count}`;
+    //   existingUser = await User.findOne({ displayName: nickname });
+    //   count++;
+    // }
+  try {
+    let nickname = generateNickname();
+    let usersWithNickname = await User.find({ "displayName": { $regex: new RegExp(nickname, "i") } });
+    const uniqueName = `${nickname}#${usersWithNickname.length}`; // 사랑을추구하는고양이#0, 사랑을추구하는고양이#1 , ... 
+
+    return uniqueName;
+
+  } catch (error) {
+    throw new Error(`Error return nickname: ${error}`);
+  }
 }
 
 const User = mongoose.model<DBUserDocument, DBUserModel>("User", UserSchema, "user");
