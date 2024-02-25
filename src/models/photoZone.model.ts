@@ -1,18 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 interface DBPhotoZone {
-  // var _id: String
-  // var creator: CreatorForList
-  // var title: String
-  // var placeName: String
-  // var location: GuidelineLocation
-  // var shortDescription: String
-  // var description: String
-  
-  // var imageUrls: [String]
-  // var tags: [String]
   uid: string;
-
   title: string;
   placeName: string;
   location: {
