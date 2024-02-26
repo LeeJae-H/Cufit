@@ -44,6 +44,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   top5: () => Promise<[DBGuidelineDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBGuidelineDocument]>;
   newSearch: (keyword: string) => Promise<[DBGuidelineDocument]>;
+  searchbyTitleOrTag: (keyword: string) => Promise<[DBGuidelineDocument]>;
   findByDistance(lat: number, lng: number, distance: number): Promise<DBGuidelineDocument[]>;
 }
 
@@ -220,6 +221,15 @@ GuidelineSchema.statics.newSearch = async function(keyword: string) {
   return result;
 }
 
+GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string) {
+  let result = await Guideline.find({
+    $or: [
+      { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+      { title: { $regex: new RegExp(keyword, 'i') } }
+    ],
+  })
+  return result;  
+}
 
 GuidelineSchema.statics.search = async function(keyword: string, sort: string, sortby: string, cost: string) {
   if (sortby === "p") { // like순서
