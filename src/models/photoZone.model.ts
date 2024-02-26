@@ -44,8 +44,21 @@ const PhotoZoneSchema: Schema<DBPhotoZone> = new Schema({
     required: true,
     type: Number,
   },
-  tags: { required: true, type: [String] },  
-  location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{type: Number}], default: [0, 0] } }
+  tags: { 
+    required: true, 
+    type: [String] 
+  },  
+  location: { 
+    type: { 
+      type: String, 
+      enum: ['Point'], 
+      default: 'Point' 
+    }, 
+    coordinates: { 
+      type: [{type: Number}], 
+      default: [0, 0] 
+    } 
+  }
 });
 
 PhotoZoneSchema.index({ location: "2dsphere" }); 
