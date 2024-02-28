@@ -40,6 +40,7 @@ interface DBFilterModel extends Model<DBFilterDocument> {
   top5: () => Promise<[DBFilterDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBFilterDocument]>;
   newSearch: (keyword: string) => Promise<[DBFilterDocument]>;
+  searchbyTitleOrTag: (keyword: string) => Promise<[DBFilterDocument]>;
 }
 
 const FilterSchema = new Schema<DBFilterDocument>({
@@ -140,6 +141,9 @@ FilterSchema.statics.newSearch = async function(keyword: string) {
       }
     },
     {
+      $unwind: "$creator"
+    },
+    {
       $lookup: {
         from: "auth",
         localField: "_id",
@@ -163,6 +167,16 @@ FilterSchema.statics.newSearch = async function(keyword: string) {
     }
   ])
   return result;
+}
+
+FilterSchema.statics.searchbyTitleOrTag = async function(keyword: string) {
+  let result = await Filter.find({
+    $or: [
+      { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+      { title: { $regex: new RegExp(keyword, 'i') } }
+    ],
+  })
+  return result;  
 }
 
 FilterSchema.statics.search = async function(keyword: string, sort: string, sortby: string, cost: string) {
