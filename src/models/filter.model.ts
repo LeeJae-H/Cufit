@@ -141,6 +141,9 @@ FilterSchema.statics.newSearch = async function(keyword: string) {
       }
     },
     {
+      $unwind: "$creator"
+    },
+    {
       $lookup: {
         from: "auth",
         localField: "_id",

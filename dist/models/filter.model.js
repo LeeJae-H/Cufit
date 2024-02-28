@@ -151,6 +151,9 @@ FilterSchema.statics.newSearch = function (keyword) {
                 }
             },
             {
+                $unwind: "$creator"
+            },
+            {
                 $lookup: {
                     from: "auth",
                     localField: "_id",
@@ -173,6 +176,17 @@ FilterSchema.statics.newSearch = function (keyword) {
                 }
             }
         ]);
+        return result;
+    });
+};
+FilterSchema.statics.searchbyTitleOrTag = function (keyword) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result = yield Filter.find({
+            $or: [
+                { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+                { title: { $regex: new RegExp(keyword, 'i') } }
+            ],
+        });
         return result;
     });
 };

@@ -227,6 +227,17 @@ GuidelineSchema.statics.newSearch = function (keyword) {
         return result;
     });
 };
+GuidelineSchema.statics.searchbyTitleOrTag = function (keyword) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result = yield Guideline.find({
+            $or: [
+                { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+                { title: { $regex: new RegExp(keyword, 'i') } }
+            ],
+        });
+        return result;
+    });
+};
 GuidelineSchema.statics.search = function (keyword, sort, sortby, cost) {
     return __awaiter(this, void 0, void 0, function* () {
         if (sortby === "p") { // like순서
