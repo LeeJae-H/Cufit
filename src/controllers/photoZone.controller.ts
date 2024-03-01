@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
 import { CustomRequest } from '../types/customRequest';
 import { PhotoZone } from '../models/photoZone.model';
+import { User } from '../models/user.model';
+import { Review } from '../models/review.model';
+import { Double } from 'aws-sdk/clients/apigateway';
 import logger from '../config/logger';
+import mongoose from 'mongoose';
+import { Follow } from '../models/follow.model';
+import { Like } from '../models/like.model';
+import { Wish } from '../models/wish.model';
 
 export const uploadPhotozone = async (req: Request, res: Response) => {
   try {
@@ -47,8 +54,17 @@ export const uploadPhotozone = async (req: Request, res: Response) => {
 
 export const deletePhotozone = async (req: CustomRequest, res: Response) => {
   try {
-    const uid = req.uid!;
-    await PhotoZone.deleteOne({uid}); // uid말고 유니크한 필드 집합으로 변경해야 함.
+    const photoZoneId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(photoZoneId)) {
+      throw new Error('Invalid photoZoneId');
+    }
+
+    const deletedPhotoZone = await PhotoZone.deleteOne({ _id: photoZoneId });
+
+    if (deletedPhotoZone.deletedCount === 0) {
+      throw new Error('photoZone not found');
+    }
 
     res.status(200).json({
         statusCode: 0,
@@ -124,9 +140,8 @@ export const getPhotozoneByDistance = async (req: Request, res: Response) => {
 }
 
 export const searchPhotozones = async (req: Request, res: Response) => {
-  const keyword = req.params.keyword;
-
   try{
+    const keyword = req.params.keyword;
     const photozones = await PhotoZone.searchByKeyword(keyword);
 
     res.status(200).json({
@@ -144,5 +159,47 @@ export const searchPhotozones = async (req: Request, res: Response) => {
       result: {}
     });
     logger.error(`Error search photozones: ${error}`);
+  }
+}
+
+export const getDetail = async (req: Request, res: Response) => {
+  try{
+    const uid = `${req.query.uid}`;
+    const cid = `${req.query.cid}`;
+    const type = `${req.query.type}`;
+    const photoZoneId = req.params.photoZoneId;
+
+    if (!cid || !photoZoneId || !type) {
+      logger.error("Lack of essential data");
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Lack of essential data",
+        result: {}
+      })
+    }
+    
+    const creator = await User.getFromUid(cid);
+    let isFollowed: Boolean = await Follow.isFollowed(uid, cid);
+    let isLiked: Boolean = await Like.isExist(photoZoneId, uid, type);
+    let isWished: Boolean = await Wish.isExist(photoZoneId, uid, type);
+    
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {
+        creator: creator,
+        isFollowed,
+        isLiked,
+        isWished,
+      }
+    })
+    logger.info("Successfully get detail");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get detail: ${error}`);
   }
 }

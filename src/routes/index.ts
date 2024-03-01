@@ -4,7 +4,7 @@ import creator from './creator.route';
 import filter from './filter.route';
 import guideline from './guideline.route';
 import image from './image.route';
-import photozone from './photozone.route';
+import photozone from './photoZone.route';
 import product from './product.route';
 import search from './search.route';
 import stts from './status.route';
