@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { User } from '../models/user.model';
 import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
+import { PhotoZone } from '../models/photoZone.model';
 import logger from '../config/logger';
 
 export const searchCreators = async (req: Request, res: Response) => {
@@ -80,20 +81,22 @@ export const getAnything = async (req: Request, res: Response) => {
   const keyword = req.params.keyword;
 
   try{
-    // creator, guideline, filter
+    // creator, guideline, filter, photoZone
     if (keyword === "") {
       throw new Error("Empty keyword")
     }
     const creator = await User.search(keyword);
     const guideline = await Guideline.newSearch(keyword);
     const filter = await Filter.newSearch(keyword);
+    const photoZone = await PhotoZone.searchByKeyword(keyword);
     res.status(200).json({
       statusCode: 0,
       message: "Success",
       result: {
         creator: creator,
         guideline: guideline,
-        filter: filter
+        filter: filter,
+        photoZone: photoZone
       }
     })
     logger.info("Successfully get anything");

@@ -454,6 +454,30 @@ export const likeProduct = async (req: Request, res: Response) => {
         })
         logger.info("Successfully guideline like registed");
       }
+    } else if (type === "photoZone") {
+      if(isLiked) {
+        await Like.deleteOne({productId: productId, uid: uid, productType: type});
+        res.status(200).json({
+          statusCode: 0,
+          message: "Successfully photoZone like deleted",
+          result: false
+        })
+        logger.info("Successfully photoZone like deleted");
+      } else {
+        const like = new Like({
+          productId: new mongoose.Types.ObjectId(productId),
+          uid: uid,
+          productType: type,
+          createdAt: createdAt
+        })
+        await like.save();
+        res.status(200).json({
+          statusCode: 0,
+          message: "Successfully photoZone like registed",
+          result: true
+        })
+        logger.info("Successfully photoZone like registed");
+      }
     }
   } catch (error) {
     res.status(500).json({
@@ -520,6 +544,30 @@ export const wishProduct = async (req: Request, res: Response) => {
           result: true
         })
         logger.info("Successfully guideline wish registed");
+      }
+    } else if (type === 'photoZone') {
+      if(isWished) {
+        await Wish.deleteOne({productId: productId, uid: uid, productType: type});
+        res.status(200).json({
+          statusCode: 0,
+          message: "Successfully photoZone wish deleted",
+          result: false
+        })
+        logger.info("Successfully photoZone wish deleted");
+      } else {
+        const wish = new Wish({
+          productId: productId,
+          uid: uid,
+          productType: type,
+          createdAt: createdAt
+        })
+        await wish.save();
+        res.status(200).json({
+          statusCode: 0,
+          message: "Successfully photoZone wish registed",
+          result: true
+        })
+        logger.info("Successfully photoZone wish registed");
       }
     }
   } catch (error) {
