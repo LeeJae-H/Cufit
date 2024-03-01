@@ -16,6 +16,7 @@ exports.getAnything = exports.searchFilters = exports.searchGuidelines = exports
 const user_model_1 = require("../models/user.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
+const photoZone_model_1 = require("../models/photoZone.model");
 const logger_1 = __importDefault(require("../config/logger"));
 const searchCreators = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
@@ -90,20 +91,22 @@ exports.searchFilters = searchFilters;
 const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     try {
-        // creator, guideline, filter
+        // creator, guideline, filter, photoZone
         if (keyword === "") {
             throw new Error("Empty keyword");
         }
         const creator = yield user_model_1.User.search(keyword);
         const guideline = yield guideline_model_1.Guideline.newSearch(keyword);
         const filter = yield filter_model_1.Filter.newSearch(keyword);
+        const photoZone = yield photoZone_model_1.PhotoZone.searchByKeyword(keyword);
         res.status(200).json({
             statusCode: 0,
             message: "Success",
             result: {
                 creator: creator,
                 guideline: guideline,
-                filter: filter
+                filter: filter,
+                photoZone: photoZone
             }
         });
         logger_1.default.info("Successfully get anything");

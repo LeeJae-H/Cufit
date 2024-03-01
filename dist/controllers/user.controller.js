@@ -489,6 +489,32 @@ const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 logger_1.default.info("Successfully guideline like registed");
             }
         }
+        else if (type === "PhotoZone") {
+            if (isLiked) {
+                yield like_model_1.Like.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully photoZone like deleted",
+                    result: false
+                });
+                logger_1.default.info("Successfully photoZone like deleted");
+            }
+            else {
+                const like = new like_model_1.Like({
+                    productId: new mongoose_1.default.Types.ObjectId(productId),
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield like.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully photoZone like registed",
+                    result: true
+                });
+                logger_1.default.info("Successfully photoZone like registed");
+            }
+        }
     }
     catch (error) {
         res.status(500).json({
@@ -557,6 +583,32 @@ const wishProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     result: true
                 });
                 logger_1.default.info("Successfully guideline wish registed");
+            }
+        }
+        else if (type === 'photoZone') {
+            if (isWished) {
+                yield wish_model_1.Wish.deleteOne({ productId: productId, uid: uid, productType: type });
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully photoZone wish deleted",
+                    result: false
+                });
+                logger_1.default.info("Successfully photoZone wish deleted");
+            }
+            else {
+                const wish = new wish_model_1.Wish({
+                    productId: productId,
+                    uid: uid,
+                    productType: type,
+                    createdAt: createdAt
+                });
+                yield wish.save();
+                res.status(200).json({
+                    statusCode: 0,
+                    message: "Successfully photoZone wish registed",
+                    result: true
+                });
+                logger_1.default.info("Successfully photoZone wish registed");
             }
         }
     }

@@ -22,6 +22,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PhotoZoneSchema = exports.PhotoZone = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
@@ -72,5 +81,35 @@ const PhotoZoneSchema = new mongoose_1.Schema({
 });
 exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
-const PhotoZone = mongoose_1.default.model('PhotoZone', PhotoZoneSchema, 'photoZone');
+PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = PhotoZone.find({
+            location: {
+                $near: {
+                    $maxDistance: distance,
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: [lng, lat],
+                    },
+                },
+            },
+        });
+        return result;
+    });
+};
+PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result = yield PhotoZone.find({
+            $or: [
+                { placeName: { $regex: new RegExp(keyword, 'i') } },
+                { title: { $regex: new RegExp(keyword, 'i') } },
+                { description: { $regex: new RegExp(keyword, 'i') } },
+                { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+                { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+            ],
+        });
+        return result;
+    });
+};
+const PhotoZone = mongoose_1.default.model("PhotoZone", PhotoZoneSchema, "photoZone");
 exports.PhotoZone = PhotoZone;
