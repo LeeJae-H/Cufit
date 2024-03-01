@@ -103,7 +103,7 @@ PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
             {
                 $lookup: {
                     from: "user",
-                    localField: "creatorUid",
+                    localField: "uid",
                     foreignField: "uid",
                     as: "creator"
                 }
