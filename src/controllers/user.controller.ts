@@ -454,7 +454,7 @@ export const likeProduct = async (req: Request, res: Response) => {
         })
         logger.info("Successfully guideline like registed");
       }
-    } else if (type === "photoZone") {
+    } else if (type === "PhotoZone") {
       if(isLiked) {
         await Like.deleteOne({productId: productId, uid: uid, productType: type});
         res.status(200).json({
