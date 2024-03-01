@@ -99,15 +99,30 @@ PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
 };
 PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield PhotoZone.find({
-            $or: [
-                { placeName: { $regex: new RegExp(keyword, 'i') } },
-                { title: { $regex: new RegExp(keyword, 'i') } },
-                { description: { $regex: new RegExp(keyword, 'i') } },
-                { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-                { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-            ],
-        });
+        let result = yield PhotoZone.aggregate([
+            {
+                $lookup: {
+                    from: "user",
+                    localField: "creatorUid",
+                    foreignField: "uid",
+                    as: "creator"
+                }
+            },
+            {
+                $unwind: "$creator"
+            },
+            {
+                $match: {
+                    $or: [
+                        { placeName: { $regex: new RegExp(keyword, 'i') } },
+                        { title: { $regex: new RegExp(keyword, 'i') } },
+                        { description: { $regex: new RegExp(keyword, 'i') } },
+                        { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+                        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+                    ],
+                }
+            }
+        ]);
         return result;
     });
 };
