@@ -88,16 +88,31 @@ PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: numbe
 };
 
 PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
-  let result = await PhotoZone.find({
-    $or: [
-      { placeName: { $regex: new RegExp(keyword, 'i') } },
-      { title: { $regex: new RegExp(keyword, 'i') } },
-      { description: { $regex: new RegExp(keyword, 'i') } },
-      { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-      { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-    ],
-  })
-  return result;  
+  let result = await PhotoZone.aggregate([
+    {
+      $lookup: {
+        from: "user",
+        localField: "creatorUid",
+        foreignField: "uid",
+        as: "creator"
+      }
+    },
+    {
+      $unwind: "$creator"
+    },
+    {
+      $match: {
+        $or: [
+          { placeName: { $regex: new RegExp(keyword, 'i') } },
+          { title: { $regex: new RegExp(keyword, 'i') } },
+          { description: { $regex: new RegExp(keyword, 'i') } },
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+        ],
+      }
+    }
+  ])
+  return result;
 }
 
 const PhotoZone = mongoose.model<DBPhotoZoneDocument, DBPhotoZoneModel>("PhotoZone", PhotoZoneSchema, "photoZone");
