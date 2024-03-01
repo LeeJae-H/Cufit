@@ -23,16 +23,21 @@ export const uploadPhotozone = async (req: Request, res: Response) => {
       tags,
     } = req.body;
     const createdAt = Date.now();
-
+    var locationJSON: any = {};
+    try{
+      locationJSON = JSON.parse(location);
+    } catch (error){
+      throw new Error("Error while parsing location");
+    }
     const newPhotoZone = new PhotoZone({
       uid,
       title,
       placeName,
-      location,
+      locationJSON,
       description,
       shortDescription,
-      imageUrls,
-      tags,
+      imageUrls: imageUrls.split(','),
+      tags: tags.split(','),
       createdAt
     });
 
