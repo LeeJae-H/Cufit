@@ -37,7 +37,7 @@ const LikeSchema = new Schema<DBLikeDocument>({
   productType: {
     required: true,
     type: String,
-    enum: ['Filter', 'Guideline']
+    enum: ['Filter', 'Guideline', 'PhotoZone']
   }
 })
 

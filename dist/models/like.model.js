@@ -53,7 +53,7 @@ const LikeSchema = new mongoose_1.Schema({
     productType: {
         required: true,
         type: String,
-        enum: ['Filter', 'Guideline']
+        enum: ['Filter', 'Guideline', 'PhotoZone']
     }
 });
 exports.LikeSchema = LikeSchema;

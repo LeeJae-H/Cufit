@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 interface DBPhotoZone {
   uid: string;
@@ -15,7 +15,16 @@ interface DBPhotoZone {
   createdAt: number;
 }
 
-const PhotoZoneSchema: Schema<DBPhotoZone> = new Schema({
+interface DBPhotoZoneDocument extends DBPhotoZone, Document {
+
+}
+
+interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
+  findByDistance(lat: number, lng: number, distance: number): Promise<DBPhotoZoneDocument[]>;
+  searchByKeyword: (keyword: string) => Promise<[DBPhotoZoneDocument]>;
+}  
+
+const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
   uid: {
     required: true,
     type: String,
@@ -63,6 +72,48 @@ const PhotoZoneSchema: Schema<DBPhotoZone> = new Schema({
 
 PhotoZoneSchema.index({ location: "2dsphere" }); 
 
-const PhotoZone = mongoose.model<DBPhotoZone>('PhotoZone', PhotoZoneSchema, 'photoZone');
+PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
+  const result = PhotoZone.find({
+    location: {
+      $near: {
+        $maxDistance: distance,
+        $geometry: {
+          type: 'Point',
+          coordinates: [lng, lat],
+        },
+      },
+    },
+  })
+  return result;
+};
 
-export { PhotoZone, PhotoZoneSchema };
+PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
+  let result = await PhotoZone.aggregate([
+    {
+      $lookup: {
+        from: "user",
+        localField: "uid",
+        foreignField: "uid",
+        as: "creator"
+      }
+    },
+    {
+      $unwind: "$creator"
+    },
+    {
+      $match: {
+        $or: [
+          { placeName: { $regex: new RegExp(keyword, 'i') } },
+          { title: { $regex: new RegExp(keyword, 'i') } },
+          { description: { $regex: new RegExp(keyword, 'i') } },
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+        ],
+      }
+    }
+  ])
+  return result;
+}
+
+const PhotoZone = mongoose.model<DBPhotoZoneDocument, DBPhotoZoneModel>("PhotoZone", PhotoZoneSchema, "photoZone");
+export { PhotoZone, PhotoZoneSchema, DBPhotoZoneDocument };
