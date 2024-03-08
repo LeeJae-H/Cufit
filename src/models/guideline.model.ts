@@ -228,6 +228,11 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string) {
       { title: { $regex: new RegExp(keyword, 'i') } }
     ],
   })
+  .populate('likedCount')
+  .populate('wishedCount')
+  .populate('usedCount')
+  .populate('authStatus')
+  .populate('creator');
   return result;  
 }
 
