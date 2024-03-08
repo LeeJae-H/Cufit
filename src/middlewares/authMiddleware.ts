@@ -4,7 +4,7 @@ import admin from 'firebase-admin';
 import logger from '../config/logger';
 
 const verifyIdToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
-  const { idToken } = req.body;
+  const { idToken } = req.body; // req.headers로 수정
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
