@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { CustomRequest } from '../types/customRequest';
 import { User } from '../models/user.model';
 import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
@@ -29,11 +30,12 @@ export const searchCreators = async (req: Request, res: Response) => {
   }
 }
 
-export const searchGuidelines = async (req: Request, res: Response) => {
+export const searchGuidelines = async (req: CustomRequest, res: Response) => {
   const keyword = req.params.keyword;
+  const authCode: any = req.query.code;
 
   try{
-    const guidelines = await Guideline.searchbyTitleOrTag(keyword);
+    const guidelines = await Guideline.searchbyTitleOrTag(keyword, authCode);
 
     res.status(200).json({
       statusCode: 0,

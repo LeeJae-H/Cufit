@@ -44,7 +44,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   top5: () => Promise<[DBGuidelineDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBGuidelineDocument]>;
   newSearch: (keyword: string) => Promise<[DBGuidelineDocument]>;
-  searchbyTitleOrTag: (keyword: string) => Promise<[DBGuidelineDocument]>;
+  searchbyTitleOrTag: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   findByDistance(lat: number, lng: number, distance: number): Promise<DBGuidelineDocument[]>;
 }
 
@@ -221,13 +221,43 @@ GuidelineSchema.statics.newSearch = async function(keyword: string) {
   return result;
 }
 
-GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string) {
-  let result = await Guideline.find({
-    $or: [
-      { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-      { title: { $regex: new RegExp(keyword, 'i') } }
-    ],
-  })
+GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, code?: string) {
+  let pipeline: any[] = [
+    {
+      $lookup: {
+        from: "auth",
+        let: { productId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$productId", "$$productId"] }
+            }
+          }
+        ],
+        as: "auth"
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+          { title: { $regex: new RegExp(keyword, 'i') } }
+        ]
+      }
+    }
+  ];
+
+  if (code) {
+    pipeline.push({
+      $match: {
+        "auth.code": code
+      }
+    });
+  }
+
+  // code 파라미터가 없을 경우 auth.code 관계 없이 모두 출력
+  // code 파라미터가 있을 경우 auth.code=code 인 것만 출력
+  let result = await Guideline.aggregate(pipeline);
   return result;  
 }
 
