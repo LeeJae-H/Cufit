@@ -170,8 +170,6 @@ GuidelineSchema.statics.top5 = async function() {
       .populate('usedCount')
       .populate('authStatus')
       .populate('creator');
-    console.log('result')
-    console.log(top5Guidelines)
     top5Guidelines.sort((a, b): number => {
       return b.likedCount - a.likedCount;
     });
@@ -244,6 +242,32 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, cod
           { title: { $regex: new RegExp(keyword, 'i') } }
         ]
       }
+    },
+    {
+      $lookup: {
+        from: "user", 
+        localField: "creatorUid",
+        foreignField: "uid", 
+        as: "creator" 
+      }
+    },
+    {
+      $lookup: {
+        from: "like",
+        localField: "_id",
+        foreignField: "productId",
+        as: "likes"
+      }
+    },
+    {
+      $addFields: {
+        likedCount: { $size: "$likes" } 
+      }
+    },
+    {
+      $project: {
+        likes: 0 // likes 필드를 제외하고 출력
+      }
     }
   ];
 
@@ -254,10 +278,10 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, cod
       }
     });
   }
-
   // code 파라미터가 없을 경우 auth.code 관계 없이 모두 출력
   // code 파라미터가 있을 경우 auth.code=code 인 것만 출력
   let result = await Guideline.aggregate(pipeline);
+
   return result;  
 }
 
