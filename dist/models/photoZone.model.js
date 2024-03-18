@@ -93,7 +93,9 @@ PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
                     },
                 },
             },
-        });
+        })
+            .populate("likedCount")
+            .populate("creator");
         return result;
     });
 };
@@ -126,5 +128,17 @@ PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
         return result;
     });
 };
+PhotoZoneSchema.virtual('likedCount', {
+    ref: 'Like',
+    localField: '_id',
+    foreignField: 'productId',
+    count: true
+});
+PhotoZoneSchema.virtual('creator', {
+    ref: 'User',
+    localField: 'creatorUid',
+    foreignField: 'uid',
+    justOne: true
+});
 const PhotoZone = mongoose_1.default.model("PhotoZone", PhotoZoneSchema, "photoZone");
 exports.PhotoZone = PhotoZone;
