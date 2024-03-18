@@ -68,6 +68,14 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
       default: [0, 0] 
     } 
   }
+}, {
+  toJSON: {
+    virtuals: true
+  },
+  toObject: {
+    virtuals: true
+  
+  }
 });
 
 PhotoZoneSchema.index({ location: "2dsphere" }); 
