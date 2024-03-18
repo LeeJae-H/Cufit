@@ -78,6 +78,13 @@ const PhotoZoneSchema = new mongoose_1.Schema({
             default: [0, 0]
         }
     }
+}, {
+    toJSON: {
+        virtuals: true
+    },
+    toObject: {
+        virtuals: true
+    }
 });
 exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
