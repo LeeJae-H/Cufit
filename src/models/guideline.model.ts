@@ -421,7 +421,6 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, cod
   // code 파라미터가 없을 경우 auth.code 관계 없이 모두 출력
   // code 파라미터가 있을 경우 auth.code=code 인 것만 출력
   let result = await Guideline.aggregate(pipeline);
-
   return result;  
 }
 
