@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const firebase_admin_1 = __importDefault(require("firebase-admin"));
 const logger_1 = __importDefault(require("../config/logger"));
 const verifyIdToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { idToken } = req.body;
+    const { idToken } = req.body; // req.headers로 수정
     try {
         const decodedToken = yield firebase_admin_1.default.auth().verifyIdToken(idToken);
         req.uid = decodedToken.uid;

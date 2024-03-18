@@ -68,6 +68,14 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
       default: [0, 0] 
     } 
   }
+}, {
+  toJSON: {
+    virtuals: true
+  },
+  toObject: {
+    virtuals: true
+  
+  }
 });
 
 PhotoZoneSchema.index({ location: "2dsphere" }); 
@@ -84,6 +92,8 @@ PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: numbe
       },
     },
   })
+  .populate("likedCount")
+  .populate("creator");
   return result;
 };
 
@@ -114,6 +124,20 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
   ])
   return result;
 }
+
+PhotoZoneSchema.virtual('likedCount', {
+  ref: 'Like',
+  localField: '_id',
+  foreignField: 'productId',
+  count: true
+});
+
+PhotoZoneSchema.virtual('creator', {
+  ref: 'User',
+  localField: 'uid',
+  foreignField: 'uid',
+  justOne: true
+})
 
 const PhotoZone = mongoose.model<DBPhotoZoneDocument, DBPhotoZoneModel>("PhotoZone", PhotoZoneSchema, "photoZone");
 export { PhotoZone, PhotoZoneSchema, DBPhotoZoneDocument };
