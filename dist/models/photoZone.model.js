@@ -136,7 +136,7 @@ PhotoZoneSchema.virtual('likedCount', {
 });
 PhotoZoneSchema.virtual('creator', {
     ref: 'User',
-    localField: 'creatorUid',
+    localField: 'uid',
     foreignField: 'uid',
     justOne: true
 });
