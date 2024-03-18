@@ -84,6 +84,8 @@ PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: numbe
       },
     },
   })
+  .populate("likedCount")
+  .populate("creator");
   return result;
 };
 
@@ -114,6 +116,20 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
   ])
   return result;
 }
+
+PhotoZoneSchema.virtual('likedCount', {
+  ref: 'Like',
+  localField: '_id',
+  foreignField: 'productId',
+  count: true
+});
+
+PhotoZoneSchema.virtual('creator', {
+  ref: 'User',
+  localField: 'creatorUid',
+  foreignField: 'uid',
+  justOne: true
+})
 
 const PhotoZone = mongoose.model<DBPhotoZoneDocument, DBPhotoZoneModel>("PhotoZone", PhotoZoneSchema, "photoZone");
 export { PhotoZone, PhotoZoneSchema, DBPhotoZoneDocument };
