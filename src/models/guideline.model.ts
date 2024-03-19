@@ -36,16 +36,16 @@ interface DBGuidelineDocument extends DBGuideline, Document {
 }
 
 interface DBGuidelineModel extends Model<DBGuidelineDocument> {
-  getListFromCreatorUid: (uid: string) => Promise<[DBGuidelineDocument]>;
+  getListFromCreatorUid: (uid: string, code?: string) => Promise<[DBGuidelineDocument]>;
   getListFromTag: (tag: string) => Promise<[DBGuidelineDocument]>;
-  getFromObjId: (_id: string) => Promise<DBGuidelineDocument>;
+  getFromObjId: (_id: string, code?: string) => Promise<DBGuidelineDocument>;
   newGuideline: (data: Object) => Promise<DBGuidelineDocument>;
   getListFromTagWithSort: (tag: string, sortBy: string, sort: string) => Promise<[DBGuidelineDocument]>;
-  top5: () => Promise<[DBGuidelineDocument]>;
+  top5: (code?: string) => Promise<[DBGuidelineDocument]>;
   search: (keyword: string, sort: string, sortby: string, cost: string) => Promise<[DBGuidelineDocument]>;
-  newSearch: (keyword: string) => Promise<[DBGuidelineDocument]>;
-  searchbyTitleOrTag: (keyword: string) => Promise<[DBGuidelineDocument]>;
-  findByDistance(lat: number, lng: number, distance: number): Promise<DBGuidelineDocument[]>;
+  newSearch: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
+  searchbyTitleOrTag: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
+  findByDistance(lat: number, lng: number, distance: number, code?: string): Promise<DBGuidelineDocument[]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -70,15 +70,65 @@ const GuidelineSchema = new Schema<DBGuidelineDocument>({
   }
 })
 
-GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string) {
+GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, code?: string) {
   try {
-    const result = await Guideline.find({ creatorUid: uid }).sort({ _id: -1 }).limit(50)
-        .populate('likedCount')
-        .populate('wishedCount')
-        .populate('usedCount')
-        .populate('authStatus')
-        .populate('creator');
-      return result;
+    let pipeline: any[] = [
+      {
+        $lookup: {
+          from: "auth",
+          let: { productId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$productId", "$$productId"] }
+              }
+            }
+          ],
+          as: "auth"
+        }
+      },
+      {
+        $match: {
+          $or: [
+            { creatorUid: uid } 
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
+        }
+      },
+      {
+        $addFields: {
+          likedCount: { $size: "$likes" } 
+        }
+      },
+      {
+        $project: {
+          likes: 0 // likes 필드를 제외하고 출력
+        }
+      },
+      {
+        $sort: { _id: -1 } 
+       },
+      {
+        $limit: 50 
+      }
+    ];
+  
+    if (code) {
+      pipeline.push({
+        $match: {
+          "auth.code": code
+        }
+      });
+    }
+    let result = await Guideline.aggregate(pipeline);
+    return result;  
   } catch(error) {
     throw error;
   }
@@ -98,16 +148,68 @@ GuidelineSchema.statics.getListFromTag = async function(tag: string) {
   }
 }
 
-GuidelineSchema.statics.getFromObjId = async function(_id: string) {
+GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string) {
   try {
-    const result = await Guideline.findById(_id)
-                    .populate('likedCount')
-                    .populate('wishedCount')
-                    .populate('usedCount')
-                    .populate('authStatus')
-                    .populate('creator');
-    return result;
-  } catch(error) {
+    let pipeline: any[] = [
+      {
+        $lookup: {
+          from: "auth",
+          let: { productId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$productId", "$$productId"] }
+              }
+            }
+          ],
+          as: "auth"
+        }
+      },
+      {
+        $match: {
+          $or: [
+            { _id: new mongoose.Types.ObjectId(_id) } 
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: "user", 
+          localField: "creatorUid",
+          foreignField: "uid", 
+          as: "creator" 
+        }
+      },
+      {
+        $lookup: {
+          from: "like",
+          localField: "_id",
+          foreignField: "productId",
+          as: "likes"
+        }
+      },
+      {
+        $addFields: {
+          likedCount: { $size: "$likes" } 
+        }
+      },
+      {
+        $project: {
+          likes: 0 // likes 필드를 제외하고 출력
+        }
+      }
+    ];
+  
+    if (code) {
+      pipeline.push({
+        $match: {
+          "auth.code": code
+        }
+      });
+    }
+    let result = await Guideline.aggregate(pipeline);
+    return result;  
+    } catch(error) {
     throw error;
   }
 }
@@ -122,19 +224,30 @@ GuidelineSchema.statics.getListFromTagWithSort = async function(tag: string, sor
   }
 }
 
-GuidelineSchema.statics.top5 = async function() {
+GuidelineSchema.statics.top5 = async function(code?: string) {
   try {
-    const filtered = await Guideline.aggregate([
+    let pipeline: any[] = [
       {
         $lookup: {
           from: "auth",
-          localField: "_id",
-          foreignField: "productId",
-          as: "authStatus"
+          let: { productId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$productId", "$$productId"] }
+              }
+            }
+          ],
+          as: "auth"
         }
       },
       {
-        $unwind: "$authStatus"
+        $lookup: {
+          from: "user", 
+          localField: "creatorUid",
+          foreignField: "uid", 
+          as: "creator" 
+        }
       },
       {
         $lookup: {
@@ -145,13 +258,13 @@ GuidelineSchema.statics.top5 = async function() {
         }
       },
       {
-        $match: {
-          'authStatus.code': "authorized"
+        $addFields: {
+          likedCount: { $size: "$likes" } 
         }
       },
       {
         $project: {
-          likedCount: { $size: "$likes" }
+          likes: 0 
         }
       },
       {
@@ -162,77 +275,152 @@ GuidelineSchema.statics.top5 = async function() {
       {
         $limit: 5
       }
-    ]);
-    const filteredIds = filtered.map(item => item._id).reverse();
-    const top5Guidelines = await Guideline.find({ _id: filteredIds })
-      .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('authStatus')
-      .populate('creator');
-    console.log('result')
-    console.log(top5Guidelines)
-    top5Guidelines.sort((a, b): number => {
-      return b.likedCount - a.likedCount;
-    });
-    return top5Guidelines;
+    ];
+  
+    if (code) {
+      pipeline.push({
+        $match: {
+          "auth.code": code
+        }
+      });
+    }
+    let result = await Guideline.aggregate(pipeline);
+    return result; 
   } catch (error) {
     console.error('Error getting top 5 guidelines by likes:', error);
     throw error;
   }
 }
 
-GuidelineSchema.statics.newSearch = async function(keyword: string) {
-  let result = await Guideline.aggregate([
-    {
-      $lookup: {
-        from: "user",
-        localField: "creatorUid",
-        foreignField: "uid",
-        as: "creator"
-      }
-    },
-    {
-      $unwind: "$creator"
-    },
+GuidelineSchema.statics.newSearch = async function(keyword: string, code?: string) {
+  let pipeline: any[] = [
     {
       $lookup: {
         from: "auth",
-        localField: "_id",
-        foreignField: "productId",
-        as: "authStatus"
+        let: { productId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$productId", "$$productId"] }
+            }
+          }
+        ],
+        as: "auth"
       }
     },
     {
-      $unwind: "$authStatus"
-    },
-    {
       $match: {
-        "authStatus.code": "authorized",
         $or: [
           { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
           { title: { $regex: new RegExp(keyword, 'i') } },
           { description: { $regex: new RegExp(keyword, 'i') } },
-          { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-        ],
+          { shortDescription: { $regex: new RegExp(keyword, 'i') } }
+        ]
+      }
+    },
+    {
+      $lookup: {
+        from: "user", 
+        localField: "creatorUid",
+        foreignField: "uid", 
+        as: "creator" 
+      }
+    },
+    {
+      $lookup: {
+        from: "like",
+        localField: "_id",
+        foreignField: "productId",
+        as: "likes"
+      }
+    },
+    {
+      $addFields: {
+        likedCount: { $size: "$likes" } 
+      }
+    },
+    {
+      $project: {
+        likes: 0 // likes 필드를 제외하고 출력
       }
     }
-  ])
-  return result;
+  ];
+
+  if (code) {
+    pipeline.push({
+      $match: {
+        "auth.code": code
+      }
+    });
+  }
+  let result = await Guideline.aggregate(pipeline);
+
+  return result; 
+
 }
 
-GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string) {
-  let result = await Guideline.find({
-    $or: [
-      { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-      { title: { $regex: new RegExp(keyword, 'i') } }
-    ],
-  })
-  .populate('likedCount')
-  .populate('wishedCount')
-  .populate('usedCount')
-  .populate('authStatus')
-  .populate('creator');
+GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, code?: string) {
+  let pipeline: any[] = [
+    {
+      $lookup: {
+        from: "auth",
+        let: { productId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$productId", "$$productId"] }
+            }
+          }
+        ],
+        as: "auth"
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+          { title: { $regex: new RegExp(keyword, 'i') } }
+        ]
+      }
+    },
+    {
+      $lookup: {
+        from: "user", 
+        localField: "creatorUid",
+        foreignField: "uid", 
+        as: "creator" 
+      }
+    },
+    {
+      $lookup: {
+        from: "like",
+        localField: "_id",
+        foreignField: "productId",
+        as: "likes"
+      }
+    },
+    {
+      $addFields: {
+        likedCount: { $size: "$likes" } 
+      }
+    },
+    {
+      $project: {
+        likes: 0 // likes 필드를 제외하고 출력
+      }
+    }
+  ];
+
+  if (code) {
+    pipeline.push({
+      $match: {
+        "auth.code": code
+      }
+    });
+  }
+  // code 파라미터가 없을 경우 auth.code 관계 없이 모두 출력
+  // code 파라미터가 있을 경우 auth.code=code 인 것만 출력
+  let result = await Guideline.aggregate(pipeline);
   return result;  
 }
 
@@ -246,24 +434,70 @@ GuidelineSchema.statics.search = async function(keyword: string, sort: string, s
   }
 }
 
-GuidelineSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
-  const result = Guideline.find({
-    location: {
-      $near: {
-        $maxDistance: distance,
-        $geometry: {
-          type: 'Point',
-          coordinates: [lng, lat],
+GuidelineSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number, code?: string) {
+  let pipeline: any[] = [
+    {
+      $geoNear: {
+        near: {
+            type: "Point",
+            coordinates: [lng, lat]
         },
-      },
+        distanceField: "distance",
+        maxDistance: distance,
+        spherical: true
+      }
     },
-  })
-    .populate('likedCount')
-    .populate('wishedCount')
-    .populate('usedCount')
-    .populate('creator')
-    .populate('authStatus');
-  return result;
+    {
+      $lookup: {
+        from: "auth",
+        let: { productId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$productId", "$$productId"] }
+            }
+          }
+        ],
+        as: "auth"
+      }
+    },
+    {
+      $lookup: {
+        from: "user", 
+        localField: "creatorUid",
+        foreignField: "uid", 
+        as: "creator" 
+      }
+    },
+    {
+      $lookup: {
+        from: "like",
+        localField: "_id",
+        foreignField: "productId",
+        as: "likes"
+      }
+    },
+    {
+      $addFields: {
+        likedCount: { $size: "$likes" } 
+      }
+    },
+    {
+      $project: {
+        likes: 0 // likes 필드를 제외하고 출력
+      }
+    }
+  ];
+
+  if (code) {
+    pipeline.push({
+      $match: {
+        "auth.code": code
+      }
+    });
+  }
+  let result = await Guideline.aggregate(pipeline);
+  return result;  
 };
 
 GuidelineSchema.virtual('likedCount', {
