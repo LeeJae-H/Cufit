@@ -44,8 +44,9 @@ const searchCreators = (req, res) => __awaiter(void 0, void 0, void 0, function*
 exports.searchCreators = searchCreators;
 const searchGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
+    const authCode = req.query.code;
     try {
-        const guidelines = yield guideline_model_1.Guideline.searchbyTitleOrTag(keyword);
+        const guidelines = yield guideline_model_1.Guideline.searchbyTitleOrTag(keyword, authCode);
         res.status(200).json({
             statusCode: 0,
             message: "Success search guidelines",
@@ -90,13 +91,14 @@ const searchFilters = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.searchFilters = searchFilters;
 const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
+    const authCode = req.query.code;
     try {
         // creator, guideline, filter, photoZone
         if (keyword === "") {
             throw new Error("Empty keyword");
         }
         const creator = yield user_model_1.User.search(keyword);
-        const guideline = yield guideline_model_1.Guideline.newSearch(keyword);
+        const guideline = yield guideline_model_1.Guideline.newSearch(keyword, authCode);
         const filter = yield filter_model_1.Filter.newSearch(keyword);
         const photoZone = yield photoZone_model_1.PhotoZone.searchByKeyword(keyword);
         res.status(200).json({

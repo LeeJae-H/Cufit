@@ -104,6 +104,7 @@ exports.uploadGuideline = uploadGuideline;
 const getGuidelineTop5 = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
+        const authCode = req.query.code;
         const contents = yield contents_model_1.Contents.getGuidelineContents();
         const list = (_a = contents === null || contents === void 0 ? void 0 : contents.list) !== null && _a !== void 0 ? _a : [];
         let result = [];
@@ -119,7 +120,7 @@ const getGuidelineTop5 = (req, res) => __awaiter(void 0, void 0, void 0, functio
             };
             result.push(data);
         }
-        let top = yield guideline_model_1.Guideline.top5();
+        let top = yield guideline_model_1.Guideline.top5(authCode);
         res.status(200).json({
             statusCode: 0,
             message: "Successfully read main contents",
@@ -142,8 +143,9 @@ const getGuidelineTop5 = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.getGuidelineTop5 = getGuidelineTop5;
 const getGuidelineById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const _id = req.params.id;
+    const authCode = req.query.code;
     try {
-        const result = yield guideline_model_1.Guideline.getFromObjId(_id);
+        const result = yield guideline_model_1.Guideline.getFromObjId(_id, authCode);
         res.status(200).json({
             statusCode: 0,
             message: "Success",
@@ -163,8 +165,9 @@ const getGuidelineById = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.getGuidelineById = getGuidelineById;
 const getGuidelineByUid = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
+    const authCode = req.query.code;
     try {
-        const result = yield guideline_model_1.Guideline.getListFromCreatorUid(uid);
+        const result = yield guideline_model_1.Guideline.getListFromCreatorUid(uid, authCode);
         res.status(200).json({
             statusCode: 0,
             message: "Success",
@@ -215,6 +218,7 @@ const getGuidelineByKeyword = (req, res) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.getGuidelineByKeyword = getGuidelineByKeyword;
 const getGuidelineByDistance = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const authCode = req.query.code;
     if (!req.query.lat || !req.query.lng) {
         logger_1.default.error("Lack of essential data");
         return res.status(400).json({
@@ -228,7 +232,7 @@ const getGuidelineByDistance = (req, res) => __awaiter(void 0, void 0, void 0, f
         const lng = parseFloat(req.query.lng);
         const distanceString = req.query.distance === undefined ? "1000" : `${req.query.distance}`;
         const distance = parseFloat(distanceString);
-        const result = yield guideline_model_1.Guideline.findByDistance(lat, lng, distance);
+        const result = yield guideline_model_1.Guideline.findByDistance(lat, lng, distance, authCode);
         res.status(200).json({
             statusCode: 0,
             message: "Success",

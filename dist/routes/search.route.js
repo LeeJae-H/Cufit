@@ -7,7 +7,7 @@ const express_1 = __importDefault(require("express"));
 const search_controller_1 = require("../controllers/search.controller");
 const router = express_1.default.Router();
 router.get("/anything/:keyword", search_controller_1.getAnything); // 키워드로 사용자, 가이드라인, 필터 조회
-router.get("/creators/:keyword", search_controller_1.searchCreators); // 키워드로 사용자, 가이드라인, 필터 조회
-router.get("/guidelines/:keyword", search_controller_1.searchGuidelines); // 키워드로 사용자, 가이드라인, 필터 조회
-router.get("/filters/:keyword", search_controller_1.searchFilters); // 키워드로 사용자, 가이드라인, 필터 조회
+router.get("/creators/:keyword", search_controller_1.searchCreators); // 키워드로 사용자 조회
+router.get("/guidelines/:keyword", search_controller_1.searchGuidelines); // 키워드로 가이드라인 조회
+router.get("/filters/:keyword", search_controller_1.searchFilters); // 키워드로 필터 조회
 exports.default = router;
