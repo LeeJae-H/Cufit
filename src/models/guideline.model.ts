@@ -84,8 +84,22 @@ GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, code
               }
             }
           ],
-          as: "auth"
+          as: "authStatus"
         }
+      },
+      {
+        $unwind: "$authStatus"
+      },
+      {
+        $lookup: {
+          from: "user", 
+          localField: "creatorUid",
+          foreignField: "uid", 
+          as: "creator" 
+        }
+      },
+      {
+        $unwind: "$creator"
       },
       {
         $match: {
@@ -123,7 +137,7 @@ GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, code
     if (code) {
       pipeline.push({
         $match: {
-          "auth.code": code
+          "authStatus.code": code
         }
       });
     }
@@ -162,7 +176,7 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string
               }
             }
           ],
-          as: "auth"
+          as: "authStatus"
         }
       },
       {
@@ -179,6 +193,9 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string
           foreignField: "uid", 
           as: "creator" 
         }
+      },
+      {
+        $unwind: "$creator"
       },
       {
         $lookup: {
@@ -203,7 +220,7 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string
     if (code) {
       pipeline.push({
         $match: {
-          "auth.code": code
+          "authStatus.code": code
         }
       });
     }
@@ -238,8 +255,11 @@ GuidelineSchema.statics.top5 = async function(code?: string) {
               }
             }
           ],
-          as: "auth"
+          as: "authStatus"
         }
+      },
+      {
+        $unwind: "$authStatus"
       },
       {
         $lookup: {
@@ -248,6 +268,9 @@ GuidelineSchema.statics.top5 = async function(code?: string) {
           foreignField: "uid", 
           as: "creator" 
         }
+      },
+      {
+        $unwind: "$creator"
       },
       {
         $lookup: {
@@ -280,7 +303,7 @@ GuidelineSchema.statics.top5 = async function(code?: string) {
     if (code) {
       pipeline.push({
         $match: {
-          "auth.code": code
+          "authStatus.code": code
         }
       });
     }
@@ -305,8 +328,11 @@ GuidelineSchema.statics.newSearch = async function(keyword: string, code?: strin
             }
           }
         ],
-        as: "auth"
+        as: "authStatus"
       }
+    },
+    {
+      $unwind: "$authStatus"
     },
     {
       $match: {
@@ -325,6 +351,9 @@ GuidelineSchema.statics.newSearch = async function(keyword: string, code?: strin
         foreignField: "uid", 
         as: "creator" 
       }
+    },
+    {
+      $unwind: "$creator"
     },
     {
       $lookup: {
@@ -349,7 +378,7 @@ GuidelineSchema.statics.newSearch = async function(keyword: string, code?: strin
   if (code) {
     pipeline.push({
       $match: {
-        "auth.code": code
+        "authStatus.code": code
       }
     });
   }
@@ -372,8 +401,11 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, cod
             }
           }
         ],
-        as: "auth"
+        as: "authStatus"
       }
+    },
+    {
+      $unwind: "$authStatus"
     },
     {
       $match: {
@@ -390,6 +422,9 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, cod
         foreignField: "uid", 
         as: "creator" 
       }
+    },
+    {
+      $unwind: "$creator"
     },
     {
       $lookup: {
@@ -414,7 +449,7 @@ GuidelineSchema.statics.searchbyTitleOrTag = async function(keyword: string, cod
   if (code) {
     pipeline.push({
       $match: {
-        "auth.code": code
+        "authStatus.code": code
       }
     });
   }
@@ -458,8 +493,11 @@ GuidelineSchema.statics.findByDistance = async function (lat: number, lng: numbe
             }
           }
         ],
-        as: "auth"
+        as: "authStatus"
       }
+    },
+    {
+      $unwind: "$authStatus"
     },
     {
       $lookup: {
@@ -468,6 +506,9 @@ GuidelineSchema.statics.findByDistance = async function (lat: number, lng: numbe
         foreignField: "uid", 
         as: "creator" 
       }
+    },
+    {
+      $unwind: "$creator"
     },
     {
       $lookup: {
@@ -492,7 +533,7 @@ GuidelineSchema.statics.findByDistance = async function (lat: number, lng: numbe
   if (code) {
     pipeline.push({
       $match: {
-        "auth.code": code
+        "authStatus.code": code
       }
     });
   }
