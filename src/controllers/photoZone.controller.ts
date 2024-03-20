@@ -33,7 +33,7 @@ export const uploadPhotozone = async (req: Request, res: Response) => {
       uid,
       title,
       placeName,
-      locationJSON,
+      location: locationJSON,
       description,
       shortDescription,
       imageUrls: imageUrls.split(','),
