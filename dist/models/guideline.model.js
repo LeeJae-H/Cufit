@@ -79,8 +79,22 @@ GuidelineSchema.statics.getListFromCreatorUid = function (uid, code) {
                                 }
                             }
                         ],
-                        as: "auth"
+                        as: "authStatus"
                     }
+                },
+                {
+                    $unwind: "$authStatus"
+                },
+                {
+                    $lookup: {
+                        from: "user",
+                        localField: "creatorUid",
+                        foreignField: "uid",
+                        as: "creator"
+                    }
+                },
+                {
+                    $unwind: "$creator"
                 },
                 {
                     $match: {
@@ -117,7 +131,7 @@ GuidelineSchema.statics.getListFromCreatorUid = function (uid, code) {
             if (code) {
                 pipeline.push({
                     $match: {
-                        "auth.code": code
+                        "authStatus.code": code
                     }
                 });
             }
@@ -160,7 +174,7 @@ GuidelineSchema.statics.getFromObjId = function (_id, code) {
                                 }
                             }
                         ],
-                        as: "auth"
+                        as: "authStatus"
                     }
                 },
                 {
@@ -177,6 +191,9 @@ GuidelineSchema.statics.getFromObjId = function (_id, code) {
                         foreignField: "uid",
                         as: "creator"
                     }
+                },
+                {
+                    $unwind: "$creator"
                 },
                 {
                     $lookup: {
@@ -200,7 +217,7 @@ GuidelineSchema.statics.getFromObjId = function (_id, code) {
             if (code) {
                 pipeline.push({
                     $match: {
-                        "auth.code": code
+                        "authStatus.code": code
                     }
                 });
             }
@@ -240,8 +257,11 @@ GuidelineSchema.statics.top5 = function (code) {
                                 }
                             }
                         ],
-                        as: "auth"
+                        as: "authStatus"
                     }
+                },
+                {
+                    $unwind: "$authStatus"
                 },
                 {
                     $lookup: {
@@ -250,6 +270,9 @@ GuidelineSchema.statics.top5 = function (code) {
                         foreignField: "uid",
                         as: "creator"
                     }
+                },
+                {
+                    $unwind: "$creator"
                 },
                 {
                     $lookup: {
@@ -281,7 +304,7 @@ GuidelineSchema.statics.top5 = function (code) {
             if (code) {
                 pipeline.push({
                     $match: {
-                        "auth.code": code
+                        "authStatus.code": code
                     }
                 });
             }
@@ -308,8 +331,11 @@ GuidelineSchema.statics.newSearch = function (keyword, code) {
                             }
                         }
                     ],
-                    as: "auth"
+                    as: "authStatus"
                 }
+            },
+            {
+                $unwind: "$authStatus"
             },
             {
                 $match: {
@@ -328,6 +354,9 @@ GuidelineSchema.statics.newSearch = function (keyword, code) {
                     foreignField: "uid",
                     as: "creator"
                 }
+            },
+            {
+                $unwind: "$creator"
             },
             {
                 $lookup: {
@@ -351,7 +380,7 @@ GuidelineSchema.statics.newSearch = function (keyword, code) {
         if (code) {
             pipeline.push({
                 $match: {
-                    "auth.code": code
+                    "authStatus.code": code
                 }
             });
         }
@@ -373,8 +402,11 @@ GuidelineSchema.statics.searchbyTitleOrTag = function (keyword, code) {
                             }
                         }
                     ],
-                    as: "auth"
+                    as: "authStatus"
                 }
+            },
+            {
+                $unwind: "$authStatus"
             },
             {
                 $match: {
@@ -391,6 +423,9 @@ GuidelineSchema.statics.searchbyTitleOrTag = function (keyword, code) {
                     foreignField: "uid",
                     as: "creator"
                 }
+            },
+            {
+                $unwind: "$creator"
             },
             {
                 $lookup: {
@@ -414,7 +449,7 @@ GuidelineSchema.statics.searchbyTitleOrTag = function (keyword, code) {
         if (code) {
             pipeline.push({
                 $match: {
-                    "auth.code": code
+                    "authStatus.code": code
                 }
             });
         }
@@ -461,8 +496,11 @@ GuidelineSchema.statics.findByDistance = function (lat, lng, distance, code) {
                             }
                         }
                     ],
-                    as: "auth"
+                    as: "authStatus"
                 }
+            },
+            {
+                $unwind: "$authStatus"
             },
             {
                 $lookup: {
@@ -471,6 +509,9 @@ GuidelineSchema.statics.findByDistance = function (lat, lng, distance, code) {
                     foreignField: "uid",
                     as: "creator"
                 }
+            },
+            {
+                $unwind: "$creator"
             },
             {
                 $lookup: {
@@ -494,7 +535,7 @@ GuidelineSchema.statics.findByDistance = function (lat, lng, distance, code) {
         if (code) {
             pipeline.push({
                 $match: {
-                    "auth.code": code
+                    "authStatus.code": code
                 }
             });
         }
