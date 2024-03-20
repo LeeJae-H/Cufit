@@ -4,6 +4,7 @@ import { Contents } from '../models/contents.model';
 import { Auth } from '../models/auth.model';
 import mongoose from 'mongoose';
 import logger from '../config/logger';
+import { CustomRequest } from '../types/customRequest';
 
 export const uploadGuideline = async (req: Request, res: Response) => {
   const {
@@ -92,8 +93,9 @@ export const uploadGuideline = async (req: Request, res: Response) => {
   }
 };
 
-export const getGuidelineTop5 = async (req: Request, res: Response) => {
+export const getGuidelineTop5 = async (req: CustomRequest, res: Response) => {
   try{
+    const authCode: any = req.query.code;
     const contents = await Contents.getGuidelineContents();
     const list: any[] = contents?.list ?? []
     let result = []
@@ -109,7 +111,7 @@ export const getGuidelineTop5 = async (req: Request, res: Response) => {
       }
       result.push(data);
     }
-    let top = await Guideline.top5();
+    let top = await Guideline.top5(authCode);
     res.status(200).json({
       statusCode: 0,
       message: "Successfully read main contents",
@@ -129,11 +131,11 @@ export const getGuidelineTop5 = async (req: Request, res: Response) => {
   }
 };
 
-export const getGuidelineById = async (req: Request, res: Response) => {
+export const getGuidelineById = async (req: CustomRequest, res: Response) => {
   const _id = req.params.id;
-
+  const authCode: any = req.query.code;
   try {
-    const result = await Guideline.getFromObjId(_id);
+    const result = await Guideline.getFromObjId(_id, authCode);
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -150,11 +152,12 @@ export const getGuidelineById = async (req: Request, res: Response) => {
   }
 };
 
-export const getGuidelineByUid = async (req: Request, res: Response) => {
+export const getGuidelineByUid = async (req: CustomRequest, res: Response) => {
   const uid = req.params.uid;
+  const authCode: any = req.query.code;
 
   try {
-    const result = await Guideline.getListFromCreatorUid(uid);
+    const result = await Guideline.getListFromCreatorUid(uid, authCode);
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -203,7 +206,8 @@ export const getGuidelineByKeyword = async (req: Request, res: Response) => {
   }
 };
 
-export const getGuidelineByDistance = async (req: Request, res: Response) => {
+export const getGuidelineByDistance = async (req: CustomRequest, res: Response) => {
+  const authCode: any = req.query.code;
   if (!req.query.lat || !req.query.lng) {
     logger.error("Lack of essential data");
     return res.status(400).json({
@@ -218,7 +222,7 @@ export const getGuidelineByDistance = async (req: Request, res: Response) => {
     const lng = parseFloat(req.query.lng as string);
     const distanceString = req.query.distance === undefined ? "1000" : `${req.query.distance}`
     const distance = parseFloat(distanceString);
-    const result = await Guideline.findByDistance(lat, lng, distance);
+    const result = await Guideline.findByDistance(lat, lng, distance, authCode);
     res.status(200).json({
       statusCode: 0,
       message: "Success",

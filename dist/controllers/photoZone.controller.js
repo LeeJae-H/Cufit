@@ -35,7 +35,7 @@ const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function
             uid,
             title,
             placeName,
-            locationJSON,
+            location: locationJSON,
             description,
             shortDescription,
             imageUrls: imageUrls.split(','),
