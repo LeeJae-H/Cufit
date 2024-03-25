@@ -61,13 +61,17 @@ const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.uploadPhotozone = uploadPhotozone;
 const deletePhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const uid = req.uid;
         const photoZoneId = req.params.id;
         if (!mongoose_1.default.Types.ObjectId.isValid(photoZoneId)) {
             throw new Error('Invalid photoZoneId');
         }
-        const deletedPhotoZone = yield photoZone_model_1.PhotoZone.deleteOne({ _id: photoZoneId });
-        if (deletedPhotoZone.deletedCount === 0) {
-            throw new Error('photoZone not found');
+        const findPhotoZone = yield photoZone_model_1.PhotoZone.findById(photoZoneId);
+        if (!findPhotoZone) {
+            throw new Error('photozone not found');
+        }
+        else if (findPhotoZone.uid = uid) {
+            yield photoZone_model_1.PhotoZone.deleteOne({ _id: photoZoneId });
         }
         res.status(200).json({
             statusCode: 0,
