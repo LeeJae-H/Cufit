@@ -59,16 +59,18 @@ export const uploadPhotozone = async (req: Request, res: Response) => {
 
 export const deletePhotozone = async (req: CustomRequest, res: Response) => {
   try {
+    const uid = req.uid!;
     const photoZoneId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(photoZoneId)) {
       throw new Error('Invalid photoZoneId');
     }
 
-    const deletedPhotoZone = await PhotoZone.deleteOne({ _id: photoZoneId });
-
-    if (deletedPhotoZone.deletedCount === 0) {
-      throw new Error('photoZone not found');
+    const findPhotoZone = await PhotoZone.findById(photoZoneId);
+    if(!findPhotoZone){
+      throw new Error('photozone not found');
+    } else if(findPhotoZone.uid = uid){
+      await PhotoZone.deleteOne({ _id: photoZoneId });
     }
 
     res.status(200).json({
