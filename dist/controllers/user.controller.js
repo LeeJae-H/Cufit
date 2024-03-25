@@ -647,6 +647,10 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         else if (productType === "Guideline") {
             product = yield guideline_model_1.Guideline.getFromObjId(productId);
         }
+        if (!product) {
+            throw new Error(`${productId} Product not found.`);
+        }
+        product = product[0];
         let productPrice = parseInt(`${product.credit}`);
         const currentTime = Date.now();
         let credits = yield credit_model_1.Credit.find({
