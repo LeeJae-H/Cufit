@@ -728,7 +728,7 @@ const buyProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         catch (error) {
             yield session.abortTransaction();
-            throw new Error("Failed purchase transaction");
+            throw error;
         }
         finally {
             session.endSession();
