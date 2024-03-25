@@ -606,7 +606,10 @@ export const buyProduct = async (req: CustomRequest, res: Response) => {
     } else if (productType === "Guideline") {
       product = await Guideline.getFromObjId(productId);
     }
-    
+    if (!product) {
+      throw new Error(`${productId} Product not found.`)
+    }
+    product = product[0];
     let productPrice = parseInt(`${product.credit}`);
     const currentTime = Date.now();
     let credits = await Credit.find({
