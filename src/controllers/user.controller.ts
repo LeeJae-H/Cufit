@@ -689,7 +689,7 @@ export const buyProduct = async (req: CustomRequest, res: Response) => {
       await session.commitTransaction();
     } catch(error) {
       await session.abortTransaction();
-      throw new Error("Failed purchase transaction");
+      throw error;
     } finally {
       session.endSession();
     }
