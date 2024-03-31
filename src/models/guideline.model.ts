@@ -69,7 +69,12 @@ const GuidelineSchema = new Schema<DBGuidelineDocument>({
     virtuals: true
   }
 })
-
+/**
+ * idToken -> verify middle
+ * req -> uid?, code -> default -> authorized, all, code(selected) 
+ * response로 나가야하는 guideline -> creator, authStatus, likedCount, usedCount
+ * 
+ */
 GuidelineSchema.statics.getListFromCreatorUid = async function(uid: string, code?: string) {
   try {
     let pipeline: any[] = [
@@ -316,72 +321,17 @@ GuidelineSchema.statics.top5 = async function(code?: string) {
 }
 
 GuidelineSchema.statics.newSearch = async function(keyword: string, code?: string) {
-  let pipeline: any[] = [
-    {
-      $lookup: {
-        from: "auth",
-        let: { productId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $eq: ["$productId", "$$productId"] }
-            }
-          }
-        ],
-        as: "authStatus"
-      }
-    },
-    {
-      $unwind: "$authStatus"
-    },
-    {
-      $match: {
-        $or: [
-          { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-          { title: { $regex: new RegExp(keyword, 'i') } },
-          { description: { $regex: new RegExp(keyword, 'i') } },
-          { shortDescription: { $regex: new RegExp(keyword, 'i') } }
-        ]
-      }
-    },
-    {
-      $lookup: {
-        from: "user", 
-        localField: "creatorUid",
-        foreignField: "uid", 
-        as: "creator" 
-      }
-    },
-    {
-      $unwind: "$creator"
-    },
-    {
-      $lookup: {
-        from: "like",
-        localField: "_id",
-        foreignField: "productId",
-        as: "likes"
-      }
-    },
-    {
-      $addFields: {
-        likedCount: { $size: "$likes" } 
-      }
-    },
-    {
-      $project: {
-        likes: 0 // likes 필드를 제외하고 출력
-      }
+  let pipeline = createInitialPipeline(code);
+  pipeline.push({
+    $match: {
+      $or: [
+        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+        { title: { $regex: new RegExp(keyword, 'i') } },
+        { description: { $regex: new RegExp(keyword, 'i') } },
+        { shortDescription: { $regex: new RegExp(keyword, 'i') } }
+      ]
     }
-  ];
-
-  if (code) {
-    pipeline.push({
-      $match: {
-        "authStatus.code": code
-      }
-    });
-  }
+  })
   let result = await Guideline.aggregate(pipeline);
 
   return result; 
@@ -798,6 +748,89 @@ async function getByLatest(tag: string, sort: string) {
     console.error('Error getting top 5 guidelines by likes:', error);
     throw error;
   }
+}
+
+function createInitialPipeline(code?: string) {
+  let pipeline: any[] = [
+    {
+      $lookup: {
+        from: "auth",
+        let: { productId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$productId", "$$productId"] }
+            }
+          }
+        ],
+        as: "authStatus"
+      }
+    },
+    {
+      $unwind: "$authStatus"
+    },
+    {
+      $lookup: {
+        from: "user", 
+        localField: "creatorUid",
+        foreignField: "uid", 
+        as: "creator" 
+      }
+    },
+    {
+      $unwind: "$creator"
+    },
+    {
+      $lookup: {
+        from: "like",
+        localField: "_id",
+        foreignField: "productId",
+        as: "likes"
+      }
+    },
+    {
+      $addFields: {
+        likedCount: { $size: "$likes" } 
+      }
+    },
+    {
+      $lookup: {
+        from: "order",
+        localField: "_id",
+        foreignField: "productId",
+        as: "orders"
+      }
+    },
+    {
+      $addFields: {
+        usedCount: { $size: "$orders" } 
+      }
+    },
+    {
+      $project: {
+        orders: 0, // likes 필드를 제외하고 출력
+        likes: 0
+      }
+    }
+  ];
+
+  if (code) {
+    if (code !== "all") {
+      pipeline.push({
+        $match: {
+          "authStatus.code": code
+        }
+      });
+    }
+  } else {
+    pipeline.push({
+      $match: {
+        "authStatus.code": "authorized"
+      }
+    });
+  }
+
+  return pipeline;
 }
 
 const Guideline = mongoose.model<DBGuidelineDocument, DBGuidelineModel>("Guideline", GuidelineSchema, "guideline");
