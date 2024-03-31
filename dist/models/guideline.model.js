@@ -64,6 +64,12 @@ const GuidelineSchema = new mongoose_1.Schema({
     }
 });
 exports.GuidelineSchema = GuidelineSchema;
+/**
+ * idToken -> verify middle
+ * req -> uid?, code -> default -> authorized, all, code(selected)
+ * response로 나가야하는 guideline -> creator, authStatus, likedCount, usedCount
+ *
+ */
 GuidelineSchema.statics.getListFromCreatorUid = function (uid, code) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -319,71 +325,17 @@ GuidelineSchema.statics.top5 = function (code) {
 };
 GuidelineSchema.statics.newSearch = function (keyword, code) {
     return __awaiter(this, void 0, void 0, function* () {
-        let pipeline = [
-            {
-                $lookup: {
-                    from: "auth",
-                    let: { productId: "$_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$productId", "$$productId"] }
-                            }
-                        }
-                    ],
-                    as: "authStatus"
-                }
-            },
-            {
-                $unwind: "$authStatus"
-            },
-            {
-                $match: {
-                    $or: [
-                        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-                        { title: { $regex: new RegExp(keyword, 'i') } },
-                        { description: { $regex: new RegExp(keyword, 'i') } },
-                        { shortDescription: { $regex: new RegExp(keyword, 'i') } }
-                    ]
-                }
-            },
-            {
-                $lookup: {
-                    from: "user",
-                    localField: "creatorUid",
-                    foreignField: "uid",
-                    as: "creator"
-                }
-            },
-            {
-                $unwind: "$creator"
-            },
-            {
-                $lookup: {
-                    from: "like",
-                    localField: "_id",
-                    foreignField: "productId",
-                    as: "likes"
-                }
-            },
-            {
-                $addFields: {
-                    likedCount: { $size: "$likes" }
-                }
-            },
-            {
-                $project: {
-                    likes: 0 // likes 필드를 제외하고 출력
-                }
+        let pipeline = createInitialPipeline(code);
+        pipeline.push({
+            $match: {
+                $or: [
+                    { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+                    { title: { $regex: new RegExp(keyword, 'i') } },
+                    { description: { $regex: new RegExp(keyword, 'i') } },
+                    { shortDescription: { $regex: new RegExp(keyword, 'i') } }
+                ]
             }
-        ];
-        if (code) {
-            pipeline.push({
-                $match: {
-                    "authStatus.code": code
-                }
-            });
-        }
+        });
         let result = yield Guideline.aggregate(pipeline);
         return result;
     });
@@ -803,6 +755,87 @@ function getByLatest(tag, sort) {
             throw error;
         }
     });
+}
+function createInitialPipeline(code) {
+    let pipeline = [
+        {
+            $lookup: {
+                from: "auth",
+                let: { productId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$productId", "$$productId"] }
+                        }
+                    }
+                ],
+                as: "authStatus"
+            }
+        },
+        {
+            $unwind: "$authStatus"
+        },
+        {
+            $lookup: {
+                from: "user",
+                localField: "creatorUid",
+                foreignField: "uid",
+                as: "creator"
+            }
+        },
+        {
+            $unwind: "$creator"
+        },
+        {
+            $lookup: {
+                from: "like",
+                localField: "_id",
+                foreignField: "productId",
+                as: "likes"
+            }
+        },
+        {
+            $addFields: {
+                likedCount: { $size: "$likes" }
+            }
+        },
+        {
+            $lookup: {
+                from: "order",
+                localField: "_id",
+                foreignField: "productId",
+                as: "orders"
+            }
+        },
+        {
+            $addFields: {
+                usedCount: { $size: "$orders" }
+            }
+        },
+        {
+            $project: {
+                orders: 0, // likes 필드를 제외하고 출력
+                likes: 0
+            }
+        }
+    ];
+    if (code) {
+        if (code !== "all") {
+            pipeline.push({
+                $match: {
+                    "authStatus.code": code
+                }
+            });
+        }
+    }
+    else {
+        pipeline.push({
+            $match: {
+                "authStatus.code": "authorized"
+            }
+        });
+    }
+    return pipeline;
 }
 const Guideline = mongoose_1.default.model("Guideline", GuidelineSchema, "guideline");
 exports.Guideline = Guideline;
