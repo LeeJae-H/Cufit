@@ -73,74 +73,19 @@ exports.GuidelineSchema = GuidelineSchema;
 GuidelineSchema.statics.getListFromCreatorUid = function (uid, code) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let pipeline = [
-                {
-                    $lookup: {
-                        from: "auth",
-                        let: { productId: "$_id" },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: { $eq: ["$productId", "$$productId"] }
-                                }
-                            }
-                        ],
-                        as: "authStatus"
-                    }
-                },
-                {
-                    $unwind: "$authStatus"
-                },
-                {
-                    $lookup: {
-                        from: "user",
-                        localField: "creatorUid",
-                        foreignField: "uid",
-                        as: "creator"
-                    }
-                },
-                {
-                    $unwind: "$creator"
-                },
-                {
-                    $match: {
-                        $or: [
-                            { creatorUid: uid }
-                        ]
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "like",
-                        localField: "_id",
-                        foreignField: "productId",
-                        as: "likes"
-                    }
-                },
-                {
-                    $addFields: {
-                        likedCount: { $size: "$likes" }
-                    }
-                },
-                {
-                    $project: {
-                        likes: 0 // likes 필드를 제외하고 출력
-                    }
-                },
-                {
-                    $sort: { _id: -1 }
-                },
-                {
-                    $limit: 50
+            let pipeline = createInitialPipeline(code);
+            pipeline.splice(4, 0, {
+                $match: {
+                    $or: [
+                        { creatorUid: uid }
+                    ]
                 }
-            ];
-            if (code) {
-                pipeline.push({
-                    $match: {
-                        "authStatus.code": code
-                    }
-                });
-            }
+            });
+            pipeline.push({
+                $sort: { _id: -1 }
+            }, {
+                $limit: 50
+            });
             let result = yield Guideline.aggregate(pipeline);
             return result;
         }
@@ -168,65 +113,14 @@ GuidelineSchema.statics.getListFromTag = function (tag) {
 GuidelineSchema.statics.getFromObjId = function (_id, code) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let pipeline = [
-                {
-                    $lookup: {
-                        from: "auth",
-                        let: { productId: "$_id" },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: { $eq: ["$productId", "$$productId"] }
-                                }
-                            }
-                        ],
-                        as: "authStatus"
-                    }
-                },
-                {
-                    $match: {
-                        $or: [
-                            { _id: new mongoose_1.default.Types.ObjectId(_id) }
-                        ]
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "user",
-                        localField: "creatorUid",
-                        foreignField: "uid",
-                        as: "creator"
-                    }
-                },
-                {
-                    $unwind: "$creator"
-                },
-                {
-                    $lookup: {
-                        from: "like",
-                        localField: "_id",
-                        foreignField: "productId",
-                        as: "likes"
-                    }
-                },
-                {
-                    $addFields: {
-                        likedCount: { $size: "$likes" }
-                    }
-                },
-                {
-                    $project: {
-                        likes: 0 // likes 필드를 제외하고 출력
-                    }
+            let pipeline = createInitialPipeline(code);
+            pipeline.unshift({
+                $match: {
+                    $or: [
+                        { _id: new mongoose_1.default.Types.ObjectId(_id) }
+                    ]
                 }
-            ];
-            if (code) {
-                pipeline.push({
-                    $match: {
-                        "authStatus.code": code
-                    }
-                });
-            }
+            });
             let result = yield Guideline.aggregate(pipeline);
             return result;
         }
@@ -251,69 +145,14 @@ GuidelineSchema.statics.getListFromTagWithSort = function (tag, sortBy, sort) {
 GuidelineSchema.statics.top5 = function (code) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let pipeline = [
-                {
-                    $lookup: {
-                        from: "auth",
-                        let: { productId: "$_id" },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: { $eq: ["$productId", "$$productId"] }
-                                }
-                            }
-                        ],
-                        as: "authStatus"
-                    }
-                },
-                {
-                    $unwind: "$authStatus"
-                },
-                {
-                    $lookup: {
-                        from: "user",
-                        localField: "creatorUid",
-                        foreignField: "uid",
-                        as: "creator"
-                    }
-                },
-                {
-                    $unwind: "$creator"
-                },
-                {
-                    $lookup: {
-                        from: "like",
-                        localField: "_id",
-                        foreignField: "productId",
-                        as: "likes"
-                    }
-                },
-                {
-                    $addFields: {
-                        likedCount: { $size: "$likes" }
-                    }
-                },
-                {
-                    $project: {
-                        likes: 0
-                    }
-                },
-                {
-                    $sort: {
-                        likedCount: -1
-                    }
-                },
-                {
-                    $limit: 5
+            let pipeline = createInitialPipeline(code);
+            pipeline.push({
+                $sort: {
+                    likedCount: -1
                 }
-            ];
-            if (code) {
-                pipeline.push({
-                    $match: {
-                        "authStatus.code": code
-                    }
-                });
-            }
+            }, {
+                $limit: 5
+            });
             let result = yield Guideline.aggregate(pipeline);
             return result;
         }
@@ -326,7 +165,7 @@ GuidelineSchema.statics.top5 = function (code) {
 GuidelineSchema.statics.newSearch = function (keyword, code) {
     return __awaiter(this, void 0, void 0, function* () {
         let pipeline = createInitialPipeline(code);
-        pipeline.push({
+        pipeline.unshift({
             $match: {
                 $or: [
                     { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
@@ -342,71 +181,15 @@ GuidelineSchema.statics.newSearch = function (keyword, code) {
 };
 GuidelineSchema.statics.searchbyTitleOrTag = function (keyword, code) {
     return __awaiter(this, void 0, void 0, function* () {
-        let pipeline = [
-            {
-                $lookup: {
-                    from: "auth",
-                    let: { productId: "$_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$productId", "$$productId"] }
-                            }
-                        }
-                    ],
-                    as: "authStatus"
-                }
-            },
-            {
-                $unwind: "$authStatus"
-            },
-            {
-                $match: {
-                    $or: [
-                        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-                        { title: { $regex: new RegExp(keyword, 'i') } }
-                    ]
-                }
-            },
-            {
-                $lookup: {
-                    from: "user",
-                    localField: "creatorUid",
-                    foreignField: "uid",
-                    as: "creator"
-                }
-            },
-            {
-                $unwind: "$creator"
-            },
-            {
-                $lookup: {
-                    from: "like",
-                    localField: "_id",
-                    foreignField: "productId",
-                    as: "likes"
-                }
-            },
-            {
-                $addFields: {
-                    likedCount: { $size: "$likes" }
-                }
-            },
-            {
-                $project: {
-                    likes: 0 // likes 필드를 제외하고 출력
-                }
+        let pipeline = createInitialPipeline(code);
+        pipeline.unshift({
+            $match: {
+                $or: [
+                    { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+                    { title: { $regex: new RegExp(keyword, 'i') } }
+                ]
             }
-        ];
-        if (code) {
-            pipeline.push({
-                $match: {
-                    "authStatus.code": code
-                }
-            });
-        }
-        // code 파라미터가 없을 경우 auth.code 관계 없이 모두 출력
-        // code 파라미터가 있을 경우 auth.code=code 인 것만 출력
+        });
         let result = yield Guideline.aggregate(pipeline);
         return result;
     });
@@ -425,72 +208,18 @@ GuidelineSchema.statics.search = function (keyword, sort, sortby, cost) {
 };
 GuidelineSchema.statics.findByDistance = function (lat, lng, distance, code) {
     return __awaiter(this, void 0, void 0, function* () {
-        let pipeline = [
-            {
-                $geoNear: {
-                    near: {
-                        type: "Point",
-                        coordinates: [lng, lat]
-                    },
-                    distanceField: "distance",
-                    maxDistance: distance,
-                    spherical: true
-                }
-            },
-            {
-                $lookup: {
-                    from: "auth",
-                    let: { productId: "$_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$productId", "$$productId"] }
-                            }
-                        }
-                    ],
-                    as: "authStatus"
-                }
-            },
-            {
-                $unwind: "$authStatus"
-            },
-            {
-                $lookup: {
-                    from: "user",
-                    localField: "creatorUid",
-                    foreignField: "uid",
-                    as: "creator"
-                }
-            },
-            {
-                $unwind: "$creator"
-            },
-            {
-                $lookup: {
-                    from: "like",
-                    localField: "_id",
-                    foreignField: "productId",
-                    as: "likes"
-                }
-            },
-            {
-                $addFields: {
-                    likedCount: { $size: "$likes" }
-                }
-            },
-            {
-                $project: {
-                    likes: 0 // likes 필드를 제외하고 출력
-                }
+        let pipeline = createInitialPipeline(code);
+        pipeline.unshift({
+            $geoNear: {
+                near: {
+                    type: "Point",
+                    coordinates: [lng, lat]
+                },
+                distanceField: "distance",
+                maxDistance: distance,
+                spherical: true
             }
-        ];
-        if (code) {
-            pipeline.push({
-                $match: {
-                    "authStatus.code": code
-                }
-            });
-        }
+        });
         let result = yield Guideline.aggregate(pipeline);
         return result;
     });
@@ -821,7 +550,7 @@ function createInitialPipeline(code) {
     ];
     if (code) {
         if (code !== "all") {
-            pipeline.push({
+            pipeline.splice(2, 0, {
                 $match: {
                     "authStatus.code": code
                 }
@@ -829,7 +558,7 @@ function createInitialPipeline(code) {
         }
     }
     else {
-        pipeline.push({
+        pipeline.splice(2, 0, {
             $match: {
                 "authStatus.code": "authorized"
             }
