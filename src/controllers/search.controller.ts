@@ -112,3 +112,76 @@ export const getAnything = async (req: CustomRequest, res: Response) => {
     logger.error(`Error get anything: ${error}`);
   }
 };
+
+
+// req.body.coordinates 예시
+    // {
+    //   "coordinates": [
+    //     {"lng": -1, "lat": -1},
+    //     {"lng": 1, "lat": -1},
+    //     {"lng": 1, "lat": 1},
+    //     {"lng": -1, "lat": 1},
+    //     {"lng": -1, "lat": -1}
+    //   ]
+    // }
+    // 
+    // => 점들이 순서대로 가야하고, 첫 점과 끝 점이 같아야 함
+export const getGuidelineInArea = async (req: CustomRequest, res: Response) => {
+  const authCode: any = req.query.code;
+  if (!req.body.coordinates || req.body.coordinates.length < 3) {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    })
+  }
+
+  try {
+    const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
+    const result = await Guideline.findByArea(coordinates, authCode);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: result
+    })
+    logger.info("Successfully get guideline in area");
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get guideline in area: ${error}`);
+  }
+};
+
+export const getPhotozoneInArea = async (req: CustomRequest, res: Response) => {
+  const authCode: any = req.query.code;
+  if (!req.body.coordinates || req.body.coordinates.length < 3) {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    })
+  }
+  
+  try {
+    const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
+    const result = await PhotoZone.findByArea(coordinates, authCode);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: result
+    })
+    logger.info("Successfully get photozone in area");
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get photozone in area: ${error}`);
+  }
+};
