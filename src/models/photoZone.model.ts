@@ -99,24 +99,6 @@ PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: numbe
 };
 
 PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: string) {
-// photozone에는 auth 컬렉션에 정보가 없어서 아래 주석처럼 하면 결과가 안나오는것 같음.
-  // let pipeline = createInitialPipeline(code);
-
-  // pipeline.unshift({
-  //   $match: {
-  //     location: {
-  //       $geoWithin: {
-  //         $geometry: {
-  //           type: "Polygon",
-  //           coordinates: [coordinates]
-  //         }
-  //       }
-  //     }
-  //   }
-  // });
-  // let result = await PhotoZone.aggregate(pipeline);
-  // return result; 
-  
   let result = await PhotoZone.aggregate([
     {
       $match: {
@@ -176,89 +158,6 @@ PhotoZoneSchema.virtual('creator', {
   foreignField: 'uid',
   justOne: true
 })
-
-function createInitialPipeline(code?: string) {
-  let pipeline: any[] = [
-    {
-      $lookup: {
-        from: "auth",
-        let: { productId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $eq: ["$productId", "$$productId"] }
-            }
-          }
-        ],
-        as: "authStatus"
-      }
-    },
-    {
-      $unwind: "$authStatus"
-    },
-    {
-      $lookup: {
-        from: "user", 
-        localField: "creatorUid",
-        foreignField: "uid", 
-        as: "creator" 
-      }
-    },
-    {
-      $unwind: "$creator"
-    },
-    {
-      $lookup: {
-        from: "like",
-        localField: "_id",
-        foreignField: "productId",
-        as: "likes"
-      }
-    },
-    {
-      $addFields: {
-        likedCount: { $size: "$likes" } 
-      }
-    },
-    {
-      $lookup: {
-        from: "order",
-        localField: "_id",
-        foreignField: "productId",
-        as: "orders"
-      }
-    },
-    {
-      $addFields: {
-        usedCount: { $size: "$orders" } 
-      }
-    },
-    {
-      $project: {
-        orders: 0,
-        likes: 0
-      }
-    }
-  ];
-
-  if (code) {
-    if (code !== "all") {
-      pipeline.splice(2, 0, {
-        $match: {
-          "authStatus.code": code
-        }
-      });
-    }
-  } else {
-    pipeline.splice(2, 0, {
-      $match: {
-        "authStatus.code": "authorized"
-      }
-    });
-  }
-
-  return pipeline;
-}
 
 const PhotoZone = mongoose.model<DBPhotoZoneDocument, DBPhotoZoneModel>("PhotoZone", PhotoZoneSchema, "photoZone");
 export { PhotoZone, PhotoZoneSchema, DBPhotoZoneDocument };
