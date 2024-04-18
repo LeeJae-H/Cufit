@@ -21,6 +21,7 @@ interface DBPhotoZoneDocument extends DBPhotoZone, Document {
 
 interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
   findByDistance(lat: number, lng: number, distance: number): Promise<DBPhotoZoneDocument[]>;
+  findByArea(coordinates: any[], code?: string): Promise<DBPhotoZoneDocument[]>;
   searchByKeyword: (keyword: string) => Promise<[DBPhotoZoneDocument]>;
 }  
 
@@ -95,6 +96,25 @@ PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: numbe
   .populate("likedCount")
   .populate("creator");
   return result;
+};
+
+PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: string) {
+  let result = await PhotoZone.aggregate([
+    {
+      $match: {
+        location: {
+          $geoWithin: {
+            $geometry: {
+              type: "Polygon",
+              coordinates: [coordinates]
+            }
+          }
+        }
+      }
+    }
+  ]);
+  return result;
+
 };
 
 PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {

@@ -46,6 +46,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   newSearch: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   searchbyTitleOrTag: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   findByDistance(lat: number, lng: number, distance: number, code?: string): Promise<DBGuidelineDocument[]>;
+  findByArea(coordinates: any[], code?: string): Promise<DBGuidelineDocument[]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -228,6 +229,27 @@ GuidelineSchema.statics.findByDistance = async function (lat: number, lng: numbe
       distanceField: "distance",
       maxDistance: distance,
       spherical: true
+    }
+  });
+    
+  let result = await Guideline.aggregate(pipeline);
+  return result;  
+};
+
+
+GuidelineSchema.statics.findByArea = async function (coordinates: any[], code?: string) {
+  let pipeline = createInitialPipeline(code);
+
+  pipeline.unshift({
+    $match: {
+      location: {
+        $geoWithin: {
+          $geometry: {
+            type: "Polygon",
+            coordinates: [coordinates]
+          }
+        }
+      }
     }
   });
     
