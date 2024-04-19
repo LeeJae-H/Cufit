@@ -224,6 +224,25 @@ GuidelineSchema.statics.findByDistance = function (lat, lng, distance, code) {
         return result;
     });
 };
+GuidelineSchema.statics.findByArea = function (coordinates, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline(code);
+        pipeline.unshift({
+            $match: {
+                location: {
+                    $geoWithin: {
+                        $geometry: {
+                            type: "Polygon",
+                            coordinates: [coordinates]
+                        }
+                    }
+                }
+            }
+        });
+        let result = yield Guideline.aggregate(pipeline);
+        return result;
+    });
+};
 GuidelineSchema.virtual('likedCount', {
     ref: 'Like',
     localField: '_id',

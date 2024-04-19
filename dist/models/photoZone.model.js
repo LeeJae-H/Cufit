@@ -106,6 +106,25 @@ PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
         return result;
     });
 };
+PhotoZoneSchema.statics.findByArea = function (coordinates, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result = yield PhotoZone.aggregate([
+            {
+                $match: {
+                    location: {
+                        $geoWithin: {
+                            $geometry: {
+                                type: "Polygon",
+                                coordinates: [coordinates]
+                            }
+                        }
+                    }
+                }
+            }
+        ]);
+        return result;
+    });
+};
 PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
     return __awaiter(this, void 0, void 0, function* () {
         let result = yield PhotoZone.aggregate([
