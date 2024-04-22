@@ -573,6 +573,19 @@ function createInitialPipeline(code?: string) {
       }
     },
     {
+      $lookup: {
+        from: "viewCount",
+        localField: "_id",
+        foreignField: "productId",
+        as: "views"
+      }
+    },
+    {
+      $addFields: {
+        viewCount: { $size: "$views" } 
+      }
+    },
+    {
       $project: {
         orders: 0, // likes 필드를 제외하고 출력
         likes: 0

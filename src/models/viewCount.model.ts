@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 interface DBviewCount {
-  uid?: string;
   productId: mongoose.Schema.Types.ObjectId;
   productType: string;
 }
@@ -14,9 +13,6 @@ interface DBviewCountModel extends Model<DBviewCountDocument> {
 }
 
 const viewCountSchema = new Schema<DBviewCountDocument>({
-  uid: {
-    type: String,
-  },
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'productType',
@@ -29,5 +25,5 @@ const viewCountSchema = new Schema<DBviewCountDocument>({
   }
 })
 
-const viewCount = mongoose.model<DBviewCountDocument, DBviewCountModel>('ViewCount', viewCountSchema, 'viewCount');
-export { viewCount, viewCountSchema }
+const ViewCount = mongoose.model<DBviewCountDocument, DBviewCountModel>('ViewCount', viewCountSchema, 'viewCount');
+export { ViewCount, viewCountSchema }

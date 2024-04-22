@@ -9,6 +9,7 @@ import { Wish } from '../models/wish.model';
 import { Follow } from '../models/follow.model';
 import { Order } from '../models/order.model';
 import logger from '../config/logger';
+import { ViewCount } from '../models/viewCount.model';
 
 export const getDetail = async (req: Request, res: Response) => {
   const uid = `${req.query.uid}`;
@@ -70,6 +71,14 @@ export const getDetail = async (req: Request, res: Response) => {
     let isWished: Boolean = await Wish.isExist(productId, uid, type);
     let isPurchased: Boolean = await Order.isExist(productId, uid, type);
     let review = await Review.findOne({uid, productId});
+
+    let viewCount = await ViewCount.countDocuments({productId: productId});
+    const view = new ViewCount({
+      productId: productId,
+      productType: type,
+    });
+    await view.save();
+    
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -82,7 +91,8 @@ export const getDetail = async (req: Request, res: Response) => {
         review,
         rating: avgRating,
         reviewCount,
-        latestReviews: latestReviews
+        latestReviews: latestReviews,
+        viewCount
       }
     })
     logger.info("Successfully get detail");
