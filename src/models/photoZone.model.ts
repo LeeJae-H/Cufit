@@ -159,5 +159,56 @@ PhotoZoneSchema.virtual('creator', {
   justOne: true
 })
 
+
+function createInitialPipeline(code?: string) {
+  let pipeline: any[] = [
+    {
+      $lookup: {
+        from: "user", 
+        localField: "creatorUid",
+        foreignField: "uid", 
+        as: "creator" 
+      }
+    },
+    {
+      $unwind: "$creator"
+    },
+    {
+      $lookup: {
+        from: "like",
+        localField: "_id",
+        foreignField: "productId",
+        as: "likes"
+      }
+    },
+    {
+      $addFields: {
+        likedCount: { $size: "$likes" } 
+      }
+    },
+    {
+      $lookup: {
+        from: "viewCount",
+        localField: "_id",
+        foreignField: "productId",
+        as: "views"
+      }
+    },
+    {
+      $addFields: {
+        viewCount: { $size: "$views" } 
+      }
+    },
+    {
+      $project: {
+        views: 0,
+        likes: 0
+      }
+    }
+  ];
+
+  return pipeline;
+}
+
 const PhotoZone = mongoose.model<DBPhotoZoneDocument, DBPhotoZoneModel>("PhotoZone", PhotoZoneSchema, "photoZone");
 export { PhotoZone, PhotoZoneSchema, DBPhotoZoneDocument };
