@@ -587,6 +587,7 @@ function createInitialPipeline(code?: string) {
     },
     {
       $project: {
+        views: 0,
         orders: 0, // likes 필드를 제외하고 출력
         likes: 0
       }
