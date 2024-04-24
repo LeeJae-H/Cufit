@@ -19,7 +19,7 @@ export const getDetail = async (req: Request, res: Response) => {
   let avgRating: Double = 0;
   let reviewCount = 0;
   let latestReviews: any[] = [];
-  if (!cid || !productId || !type) {
+  if (!productId || !type) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,

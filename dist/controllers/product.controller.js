@@ -31,7 +31,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let avgRating = 0;
     let reviewCount = 0;
     let latestReviews = [];
-    if (!cid || !productId || !type) {
+    if (!productId || !type) {
         logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,

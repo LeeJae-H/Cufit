@@ -173,7 +173,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const cid = `${req.query.cid}`;
         const type = `${req.query.type}`;
         const photoZoneId = req.params.photoZoneId;
-        if (!cid || !photoZoneId || !type) {
+        if (!photoZoneId || !type) {
             logger_1.default.error("Lack of essential data");
             return res.status(400).json({
                 statusCode: -1,

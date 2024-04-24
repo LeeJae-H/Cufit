@@ -177,7 +177,7 @@ export const getDetail = async (req: Request, res: Response) => {
     const type = `${req.query.type}`;
     const photoZoneId = req.params.photoZoneId;
 
-    if (!cid || !photoZoneId || !type) {
+    if (!photoZoneId || !type) {
       logger.error("Lack of essential data");
       return res.status(400).json({
         statusCode: -1,
