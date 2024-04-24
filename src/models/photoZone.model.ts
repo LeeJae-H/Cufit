@@ -154,7 +154,7 @@ PhotoZoneSchema.virtual('likedCount', {
 });
 
 PhotoZoneSchema.virtual('viewCount', {
-  ref: 'viewCount',
+  ref: 'ViewCount',
   localField: '_id',
   foreignField: 'productId',
   count: true
