@@ -22,6 +22,7 @@ const wish_model_1 = require("../models/wish.model");
 const follow_model_1 = require("../models/follow.model");
 const order_model_1 = require("../models/order.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const viewCount_model_1 = require("../models/viewCount.model");
 const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = `${req.query.uid}`;
     const cid = `${req.query.cid}`;
@@ -59,6 +60,13 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         catch (error) {
             throw new Error("error while find creator info");
         }
+        const view = new viewCount_model_1.ViewCount({
+            productId: productId,
+            productType: type,
+            uid: uid,
+            createdAt: Date.now()
+        });
+        yield view.save();
         if (!uid || uid === "") {
             return res.status(200).json({
                 statusCode: 0,

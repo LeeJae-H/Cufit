@@ -20,6 +20,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const follow_model_1 = require("../models/follow.model");
 const like_model_1 = require("../models/like.model");
 const wish_model_1 = require("../models/wish.model");
+const viewCount_model_1 = require("../models/viewCount.model");
 const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { uid, title, placeName, location, description, shortDescription, imageUrls, tags, } = req.body;
@@ -180,7 +181,26 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 result: {}
             });
         }
+        const view = new viewCount_model_1.ViewCount({
+            productId: photoZoneId,
+            productType: type,
+            uid: uid,
+            createdAt: Date.now()
+        });
+        yield view.save();
         const creator = yield user_model_1.User.getFromUid(cid);
+        if (!uid || uid === "") {
+            return res.status(200).json({
+                statusCode: 0,
+                message: "Success",
+                result: {
+                    creator: creator,
+                    isFollowed: false,
+                    isLiked: false,
+                    isWished: false,
+                }
+            });
+        }
         let isFollowed = yield follow_model_1.Follow.isFollowed(uid, cid);
         let isLiked = yield like_model_1.Like.isExist(photoZoneId, uid, type);
         let isWished = yield wish_model_1.Wish.isExist(photoZoneId, uid, type);
@@ -191,7 +211,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 creator: creator,
                 isFollowed,
                 isLiked,
-                isWished,
+                isWished
             }
         });
         logger_1.default.info("Successfully get detail");

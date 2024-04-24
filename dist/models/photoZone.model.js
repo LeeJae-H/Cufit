@@ -90,67 +90,58 @@ exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
 PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = PhotoZone.find({
-            location: {
-                $near: {
-                    $maxDistance: distance,
-                    $geometry: {
-                        type: 'Point',
-                        coordinates: [lng, lat],
+        let pipeline = createInitialPipeline();
+        pipeline.unshift({
+            $match: {
+                location: {
+                    $near: {
+                        $maxDistance: distance,
+                        $geometry: {
+                            type: 'Point',
+                            coordinates: [lng, lat],
+                        },
                     },
                 },
-            },
-        })
-            .populate("likedCount")
-            .populate("creator");
+            }
+        });
+        let result = yield PhotoZone.aggregate(pipeline);
         return result;
     });
 };
 PhotoZoneSchema.statics.findByArea = function (coordinates, code) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield PhotoZone.aggregate([
-            {
-                $match: {
-                    location: {
-                        $geoWithin: {
-                            $geometry: {
-                                type: "Polygon",
-                                coordinates: [coordinates]
-                            }
+        let pipeline = createInitialPipeline();
+        pipeline.unshift({
+            $match: {
+                location: {
+                    $geoWithin: {
+                        $geometry: {
+                            type: "Polygon",
+                            coordinates: [coordinates]
                         }
                     }
                 }
             }
-        ]);
+        });
+        let result = yield PhotoZone.aggregate(pipeline);
         return result;
     });
 };
 PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = yield PhotoZone.aggregate([
-            {
-                $lookup: {
-                    from: "user",
-                    localField: "uid",
-                    foreignField: "uid",
-                    as: "creator"
-                }
-            },
-            {
-                $unwind: "$creator"
-            },
-            {
-                $match: {
-                    $or: [
-                        { placeName: { $regex: new RegExp(keyword, 'i') } },
-                        { title: { $regex: new RegExp(keyword, 'i') } },
-                        { description: { $regex: new RegExp(keyword, 'i') } },
-                        { shortDescription: { $regex: new RegExp(keyword, 'i') } },
-                        { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
-                    ],
-                }
+        let pipeline = createInitialPipeline();
+        pipeline.unshift({
+            $match: {
+                $or: [
+                    { placeName: { $regex: new RegExp(keyword, 'i') } },
+                    { title: { $regex: new RegExp(keyword, 'i') } },
+                    { description: { $regex: new RegExp(keyword, 'i') } },
+                    { shortDescription: { $regex: new RegExp(keyword, 'i') } },
+                    { tags: { $elemMatch: { $regex: keyword, $options: 'i' } } },
+                ],
             }
-        ]);
+        });
+        let result = yield PhotoZone.aggregate(pipeline);
         return result;
     });
 };
@@ -166,5 +157,53 @@ PhotoZoneSchema.virtual('creator', {
     foreignField: 'uid',
     justOne: true
 });
+function createInitialPipeline(code) {
+    let pipeline = [
+        {
+            $lookup: {
+                from: "user",
+                localField: "creatorUid",
+                foreignField: "uid",
+                as: "creator"
+            }
+        },
+        {
+            $unwind: "$creator"
+        },
+        {
+            $lookup: {
+                from: "like",
+                localField: "_id",
+                foreignField: "productId",
+                as: "likes"
+            }
+        },
+        {
+            $addFields: {
+                likedCount: { $size: "$likes" }
+            }
+        },
+        {
+            $lookup: {
+                from: "viewCount",
+                localField: "_id",
+                foreignField: "productId",
+                as: "views"
+            }
+        },
+        {
+            $addFields: {
+                viewCount: { $size: "$views" }
+            }
+        },
+        {
+            $project: {
+                views: 0,
+                likes: 0
+            }
+        }
+    ];
+    return pipeline;
+}
 const PhotoZone = mongoose_1.default.model("PhotoZone", PhotoZoneSchema, "photoZone");
 exports.PhotoZone = PhotoZone;
