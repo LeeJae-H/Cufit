@@ -2,7 +2,9 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 interface DBviewCount {
   productId: mongoose.Schema.Types.ObjectId;
+  uid: string;
   productType: string;
+  createdAt: number;
 }
 
 interface DBviewCountDocument extends DBviewCount, Document {
@@ -22,6 +24,13 @@ const viewCountSchema = new Schema<DBviewCountDocument>({
     required: true,
     type: String,
     enum: ['Filter', 'Guideline', 'PhotoZone']
+  },
+  uid: {
+    type: String,
+  },
+  createdAt: {
+    required: true,
+    type: Number
   }
 })
 

@@ -82,24 +82,33 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
 PhotoZoneSchema.index({ location: "2dsphere" }); 
 
 PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
-  const result = PhotoZone.find({
-    location: {
-      $near: {
-        $maxDistance: distance,
-        $geometry: {
-          type: 'Point',
-          coordinates: [lng, lat],
+  let pipeline = createInitialPipeline();
+
+  pipeline.unshift(
+    {
+      $match: {
+        location: {
+          $near: {
+            $maxDistance: distance,
+            $geometry: {
+              type: 'Point',
+              coordinates: [lng, lat],
+            },
+          },
         },
-      },
-    },
-  })
-  .populate("likedCount")
-  .populate("creator");
+      }
+    }
+  )
+
+  let result = await PhotoZone.aggregate(pipeline);
+
   return result;
 };
 
 PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: string) {
-  let result = await PhotoZone.aggregate([
+  let pipeline = createInitialPipeline();
+
+  pipeline.unshift(
     {
       $match: {
         location: {
@@ -112,24 +121,18 @@ PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: 
         }
       }
     }
-  ]);
+  )
+
+  let result = await PhotoZone.aggregate(pipeline);
+
   return result;
 
 };
 
 PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
-  let result = await PhotoZone.aggregate([
-    {
-      $lookup: {
-        from: "user",
-        localField: "uid",
-        foreignField: "uid",
-        as: "creator"
-      }
-    },
-    {
-      $unwind: "$creator"
-    },
+  let pipeline = createInitialPipeline();
+
+  pipeline.unshift(
     {
       $match: {
         $or: [
@@ -141,7 +144,10 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
         ],
       }
     }
-  ])
+  )
+
+  let result = await PhotoZone.aggregate(pipeline);
+
   return result;
 }
 

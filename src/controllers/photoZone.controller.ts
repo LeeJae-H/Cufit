@@ -185,19 +185,35 @@ export const getDetail = async (req: Request, res: Response) => {
         result: {}
       })
     }
-    
+
+    const view = new ViewCount({
+      productId: photoZoneId,
+      productType: type,
+      uid: uid,
+      createdAt: Date.now()
+    });
+    await view.save();
+
     const creator = await User.getFromUid(cid);
+
+    if (!uid || uid === "") {
+      return res.status(200).json({
+        statusCode: 0,
+        message: "Success",
+        result: {
+          creator: creator,
+          isFollowed: false,
+          isLiked: false,
+          isWished: false,
+        }
+      });
+    }
+    
+    
     let isFollowed: Boolean = await Follow.isFollowed(uid, cid);
     let isLiked: Boolean = await Like.isExist(photoZoneId, uid, type);
     let isWished: Boolean = await Wish.isExist(photoZoneId, uid, type);
 
-    let viewCount = await ViewCount.countDocuments({productId: photoZoneId});
-    const view = new ViewCount({
-      productId: photoZoneId,
-      productType: type,
-    });
-    await view.save();
-    
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -205,8 +221,7 @@ export const getDetail = async (req: Request, res: Response) => {
         creator: creator,
         isFollowed,
         isLiked,
-        isWished,
-        viewCount
+        isWished
       }
     })
     logger.info("Successfully get detail");
