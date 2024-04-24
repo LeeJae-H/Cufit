@@ -9,6 +9,7 @@ import { Wish } from '../models/wish.model';
 import { Follow } from '../models/follow.model';
 import { Order } from '../models/order.model';
 import logger from '../config/logger';
+import { ViewCount } from '../models/viewCount.model';
 
 export const getDetail = async (req: Request, res: Response) => {
   const uid = `${req.query.uid}`;
@@ -48,6 +49,14 @@ export const getDetail = async (req: Request, res: Response) => {
       throw new Error("error while find creator info");
     }
     
+    const view = new ViewCount({
+      productId: productId,
+      productType: type,
+      uid: uid,
+      createdAt: Date.now()
+    });
+    await view.save();
+
     if (!uid || uid === "") {
       return res.status(200).json({
         statusCode: 0,
@@ -70,6 +79,7 @@ export const getDetail = async (req: Request, res: Response) => {
     let isWished: Boolean = await Wish.isExist(productId, uid, type);
     let isPurchased: Boolean = await Order.isExist(productId, uid, type);
     let review = await Review.findOne({uid, productId});
+    
     res.status(200).json({
       statusCode: 0,
       message: "Success",

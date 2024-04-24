@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import { Follow } from '../models/follow.model';
 import { Like } from '../models/like.model';
 import { Wish } from '../models/wish.model';
+import { ViewCount } from '../models/viewCount.model';
 
 export const uploadPhotozone = async (req: Request, res: Response) => {
   try {
@@ -184,12 +185,35 @@ export const getDetail = async (req: Request, res: Response) => {
         result: {}
       })
     }
-    
+
+    const view = new ViewCount({
+      productId: photoZoneId,
+      productType: type,
+      uid: uid,
+      createdAt: Date.now()
+    });
+    await view.save();
+
     const creator = await User.getFromUid(cid);
+
+    if (!uid || uid === "") {
+      return res.status(200).json({
+        statusCode: 0,
+        message: "Success",
+        result: {
+          creator: creator,
+          isFollowed: false,
+          isLiked: false,
+          isWished: false,
+        }
+      });
+    }
+    
+    
     let isFollowed: Boolean = await Follow.isFollowed(uid, cid);
     let isLiked: Boolean = await Like.isExist(photoZoneId, uid, type);
     let isWished: Boolean = await Wish.isExist(photoZoneId, uid, type);
-    
+
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -197,7 +221,7 @@ export const getDetail = async (req: Request, res: Response) => {
         creator: creator,
         isFollowed,
         isLiked,
-        isWished,
+        isWished
       }
     })
     logger.info("Successfully get detail");
