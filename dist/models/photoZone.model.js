@@ -90,19 +90,20 @@ exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
 PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
     return __awaiter(this, void 0, void 0, function* () {
-        let pipeline = createInitialPipeline();
-        pipeline.unshift({
-            $geoNear: {
-                near: {
-                    type: "Point",
-                    coordinates: [lng, lat]
+        const result = PhotoZone.find({
+            location: {
+                $near: {
+                    $maxDistance: distance,
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: [lng, lat],
+                    },
                 },
-                distanceField: "distance",
-                maxDistance: distance,
-                spherical: true
-            }
-        });
-        let result = yield PhotoZone.aggregate(pipeline);
+            },
+        })
+            .populate("likedCount")
+            .populate("viewCount")
+            .populate("creator");
         return result;
     });
 };
@@ -145,6 +146,12 @@ PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
 };
 PhotoZoneSchema.virtual('likedCount', {
     ref: 'Like',
+    localField: '_id',
+    foreignField: 'productId',
+    count: true
+});
+PhotoZoneSchema.virtual('viewCount', {
+    ref: 'viewCount',
     localField: '_id',
     foreignField: 'productId',
     count: true

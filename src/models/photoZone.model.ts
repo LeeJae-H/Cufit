@@ -82,22 +82,22 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
 PhotoZoneSchema.index({ location: "2dsphere" }); 
 
 PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
-  let pipeline = createInitialPipeline();
-
-  pipeline.unshift({
-    $geoNear: {
-      near: {
-          type: "Point",
-          coordinates: [lng, lat]
+  const result = PhotoZone.find({
+    location: {
+      $near: {
+        $maxDistance: distance,
+        $geometry: {
+          type: 'Point',
+          coordinates: [lng, lat],
+        },
       },
-      distanceField: "distance",
-      maxDistance: distance,
-      spherical: true
-    }
-  });
-    
-  let result = await PhotoZone.aggregate(pipeline);
-  return result;  
+    },
+  })
+  .populate("likedCount")
+  .populate("viewCount")
+  .populate("creator");
+  
+  return result;
 };
 
 PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: string) {
@@ -152,6 +152,14 @@ PhotoZoneSchema.virtual('likedCount', {
   foreignField: 'productId',
   count: true
 });
+
+PhotoZoneSchema.virtual('viewCount', {
+  ref: 'viewCount',
+  localField: '_id',
+  foreignField: 'productId',
+  count: true
+});
+
 
 PhotoZoneSchema.virtual('creator', {
   ref: 'User',
