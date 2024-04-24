@@ -55,7 +55,8 @@ export const getDetail = async (req: Request, res: Response) => {
       uid: uid,
       createdAt: Date.now()
     });
-    await view.save();
+    
+    view.save(); // 저장보다 정보를 가져오는게 더중요하고 저장이 안되어도 크게 문제가 되지 않기 때문에 결과를 보지 않고 다음 블록을 진행하도록 await 제거
 
     if (!uid || uid === "") {
       return res.status(200).json({
