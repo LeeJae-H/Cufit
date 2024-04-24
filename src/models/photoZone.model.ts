@@ -84,25 +84,20 @@ PhotoZoneSchema.index({ location: "2dsphere" });
 PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
   let pipeline = createInitialPipeline();
 
-  pipeline.unshift(
-    {
-      $match: {
-        location: {
-          $near: {
-            $maxDistance: distance,
-            $geometry: {
-              type: 'Point',
-              coordinates: [lng, lat],
-            },
-          },
-        },
-      }
+  pipeline.unshift({
+    $geoNear: {
+      near: {
+          type: "Point",
+          coordinates: [lng, lat]
+      },
+      distanceField: "distance",
+      maxDistance: distance,
+      spherical: true
     }
-  )
-
+  });
+    
   let result = await PhotoZone.aggregate(pipeline);
-
-  return result;
+  return result;  
 };
 
 PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: string) {

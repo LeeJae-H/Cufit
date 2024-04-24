@@ -92,16 +92,14 @@ PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
     return __awaiter(this, void 0, void 0, function* () {
         let pipeline = createInitialPipeline();
         pipeline.unshift({
-            $match: {
-                location: {
-                    $near: {
-                        $maxDistance: distance,
-                        $geometry: {
-                            type: 'Point',
-                            coordinates: [lng, lat],
-                        },
-                    },
+            $geoNear: {
+                near: {
+                    type: "Point",
+                    coordinates: [lng, lat]
                 },
+                distanceField: "distance",
+                maxDistance: distance,
+                spherical: true
             }
         });
         let result = yield PhotoZone.aggregate(pipeline);
