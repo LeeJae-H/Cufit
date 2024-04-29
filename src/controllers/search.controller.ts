@@ -128,7 +128,7 @@ export const getAnything = async (req: CustomRequest, res: Response) => {
     // => 점들이 순서대로 가야하고, 첫 점과 끝 점이 같아야 함
 export const getGuidelineInArea = async (req: CustomRequest, res: Response) => {
   const authCode: any = req.query.code;
-  if (!req.body.coordinates || req.body.coordinates.length < 3) {
+  if (!req.body.coordinates) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
@@ -136,9 +136,23 @@ export const getGuidelineInArea = async (req: CustomRequest, res: Response) => {
       result: {}
     })
   }
-
+  
   try {
-    const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
+    let coordinates: any[] = [];
+    req.body.coordinates.forEach((coord: any) => {
+      const count = coord.lat.length;
+      for (var i = 0; i < count; i++) {
+        coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])])
+      }
+    })
+    if (coordinates.length < 3) {
+      logger.error("Lack of essential data");
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Lack of essential data",
+        result: {}
+      })
+    }
     const result = await Guideline.findByArea(coordinates, authCode);
     res.status(200).json({
       statusCode: 0,
@@ -158,7 +172,7 @@ export const getGuidelineInArea = async (req: CustomRequest, res: Response) => {
 
 export const getPhotozoneInArea = async (req: CustomRequest, res: Response) => {
   const authCode: any = req.query.code;
-  if (!req.body.coordinates || req.body.coordinates.length < 3) {
+  if (!req.body.coordinates) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
@@ -170,12 +184,19 @@ export const getPhotozoneInArea = async (req: CustomRequest, res: Response) => {
   try {
     let coordinates: any[] = [];
     req.body.coordinates.forEach((coord: any) => {
-      const count = coord.length;
+      const count = coord.lat.length;
       for (var i = 0; i < count; i++) {
         coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])])
       }
     })
-    // const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
+    if (coordinates.length < 3) {
+      logger.error("Lack of essential data");
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Lack of essential data",
+        result: {}
+      })
+    }
     const result = await PhotoZone.findByArea(coordinates, authCode);
     res.status(200).json({
       statusCode: 0,
