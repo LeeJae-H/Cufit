@@ -176,7 +176,14 @@ const getPhotozoneInArea = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
     try {
-        const coordinates = req.body.coordinates.map((coord) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
+        let coordinates = [];
+        req.body.coordinates.forEach((coord) => {
+            const count = coord.length;
+            for (var i = 0; i < count; i++) {
+                coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])]);
+            }
+        });
+        // const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
         const result = yield photoZone_model_1.PhotoZone.findByArea(coordinates, authCode);
         res.status(200).json({
             statusCode: 0,

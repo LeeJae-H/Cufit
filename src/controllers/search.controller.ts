@@ -168,7 +168,14 @@ export const getPhotozoneInArea = async (req: CustomRequest, res: Response) => {
   }
   
   try {
-    const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
+    let coordinates: any[] = [];
+    req.body.coordinates.forEach((coord: any) => {
+      const count = coord.length;
+      for (var i = 0; i < count; i++) {
+        coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])])
+      }
+    })
+    // const coordinates = req.body.coordinates.map((coord: any) => [parseFloat(coord.lng), parseFloat(coord.lat)]);
     const result = await PhotoZone.findByArea(coordinates, authCode);
     res.status(200).json({
       statusCode: 0,
