@@ -174,7 +174,7 @@ function createInitialPipeline(code?: string) {
     {
       $lookup: {
         from: "user", 
-        localField: "creatorUid",
+        localField: "uid",
         foreignField: "uid", 
         as: "creator" 
       }
