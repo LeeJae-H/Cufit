@@ -1,10 +1,9 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 interface DBSearchedKeyword {
-  name: string;
+  keyword: string;
   createdAt: number;
-  imageUrl?: string;
-  present: boolean;
+  uid?: string;
 }
 
 interface DBSearchedKeywordDocument extends DBSearchedKeyword, Document {
@@ -15,7 +14,7 @@ interface DBSearchedKeywordModel extends Model<DBSearchedKeywordDocument> {
 }
 
 const SearchedKeywordSchema: Schema<DBSearchedKeywordDocument> = new Schema({
-  name: {
+  keyword: {
     required: true,
     type: String,
   },
@@ -23,12 +22,8 @@ const SearchedKeywordSchema: Schema<DBSearchedKeywordDocument> = new Schema({
     required: true,
     type: Number,
   },
-  imageUrl: {
+  uid: {
     type: String,
-  },
-  present: {
-    required: true,
-    type: Boolean,
   }
 });
 

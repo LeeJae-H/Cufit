@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SearchedKeywordSchema = exports.SearchedKeyword = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const SearchedKeywordSchema = new mongoose_1.Schema({
-    name: {
+    keyword: {
         required: true,
         type: String,
     },
@@ -34,12 +34,8 @@ const SearchedKeywordSchema = new mongoose_1.Schema({
         required: true,
         type: Number,
     },
-    imageUrl: {
+    uid: {
         type: String,
-    },
-    present: {
-        required: true,
-        type: Boolean,
     }
 });
 exports.SearchedKeywordSchema = SearchedKeywordSchema;
