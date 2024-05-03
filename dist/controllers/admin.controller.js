@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
+exports.modifyGuideline = exports.uploadGuideline = exports.getGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
 const contents_model_1 = require("../models/contents.model");
 const faq_model_1 = require("../models/faq.model");
 const servserStatus_model_1 = require("../models/servserStatus.model");
@@ -20,6 +20,9 @@ const auth_model_1 = require("../models/auth.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const popularTag_model_1 = require("../models/popularTag.model");
+const popularPhotoZone_model_1 = require("../models/popularPhotoZone.model");
+const popularGuideline_model_1 = require("../models/popularGuideline.model");
 const postStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = `${req.query.code}`;
     const upload = req.query.upload === "true";
@@ -310,3 +313,263 @@ const postAuth = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.postAuth = postAuth;
+// main.route.ts를 따로 만들었지만 일단 main.controller.ts말고 여기에 넣음, 아래 포토존및가이드라인도 마찬가지
+const getTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tagList = yield popularTag_model_1.PopularTag.find();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tagList
+        });
+        logger_1.default.info("Successfully get tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get tag-list: ${error}`);
+    }
+});
+exports.getTagList = getTagList;
+const uploadTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, imageUrl, present } = req.body;
+    const createdAt = Date.now();
+    try {
+        const tag = new popularTag_model_1.PopularTag({
+            name: name,
+            createdAt: createdAt,
+            imageUrl: imageUrl,
+            present: present
+        });
+        yield tag.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tag
+        });
+        logger_1.default.info("Successfully upload tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error upload tag-list: ${error}`);
+    }
+});
+exports.uploadTagList = uploadTagList;
+const modifyTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, imageUrl, present } = req.body;
+    const createdAt = Date.now();
+    try {
+        const tag = yield popularTag_model_1.PopularTag.findOne({ name: name });
+        if (!tag) {
+            return res.status(404).json({
+                statusCode: -1,
+                message: "Tag not found",
+                result: {}
+            });
+        }
+        if (name)
+            tag.name = name;
+        if (imageUrl)
+            tag.imageUrl = imageUrl;
+        if (present)
+            tag.present = present;
+        tag.createdAt = createdAt;
+        yield tag.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tag
+        });
+        logger_1.default.info("Successfully modify tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error modify tag-list: ${error}`);
+    }
+});
+exports.modifyTagList = modifyTagList;
+const getPhotoZones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const photoZones = yield popularPhotoZone_model_1.PopularPhotoZone.find();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: photoZones
+        });
+        logger_1.default.info("Successfully get photozones");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get photozones: ${error}`);
+    }
+});
+exports.getPhotoZones = getPhotoZones;
+const uploadPhotoZone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title, productId, description, imageUrl } = req.body;
+        const createdAt = Date.now();
+        const photoZone = new popularPhotoZone_model_1.PopularPhotoZone({
+            title: title,
+            createdAt: createdAt,
+            productId: productId,
+            description: description,
+            imageUrl: imageUrl
+        });
+        yield photoZone.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully upload photozone",
+            result: photoZone
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Error upload photozone:', error);
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
+});
+exports.uploadPhotoZone = uploadPhotoZone;
+const modifyPhotoZone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, productId, description, imageUrl } = req.body;
+    const createdAt = Date.now();
+    try {
+        const photoZone = yield popularPhotoZone_model_1.PopularPhotoZone.findOne({ productId: productId });
+        if (!photoZone) {
+            return res.status(404).json({
+                statusCode: -1,
+                message: "photoZone not found",
+                result: {}
+            });
+        }
+        if (title)
+            photoZone.title = title;
+        if (productId)
+            photoZone.productId = productId;
+        if (description)
+            photoZone.description = description;
+        if (imageUrl)
+            photoZone.imageUrl = imageUrl;
+        photoZone.createdAt = createdAt;
+        yield photoZone.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: photoZone
+        });
+        logger_1.default.info("Successfully modify photozone");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error modify photozone: ${error}`);
+    }
+});
+exports.modifyPhotoZone = modifyPhotoZone;
+const getGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const guidelines = yield popularGuideline_model_1.PopularGuideline.find();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: guidelines
+        });
+        logger_1.default.info("Successfully get guidelines");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get guidelines: ${error}`);
+    }
+});
+exports.getGuidelines = getGuidelines;
+const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title, productId, description, imageUrl } = req.body;
+        const createdAt = Date.now();
+        const guideline = new popularGuideline_model_1.PopularGuideline({
+            title: title,
+            createdAt: createdAt,
+            productId: productId,
+            description: description,
+            imageUrl: imageUrl
+        });
+        yield guideline.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully upload guideline",
+            result: guideline
+        });
+    }
+    catch (error) {
+        logger_1.default.error('Error upload guideline:', error);
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+    }
+});
+exports.uploadGuideline = uploadGuideline;
+const modifyGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, productId, description, imageUrl } = req.body;
+    const createdAt = Date.now();
+    try {
+        const guideline = yield popularGuideline_model_1.PopularGuideline.findOne({ productId: productId });
+        if (!guideline) {
+            return res.status(404).json({
+                statusCode: -1,
+                message: "guideline not found",
+                result: {}
+            });
+        }
+        if (title)
+            guideline.title = title;
+        if (productId)
+            guideline.productId = productId;
+        if (description)
+            guideline.description = description;
+        if (imageUrl)
+            guideline.imageUrl = imageUrl;
+        guideline.createdAt = createdAt;
+        yield guideline.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: guideline
+        });
+        logger_1.default.info("Successfully modify guideline");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error modify guideline: ${error}`);
+    }
+});
+exports.modifyGuideline = modifyGuideline;

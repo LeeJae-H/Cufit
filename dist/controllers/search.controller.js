@@ -18,6 +18,7 @@ const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const searchedKeyword_model_1 = require("../models/searchedKeyword.model");
 const searchCreators = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     try {
@@ -92,11 +93,18 @@ exports.searchFilters = searchFilters;
 const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     const authCode = req.query.code;
+    const uid = req.params.uid;
     try {
         // creator, guideline, filter, photoZone
         if (keyword === "") {
             throw new Error("Empty keyword");
         }
+        const searched = new searchedKeyword_model_1.SearchedKeyword({
+            keyword: keyword,
+            createdAt: Date.now(),
+            uid: uid
+        });
+        yield searched.save();
         const creator = yield user_model_1.User.search(keyword);
         const guideline = yield guideline_model_1.Guideline.newSearch(keyword, authCode);
         const filter = yield filter_model_1.Filter.newSearch(keyword);
