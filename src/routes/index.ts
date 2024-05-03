@@ -9,6 +9,7 @@ import product from './product.route';
 import search from './search.route';
 import stts from './status.route';
 import user from './user.route';
+import main from './main.route';
 
 const router = express.Router();
 
