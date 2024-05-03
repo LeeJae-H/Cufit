@@ -17,7 +17,7 @@ router.use('/creators', creator);
 router.use('/filters', filter);
 router.use('/guidelines', guideline);
 router.use('/images', image);
-router.use('/main', user);
+router.use('/main', main);
 router.use('/photozones', photozone);
 router.use('/products', product);
 router.use('/search', search);
