@@ -5,6 +5,7 @@ import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
 import { PhotoZone } from '../models/photoZone.model';
 import logger from '../config/logger';
+import { SearchedKeyword } from '../models/searchedKeyword.model';
 
 export const searchCreators = async (req: Request, res: Response) => {
   const keyword = req.params.keyword;
@@ -82,12 +83,21 @@ export const searchFilters = async (req: Request, res: Response) => {
 export const getAnything = async (req: CustomRequest, res: Response) => {
   const keyword = req.params.keyword;
   const authCode: any = req.query.code;
+  const uid = req.params.uid;
 
   try{
     // creator, guideline, filter, photoZone
     if (keyword === "") {
       throw new Error("Empty keyword")
     }
+
+    const searched = new SearchedKeyword({
+      keyword: keyword,
+      createdAt: Date.now(),
+      uid: uid
+    })
+    await searched.save();
+
     const creator = await User.search(keyword);
     const guideline = await Guideline.newSearch(keyword, authCode);
     const filter = await Filter.newSearch(keyword);

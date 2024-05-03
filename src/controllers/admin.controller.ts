@@ -6,6 +6,9 @@ import { Auth } from '../models/auth.model';
 import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
 import logger from '../config/logger';
+import { PopularTag } from '../models/popularTag.model';
+import { PopularPhotoZone } from '../models/popularPhotoZone.model';
+import { PopularGuideline } from '../models/popularGuideline.model';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;
@@ -287,5 +290,265 @@ export const postAuth = async (req: Request, res: Response) => {
       result: {}
     })
     logger.error(`Error post auth: ${error}`);
+  }
+};
+
+// main.route.ts를 따로 만들었지만 일단 main.controller.ts말고 여기에 넣음, 아래 포토존및가이드라인도 마찬가지
+export const getTagList = async (req: Request, res: Response) => {
+  try{
+    const tagList = await PopularTag.find();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tagList
+    })
+    logger.info("Successfully get tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get tag-list: ${error}`);
+  }
+};
+
+export const uploadTagList = async (req: Request, res: Response) => {
+  const { name, imageUrl, present } = req.body;
+  const createdAt = Date.now();
+
+  try{
+    const tag = new PopularTag({
+      name: name,
+      createdAt:createdAt,
+      imageUrl: imageUrl,
+      present: present
+    })
+    await tag.save();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tag
+    })
+    logger.info("Successfully upload tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error upload tag-list: ${error}`);
+  }
+};
+
+export const modifyTagList = async (req: Request, res: Response) => {
+  const { name, imageUrl, present } = req.body;
+  const createdAt = Date.now();
+  
+  try{
+    const tag = await PopularTag.findOne({ name: name });
+
+    if (!tag) {
+      return res.status(404).json({
+        statusCode: -1,
+        message: "Tag not found",
+        result: {}
+      });
+    }
+
+    if (name) tag.name = name;
+    if (imageUrl) tag.imageUrl = imageUrl;
+    if (present) tag.present = present;
+    tag.createdAt = createdAt;
+
+    await tag.save();
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tag
+    })
+    logger.info("Successfully modify tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error modify tag-list: ${error}`);
+  }
+};
+
+export const getPhotoZones = async (req: Request, res: Response) => {
+  try{
+    const photoZones = await PopularPhotoZone.find();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: photoZones
+    })
+    logger.info("Successfully get photozones");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get photozones: ${error}`);
+  }
+};
+
+export const uploadPhotoZone = async (req: Request, res: Response) => {
+  try {
+    const { title, productId, description, imageUrl } = req.body;
+    const createdAt = Date.now();
+
+    const photoZone = new PopularPhotoZone({
+      title: title,
+      createdAt: createdAt,
+      productId: productId,
+      description: description,
+      imageUrl: imageUrl
+    });
+    await photoZone.save();
+
+    res.status(200).json({
+        statusCode: 0,
+        message: "Successfully upload photozone",
+        result: photoZone
+    });
+  } catch (error) {
+    logger.error('Error upload photozone:', error);
+    res.status(500).json({
+        statusCode: -1,
+        message: error,
+        result: {}
+    });
+  }
+};
+
+export const modifyPhotoZone = async (req: Request, res: Response) => {
+  const { title, productId, description, imageUrl } = req.body;
+  const createdAt = Date.now();
+  
+  try{
+    const photoZone = await PopularPhotoZone.findOne({ productId: productId });
+
+    if (!photoZone) {
+      return res.status(404).json({
+        statusCode: -1,
+        message: "photoZone not found",
+        result: {}
+      });
+    }
+
+    if (title) photoZone.title = title;
+    if (productId) photoZone.productId = productId;
+    if (description) photoZone.description = description;
+    if (imageUrl) photoZone.imageUrl = imageUrl;
+    photoZone.createdAt = createdAt;
+
+    await photoZone.save();
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: photoZone
+    })
+    logger.info("Successfully modify photozone");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error modify photozone: ${error}`);
+  }
+};
+
+export const getGuidelines = async (req: Request, res: Response) => {
+  try{
+    const guidelines = await PopularGuideline.find();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: guidelines
+    })
+    logger.info("Successfully get guidelines");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get guidelines: ${error}`);
+  }
+};
+
+export const uploadGuideline = async (req: Request, res: Response) => {
+  try {
+    const { title, productId, description, imageUrl } = req.body;
+    const createdAt = Date.now();
+
+    const guideline = new PopularGuideline({
+      title: title,
+      createdAt: createdAt,
+      productId: productId,
+      description: description,
+      imageUrl: imageUrl
+    });
+    await guideline.save();
+
+    res.status(200).json({
+        statusCode: 0,
+        message: "Successfully upload guideline",
+        result: guideline
+    });
+  } catch (error) {
+    logger.error('Error upload guideline:', error);
+    res.status(500).json({
+        statusCode: -1,
+        message: error,
+        result: {}
+    });
+  }
+};
+
+export const modifyGuideline = async (req: Request, res: Response) => {
+  const { title, productId, description, imageUrl } = req.body;
+  const createdAt = Date.now();
+  
+  try{
+    const guideline = await PopularGuideline.findOne({ productId: productId });
+
+    if (!guideline) {
+      return res.status(404).json({
+        statusCode: -1,
+        message: "guideline not found",
+        result: {}
+      });
+    }
+
+    if (title) guideline.title = title;
+    if (productId) guideline.productId = productId;
+    if (description) guideline.description = description;
+    if (imageUrl) guideline.imageUrl = imageUrl;
+    guideline.createdAt = createdAt;
+
+    await guideline.save();
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: guideline
+    })
+    logger.info("Successfully modify guideline");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error modify guideline: ${error}`);
   }
 };
