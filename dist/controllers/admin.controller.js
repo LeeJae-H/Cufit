@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.modifyGuideline = exports.uploadGuideline = exports.getGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
+exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
 const contents_model_1 = require("../models/contents.model");
 const faq_model_1 = require("../models/faq.model");
 const servserStatus_model_1 = require("../models/servserStatus.model");
@@ -21,8 +21,8 @@ const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
 const logger_1 = __importDefault(require("../config/logger"));
 const popularTag_model_1 = require("../models/popularTag.model");
-const popularPhotoZone_model_1 = require("../models/popularPhotoZone.model");
-const popularGuideline_model_1 = require("../models/popularGuideline.model");
+const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
+const todayGuideline_model_1 = require("../models/todayGuideline.model");
 const postStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = `${req.query.code}`;
     const upload = req.query.upload === "true";
@@ -399,9 +399,9 @@ const modifyTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.modifyTagList = modifyTagList;
-const getPhotoZones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTodayPhotoZones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const photoZones = yield popularPhotoZone_model_1.PopularPhotoZone.find();
+        const photoZones = yield todayPhotoZone_model_1.TodayPhotoZone.find();
         res.status(200).json({
             statusCode: 0,
             message: "Success",
@@ -418,12 +418,12 @@ const getPhotoZones = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         logger_1.default.error(`Error get photozones: ${error}`);
     }
 });
-exports.getPhotoZones = getPhotoZones;
+exports.getTodayPhotoZones = getTodayPhotoZones;
 const uploadPhotoZone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { title, productId, description, imageUrl } = req.body;
         const createdAt = Date.now();
-        const photoZone = new popularPhotoZone_model_1.PopularPhotoZone({
+        const photoZone = new todayPhotoZone_model_1.TodayPhotoZone({
             title: title,
             createdAt: createdAt,
             productId: productId,
@@ -451,7 +451,7 @@ const modifyPhotoZone = (req, res) => __awaiter(void 0, void 0, void 0, function
     const { title, productId, description, imageUrl } = req.body;
     const createdAt = Date.now();
     try {
-        const photoZone = yield popularPhotoZone_model_1.PopularPhotoZone.findOne({ productId: productId });
+        const photoZone = yield todayPhotoZone_model_1.TodayPhotoZone.findOne({ productId: productId });
         if (!photoZone) {
             return res.status(404).json({
                 statusCode: -1,
@@ -486,9 +486,9 @@ const modifyPhotoZone = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.modifyPhotoZone = modifyPhotoZone;
-const getGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTodayGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const guidelines = yield popularGuideline_model_1.PopularGuideline.find();
+        const guidelines = yield todayGuideline_model_1.TodayGuideline.find();
         res.status(200).json({
             statusCode: 0,
             message: "Success",
@@ -505,12 +505,12 @@ const getGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         logger_1.default.error(`Error get guidelines: ${error}`);
     }
 });
-exports.getGuidelines = getGuidelines;
+exports.getTodayGuidelines = getTodayGuidelines;
 const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { title, productId, description, imageUrl } = req.body;
         const createdAt = Date.now();
-        const guideline = new popularGuideline_model_1.PopularGuideline({
+        const guideline = new todayGuideline_model_1.TodayGuideline({
             title: title,
             createdAt: createdAt,
             productId: productId,
@@ -538,7 +538,7 @@ const modifyGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
     const { title, productId, description, imageUrl } = req.body;
     const createdAt = Date.now();
     try {
-        const guideline = yield popularGuideline_model_1.PopularGuideline.findOne({ productId: productId });
+        const guideline = yield todayGuideline_model_1.TodayGuideline.findOne({ productId: productId });
         if (!guideline) {
             return res.status(404).json({
                 statusCode: -1,
