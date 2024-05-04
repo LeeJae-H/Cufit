@@ -1,10 +1,10 @@
 import express from 'express';
-import { getGuidelines, getPhotoZones, getTagList } from '../controllers/admin.controller';
+import { getTodayGuideline, getTodayPhotozone, getTagList } from '../controllers/main.controller';
 
 const router = express.Router();
 
 router.get("/tag-list", getTagList);
-router.get("/photozones", getPhotoZones);
-router.get("/guidelines", getGuidelines);
+router.get("/today/guideline", getTodayGuideline);
+router.get("/today/photozone", getTodayPhotozone);
 
 export default router;

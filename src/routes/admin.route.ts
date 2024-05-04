@@ -1,5 +1,6 @@
 import express from 'express';
-import { postStatus, getContent, getContents, postContents, 
+import { 
+    postStatus, getContent, getContents, postContents, getTodayPhotoZones, getTodayGuidelines, getTagList,
     getFaqs, getProducts, postFaqAnswer, postAuth, uploadTagList, modifyTagList, uploadPhotoZone, uploadGuideline
 } from '../controllers/admin.controller';
 
@@ -14,11 +15,21 @@ router.get('/product', getProducts);
 router.post('/faq/answer/:faqId', postFaqAnswer);
 router.post("/authorize", postAuth);
 
+router.get("/tag-list", getTagList);
 router.post("/tag-list", uploadTagList);
 router.patch("/tag-list", modifyTagList);
-router.post("/photozone", uploadPhotoZone);
-router.patch("/photozone", modifyTagList);
-router.post("/guideline", uploadGuideline);
-router.patch("/guideline", modifyTagList);
+
+router.get("/today/photozones", getTodayPhotoZones);
+router.post("/today/photozone", uploadPhotoZone);
+router.patch("/today/photozone", modifyTagList);
+
+router.get("/today/guidelines", getTodayGuidelines);
+router.post("/today/guideline", uploadGuideline);
+router.patch("/today/guideline", modifyTagList);
+
+// TODO: - 구현하기
+router.get("/guidelines")
+router.get("/photozones")
+router.get("/users")
 
 export default router;

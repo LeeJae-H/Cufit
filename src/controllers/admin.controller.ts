@@ -7,8 +7,8 @@ import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
 import logger from '../config/logger';
 import { PopularTag } from '../models/popularTag.model';
-import { PopularPhotoZone } from '../models/popularPhotoZone.model';
-import { PopularGuideline } from '../models/popularGuideline.model';
+import { TodayPhotoZone } from '../models/todayPhotoZone.model';
+import { TodayGuideline } from '../models/todayGuideline.model';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;
@@ -379,9 +379,9 @@ export const modifyTagList = async (req: Request, res: Response) => {
   }
 };
 
-export const getPhotoZones = async (req: Request, res: Response) => {
+export const getTodayPhotoZones = async (req: Request, res: Response) => {
   try{
-    const photoZones = await PopularPhotoZone.find();
+    const photoZones = await TodayPhotoZone.find();
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -403,7 +403,7 @@ export const uploadPhotoZone = async (req: Request, res: Response) => {
     const { title, productId, description, imageUrl } = req.body;
     const createdAt = Date.now();
 
-    const photoZone = new PopularPhotoZone({
+    const photoZone = new TodayPhotoZone({
       title: title,
       createdAt: createdAt,
       productId: productId,
@@ -432,7 +432,7 @@ export const modifyPhotoZone = async (req: Request, res: Response) => {
   const createdAt = Date.now();
   
   try{
-    const photoZone = await PopularPhotoZone.findOne({ productId: productId });
+    const photoZone = await TodayPhotoZone.findOne({ productId: productId });
 
     if (!photoZone) {
       return res.status(404).json({
@@ -466,9 +466,9 @@ export const modifyPhotoZone = async (req: Request, res: Response) => {
   }
 };
 
-export const getGuidelines = async (req: Request, res: Response) => {
+export const getTodayGuidelines = async (req: Request, res: Response) => {
   try{
-    const guidelines = await PopularGuideline.find();
+    const guidelines = await TodayGuideline.find();
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -490,7 +490,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
     const { title, productId, description, imageUrl } = req.body;
     const createdAt = Date.now();
 
-    const guideline = new PopularGuideline({
+    const guideline = new TodayGuideline({
       title: title,
       createdAt: createdAt,
       productId: productId,
@@ -519,7 +519,7 @@ export const modifyGuideline = async (req: Request, res: Response) => {
   const createdAt = Date.now();
   
   try{
-    const guideline = await PopularGuideline.findOne({ productId: productId });
+    const guideline = await TodayGuideline.findOne({ productId: productId });
 
     if (!guideline) {
       return res.status(404).json({

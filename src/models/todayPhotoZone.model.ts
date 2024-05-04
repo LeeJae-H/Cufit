@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
-interface DBPopularPhotoZone {
+interface DBTodayPhotoZone {
   title: string;
   createdAt: number;
   productId: mongoose.Schema.Types.ObjectId;
@@ -8,14 +8,14 @@ interface DBPopularPhotoZone {
   imageUrl?: string;
 }
 
-interface DBPopularPhotoZoneDocument extends DBPopularPhotoZone, Document {
+interface DBTodayPhotoZoneDocument extends DBTodayPhotoZone, Document {
 
 }
 
-interface DBPopularPhotoZoneModel extends Model<DBPopularPhotoZoneDocument> {
+interface DBTodayPhotoZoneModel extends Model<DBTodayPhotoZoneDocument> {
 }
 
-const PopularPhotoZoneSchema: Schema<DBPopularPhotoZoneDocument> = new Schema({
+const TodayPhotoZoneSchema: Schema<DBTodayPhotoZoneDocument> = new Schema({
   title: {
     required: true,
     type: String,
@@ -37,6 +37,6 @@ const PopularPhotoZoneSchema: Schema<DBPopularPhotoZoneDocument> = new Schema({
   },
 });
 
-const PopularPhotoZone = mongoose.model<DBPopularPhotoZoneDocument, DBPopularPhotoZoneModel>('PopularPhotoZone', PopularPhotoZoneSchema, 'popularPhotoZone');
+const TodayPhotoZone = mongoose.model<DBTodayPhotoZoneDocument, DBTodayPhotoZoneModel>('TodayPhotoZone', TodayPhotoZoneSchema, 'todayPhotoZone');
 
-export { PopularPhotoZone, PopularPhotoZoneSchema };
+export { TodayPhotoZone, TodayPhotoZoneSchema };
