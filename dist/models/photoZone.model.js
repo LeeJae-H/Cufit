@@ -144,6 +144,14 @@ PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
         return result;
     });
 };
+PhotoZoneSchema.statics.findAll = function (page, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline(code);
+        // pipeline = pagination(pipeline, page);
+        let result = yield PhotoZone.aggregate(pipeline);
+        return result;
+    });
+};
 PhotoZoneSchema.virtual('likedCount', {
     ref: 'Like',
     localField: '_id',
@@ -162,6 +170,18 @@ PhotoZoneSchema.virtual('creator', {
     foreignField: 'uid',
     justOne: true
 });
+function pagination(pipeline, page) {
+    let pagination = [
+        {
+            $skip: (page - 1) * 20
+        },
+        {
+            $limit: page
+        }
+    ];
+    pipeline.push(pagination);
+    return pipeline;
+}
 function createInitialPipeline(code) {
     let pipeline = [
         {

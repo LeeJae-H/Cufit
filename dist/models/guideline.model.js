@@ -504,6 +504,26 @@ function getByLatest(tag, sort) {
         }
     });
 }
+GuidelineSchema.statics.findAll = function (page, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline(code);
+        // pipeline = pagination(pipeline, page);
+        let result = yield Guideline.aggregate(pipeline);
+        return result;
+    });
+};
+function pagination(pipeline, page) {
+    let pagination = [
+        {
+            $skip: (page - 1) * 20
+        },
+        {
+            $limit: page
+        }
+    ];
+    pipeline.push(pagination);
+    return pipeline;
+}
 function createInitialPipeline(code) {
     let pipeline = [
         {

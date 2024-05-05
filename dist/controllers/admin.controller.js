@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
+exports.allPhotozones = exports.allGuidelines = exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
 const contents_model_1 = require("../models/contents.model");
 const faq_model_1 = require("../models/faq.model");
 const servserStatus_model_1 = require("../models/servserStatus.model");
@@ -23,6 +23,7 @@ const logger_1 = __importDefault(require("../config/logger"));
 const popularTag_model_1 = require("../models/popularTag.model");
 const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
+const photoZone_model_1 = require("../models/photoZone.model");
 const postStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = `${req.query.code}`;
     const upload = req.query.upload === "true";
@@ -573,3 +574,47 @@ const modifyGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.modifyGuideline = modifyGuideline;
+const allGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(req.query.page);
+    const code = String(req.query.code);
+    try {
+        const guidelines = yield guideline_model_1.Guideline.findAll(page, code);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: guidelines
+        });
+        logger_1.default.info(`Successfully fetch allGuidelines`);
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error while fetching allGuidelines: ${error}`);
+    }
+});
+exports.allGuidelines = allGuidelines;
+const allPhotozones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(req.query.page);
+    const code = String(req.query.code);
+    try {
+        const photozone = yield photoZone_model_1.PhotoZone.findAll(page, code);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: photozone
+        });
+        logger_1.default.info(`Successfully fetch allphotozone`);
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error while fetching allphotozone: ${error}`);
+    }
+});
+exports.allPhotozones = allPhotozones;

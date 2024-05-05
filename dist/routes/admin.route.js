@@ -23,8 +23,8 @@ router.patch("/today/photozone", admin_controller_1.modifyTagList);
 router.get("/today/guidelines", admin_controller_1.getTodayGuidelines);
 router.post("/today/guideline", admin_controller_1.uploadGuideline);
 router.patch("/today/guideline", admin_controller_1.modifyTagList);
+router.get("/guidelines", admin_controller_1.allGuidelines);
+router.get("/photozones", admin_controller_1.allPhotozones);
 // TODO: - 구현하기
-router.get("/guidelines");
-router.get("/photozones");
 router.get("/users");
 exports.default = router;
