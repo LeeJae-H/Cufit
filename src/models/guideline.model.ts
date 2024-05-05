@@ -47,6 +47,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   searchbyTitleOrTag: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   findByDistance(lat: number, lng: number, distance: number, code?: string): Promise<DBGuidelineDocument[]>;
   findByArea(coordinates: any[], code?: string): Promise<DBGuidelineDocument[]>;
+  findAll(page: number, code?: string): Promise<DBGuidelineDocument[]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -515,6 +516,15 @@ async function getByLatest(tag: string, sort: string) {
     throw error;
   }
 }
+
+GuidelineSchema.statics.findAll = async function(page: number, code?: string) {
+  let pipeline = createInitialPipeline(code);
+  // pipeline = pagination(pipeline, page);
+  let result = await Guideline.aggregate(pipeline);
+
+  return result;
+}
+
 
 function pagination(pipeline: any[], page: number) {
   let pagination: any[] = [

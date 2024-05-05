@@ -9,6 +9,7 @@ import logger from '../config/logger';
 import { PopularTag } from '../models/popularTag.model';
 import { TodayPhotoZone } from '../models/todayPhotoZone.model';
 import { TodayGuideline } from '../models/todayGuideline.model';
+import { PhotoZone } from '../models/photoZone.model';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;
@@ -552,3 +553,47 @@ export const modifyGuideline = async (req: Request, res: Response) => {
     logger.error(`Error modify guideline: ${error}`);
   }
 };
+
+export const allGuidelines = async (req: Request, res: Response) => {
+  const page = Number(req.query.page);
+  const code = String(req.query.code);
+
+  try {
+    const guidelines = await Guideline.findAll(page, code);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: guidelines
+    })
+    logger.info(`Successfully fetch allGuidelines`);
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error while fetching allGuidelines: ${error}`);
+  }
+}
+
+export const allPhotozones = async (req: Request, res: Response) => {
+  const page = Number(req.query.page);
+  const code = String(req.query.code);
+
+  try {
+    const photozone = await PhotoZone.findAll(page, code);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: photozone
+    })
+    logger.info(`Successfully fetch allphotozone`);
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error while fetching allphotozone: ${error}`);
+  }
+}

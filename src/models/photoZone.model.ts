@@ -23,6 +23,7 @@ interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
   findByDistance(lat: number, lng: number, distance: number): Promise<DBPhotoZoneDocument[]>;
   findByArea(coordinates: any[], code?: string): Promise<DBPhotoZoneDocument[]>;
   searchByKeyword: (keyword: string) => Promise<[DBPhotoZoneDocument]>;
+  findAll: (page: number, code?: string) => Promise<[DBPhotoZoneDocument]>;
 }  
 
 const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
@@ -141,6 +142,14 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
     }
   )
 
+  let result = await PhotoZone.aggregate(pipeline);
+
+  return result;
+}
+
+PhotoZoneSchema.statics.findAll = async function(page: number, code?: string) {
+  let pipeline = createInitialPipeline(code);
+  // pipeline = pagination(pipeline, page);
   let result = await PhotoZone.aggregate(pipeline);
 
   return result;
