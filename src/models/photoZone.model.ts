@@ -168,6 +168,18 @@ PhotoZoneSchema.virtual('creator', {
   justOne: true
 })
 
+function pagination(pipeline: any[], page: number) {
+  let pagination: any[] = [
+    {
+      $skip: (page - 1) * 20
+    },
+    {
+      $limit: page
+    }
+  ];
+  pipeline.push(pagination);
+  return pipeline;
+}
 
 function createInitialPipeline(code?: string) {
   let pipeline: any[] = [
