@@ -383,6 +383,7 @@ export const modifyTagList = async (req: Request, res: Response) => {
 export const getTodayPhotoZones = async (req: Request, res: Response) => {
   try{
     const photoZones = await TodayPhotoZone.find();
+    // 여기에 포토존 정보를 포함해서 반환해야합니다.
     res.status(200).json({
       statusCode: 0,
       message: "Success",
@@ -470,6 +471,7 @@ export const modifyPhotoZone = async (req: Request, res: Response) => {
 export const getTodayGuidelines = async (req: Request, res: Response) => {
   try{
     const guidelines = await TodayGuideline.find();
+    // 여기에 가이드라인 정보를 포함해서 반환해야합니다.
     res.status(200).json({
       statusCode: 0,
       message: "Success",
