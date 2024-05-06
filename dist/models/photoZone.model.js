@@ -88,6 +88,25 @@ const PhotoZoneSchema = new mongoose_1.Schema({
 });
 exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
+PhotoZoneSchema.statics.getFromObjId = function (_id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let pipeline = createInitialPipeline();
+            pipeline.unshift({
+                $match: {
+                    $or: [
+                        { _id: new mongoose_1.default.Types.ObjectId(_id) }
+                    ]
+                }
+            });
+            let result = yield PhotoZone.aggregate(pipeline);
+            return result;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
 PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = PhotoZone.find({

@@ -403,6 +403,7 @@ exports.modifyTagList = modifyTagList;
 const getTodayPhotoZones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const photoZones = yield todayPhotoZone_model_1.TodayPhotoZone.find();
+        // 여기에 포토존 정보를 포함해서 반환해야합니다.
         res.status(200).json({
             statusCode: 0,
             message: "Success",
@@ -490,6 +491,7 @@ exports.modifyPhotoZone = modifyPhotoZone;
 const getTodayGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const guidelines = yield todayGuideline_model_1.TodayGuideline.find();
+        // 여기에 가이드라인 정보를 포함해서 반환해야합니다.
         res.status(200).json({
             statusCode: 0,
             message: "Success",

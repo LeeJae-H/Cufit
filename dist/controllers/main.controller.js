@@ -17,14 +17,25 @@ const logger_1 = __importDefault(require("../config/logger"));
 const popularTag_model_1 = require("../models/popularTag.model");
 const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
+const guideline_model_1 = require("../models/guideline.model");
+const photoZone_model_1 = require("../models/photoZone.model");
 const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const guideline = yield todayGuideline_model_1.TodayGuideline.find(); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
+        const guideline = yield todayGuideline_model_1.TodayGuideline.findOne(); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
         // 또한 그 결과에는 가이드라인 정보가 포함되어있어야함
+        const guidelineId = guideline === null || guideline === void 0 ? void 0 : guideline.productId;
+        const product = guideline_model_1.Guideline.getFromObjId(String(guidelineId));
+        const result = {
+            title: guideline === null || guideline === void 0 ? void 0 : guideline.title,
+            createdAt: guideline === null || guideline === void 0 ? void 0 : guideline.createdAt,
+            guideline: product,
+            description: guideline === null || guideline === void 0 ? void 0 : guideline.description,
+            imageUrl: guideline === null || guideline === void 0 ? void 0 : guideline.imageUrl
+        };
         res.status(200).json({
             statusCode: 0,
             message: "Success",
-            result: guideline
+            result: result
         });
         logger_1.default.info("Successfully get guidelines");
     }
@@ -40,12 +51,21 @@ const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.getTodayGuideline = getTodayGuideline;
 const getTodayPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const photozone = yield todayPhotoZone_model_1.TodayPhotoZone.find();
+        const photozone = yield todayPhotoZone_model_1.TodayPhotoZone.findOne();
         // 마찬가지로 포토존 정보가 포함되어있어야함.
+        const photozoneId = photozone === null || photozone === void 0 ? void 0 : photozone.productId;
+        const product = photoZone_model_1.PhotoZone.getFromObjId(String(photozoneId));
+        const result = {
+            title: photozone === null || photozone === void 0 ? void 0 : photozone.title,
+            createdAt: photozone === null || photozone === void 0 ? void 0 : photozone.createdAt,
+            photozone: product,
+            description: photozone === null || photozone === void 0 ? void 0 : photozone.description,
+            imageUrl: photozone === null || photozone === void 0 ? void 0 : photozone.imageUrl
+        };
         res.status(200).json({
             statusCode: 0,
             message: "Success",
-            result: photozone
+            result: result
         });
         logger_1.default.info("Successfully get today's photozone");
     }
