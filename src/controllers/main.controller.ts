@@ -14,6 +14,7 @@ export const getTodayGuideline = async (req: Request, res: Response) => {
     const product: any = await Guideline.getFromObjId(String(guidelineId));
 
     const result: any = {
+      _id: guideline?._id,
       title: guideline?.title,
       createdAt: guideline?.createdAt,
       guideline: product[0],
@@ -45,6 +46,7 @@ export const getTodayPhotozone = async (req: Request, res: Response) => {
     const product: any = await PhotoZone.getFromObjId(String(photozoneId));
     
     const result: any = {
+      _id: photozone?._id,
       title: photozone?.title,
       createdAt: photozone?.createdAt,
       photozone: product[0],

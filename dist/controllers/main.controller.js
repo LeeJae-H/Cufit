@@ -26,6 +26,7 @@ const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const guidelineId = guideline === null || guideline === void 0 ? void 0 : guideline.productId;
         const product = yield guideline_model_1.Guideline.getFromObjId(String(guidelineId));
         const result = {
+            _id: guideline === null || guideline === void 0 ? void 0 : guideline._id,
             title: guideline === null || guideline === void 0 ? void 0 : guideline.title,
             createdAt: guideline === null || guideline === void 0 ? void 0 : guideline.createdAt,
             guideline: product[0],
@@ -56,6 +57,7 @@ const getTodayPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const photozoneId = photozone === null || photozone === void 0 ? void 0 : photozone.productId;
         const product = yield photoZone_model_1.PhotoZone.getFromObjId(String(photozoneId));
         const result = {
+            _id: photozone === null || photozone === void 0 ? void 0 : photozone._id,
             title: photozone === null || photozone === void 0 ? void 0 : photozone.title,
             createdAt: photozone === null || photozone === void 0 ? void 0 : photozone.createdAt,
             photozone: product[0],
