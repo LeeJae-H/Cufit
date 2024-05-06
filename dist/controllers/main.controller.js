@@ -28,7 +28,7 @@ const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const result = {
             title: guideline === null || guideline === void 0 ? void 0 : guideline.title,
             createdAt: guideline === null || guideline === void 0 ? void 0 : guideline.createdAt,
-            guideline: product,
+            guideline: product[0],
             description: guideline === null || guideline === void 0 ? void 0 : guideline.description,
             imageUrl: guideline === null || guideline === void 0 ? void 0 : guideline.imageUrl
         };
@@ -58,7 +58,7 @@ const getTodayPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const result = {
             title: photozone === null || photozone === void 0 ? void 0 : photozone.title,
             createdAt: photozone === null || photozone === void 0 ? void 0 : photozone.createdAt,
-            photozone: product,
+            photozone: product[0],
             description: photozone === null || photozone === void 0 ? void 0 : photozone.description,
             imageUrl: photozone === null || photozone === void 0 ? void 0 : photozone.imageUrl
         };
