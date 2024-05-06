@@ -11,7 +11,7 @@ export const getTodayGuideline = async (req: Request, res: Response) => {
     const guideline = await TodayGuideline.findOne(); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
     // 또한 그 결과에는 가이드라인 정보가 포함되어있어야함
     const guidelineId = guideline?.productId;
-    const product = Guideline.getFromObjId(String(guidelineId));
+    const product = await Guideline.getFromObjId(String(guidelineId));
 
     const result: any = {
       title: guideline?.title,
@@ -42,7 +42,7 @@ export const getTodayPhotozone = async (req: Request, res: Response) => {
     const photozone = await TodayPhotoZone.findOne();
     // 마찬가지로 포토존 정보가 포함되어있어야함.
     const photozoneId = photozone?.productId;
-    const product = PhotoZone.getFromObjId(String(photozoneId));
+    const product = await PhotoZone.getFromObjId(String(photozoneId));
     
     const result: any = {
       title: photozone?.title,

@@ -123,7 +123,7 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string
   try {
     let pipeline = createInitialPipeline(code);
 
-    pipeline.unshift( {
+    pipeline.unshift({
       $match: {
         $or: [
           { _id: new mongoose.Types.ObjectId(_id) } 
