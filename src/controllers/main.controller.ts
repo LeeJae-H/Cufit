@@ -89,6 +89,6 @@ export const getTagList = async (req: Request, res: Response) => {
   }
 }
 
-export const getPopularGuidelines = async(req: Request, res: Response) => {
+export const getTrendingGuidelines = async(req: Request, res: Response) => {
   // 추후에 추가합시다.
 }
