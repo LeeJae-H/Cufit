@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPopularGuidelines = exports.getTagList = exports.getTodayPhotozone = exports.getTodayGuideline = void 0;
+exports.getTrendingGuidelines = exports.getTagList = exports.getTodayPhotozone = exports.getTodayGuideline = void 0;
 const logger_1 = __importDefault(require("../config/logger"));
 const popularTag_model_1 = require("../models/popularTag.model");
 const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
@@ -101,7 +101,7 @@ const getTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getTagList = getTagList;
-const getPopularGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getTrendingGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // 추후에 추가합시다.
 });
-exports.getPopularGuidelines = getPopularGuidelines;
+exports.getTrendingGuidelines = getTrendingGuidelines;
