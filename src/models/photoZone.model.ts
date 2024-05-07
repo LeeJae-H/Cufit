@@ -170,7 +170,7 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
 
 PhotoZoneSchema.statics.findAll = async function(page: number, code?: string) {
   let pipeline = createInitialPipeline(code);
-  // pipeline = pagination(pipeline, page);
+  pipeline = pagination(pipeline, page);
   let result = await PhotoZone.aggregate(pipeline);
 
   return result;
@@ -204,11 +204,11 @@ function pagination(pipeline: any[], page: number) {
       $skip: (page - 1) * 20
     },
     {
-      $limit: page
+      $limit: 20
     }
   ];
-  pipeline.push(pagination);
-  return pipeline;
+  const newPipeline = pipeline.concat(pagination);
+  return newPipeline;
 }
 
 function createInitialPipeline(code?: string) {
