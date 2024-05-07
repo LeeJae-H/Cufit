@@ -21,7 +21,7 @@ const guideline_model_1 = require("../models/guideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
 const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const guideline = yield todayGuideline_model_1.TodayGuideline.findOne(); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
+        const guideline = yield todayGuideline_model_1.TodayGuideline.findOne().sort({ _id: -1 }); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
         // 또한 그 결과에는 가이드라인 정보가 포함되어있어야함
         const guidelineId = guideline === null || guideline === void 0 ? void 0 : guideline.productId;
         const product = yield guideline_model_1.Guideline.getFromObjId(String(guidelineId));
@@ -52,7 +52,7 @@ const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.getTodayGuideline = getTodayGuideline;
 const getTodayPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const photozone = yield todayPhotoZone_model_1.TodayPhotoZone.findOne();
+        const photozone = yield todayPhotoZone_model_1.TodayPhotoZone.findOne().sort({ _id: -1 });
         // 마찬가지로 포토존 정보가 포함되어있어야함.
         const photozoneId = photozone === null || photozone === void 0 ? void 0 : photozone.productId;
         const product = yield photoZone_model_1.PhotoZone.getFromObjId(String(photozoneId));

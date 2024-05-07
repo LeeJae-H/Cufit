@@ -8,7 +8,7 @@ import { PhotoZone } from '../models/photoZone.model';
 
 export const getTodayGuideline = async (req: Request, res: Response) => {
   try{
-    const guideline = await TodayGuideline.findOne(); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
+    const guideline = await TodayGuideline.findOne().sort({ _id: -1 }); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
     // 또한 그 결과에는 가이드라인 정보가 포함되어있어야함
     const guidelineId = guideline?.productId;
     const product: any = await Guideline.getFromObjId(String(guidelineId));
@@ -40,7 +40,7 @@ export const getTodayGuideline = async (req: Request, res: Response) => {
 
 export const getTodayPhotozone = async (req: Request, res: Response) => {
   try{
-    const photozone = await TodayPhotoZone.findOne();
+    const photozone = await TodayPhotoZone.findOne().sort({ _id: -1 });
     // 마찬가지로 포토존 정보가 포함되어있어야함.
     const photozoneId = photozone?.productId;
     const product: any = await PhotoZone.getFromObjId(String(photozoneId));
