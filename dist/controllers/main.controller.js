@@ -83,7 +83,7 @@ const getTodayPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, functi
 exports.getTodayPhotozone = getTodayPhotozone;
 const getTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const tags = yield popularTag_model_1.PopularTag.find();
+        const tags = yield popularTag_model_1.PopularTag.find({ present: true });
         res.status(200).json({
             statusCode: 0,
             message: "Success",

@@ -72,7 +72,7 @@ export const getTodayPhotozone = async (req: Request, res: Response) => {
 
 export const getTagList = async (req: Request, res: Response) => {
   try{
-    const tags = await PopularTag.find();
+    const tags = await PopularTag.find({ present: true });
     res.status(200).json({
       statusCode: 0,
       message: "Success",
