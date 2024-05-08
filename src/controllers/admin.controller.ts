@@ -557,7 +557,7 @@ export const modifyGuideline = async (req: Request, res: Response) => {
 };
 
 export const allGuidelines = async (req: Request, res: Response) => {
-  const page = Number(req.query.page);
+  const page = Number(req.query.page) ?? 1;
   const code = String(req.query.code);
 
   try {
@@ -579,7 +579,7 @@ export const allGuidelines = async (req: Request, res: Response) => {
 }
 
 export const allPhotozones = async (req: Request, res: Response) => {
-  const page = Number(req.query.page);
+  const page = Number(req.query.page) ?? 1;
   const code = String(req.query.code);
 
   try {

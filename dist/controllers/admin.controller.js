@@ -577,7 +577,8 @@ const modifyGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.modifyGuideline = modifyGuideline;
 const allGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const page = Number(req.query.page);
+    var _a;
+    const page = (_a = Number(req.query.page)) !== null && _a !== void 0 ? _a : 1;
     const code = String(req.query.code);
     try {
         const guidelines = yield guideline_model_1.Guideline.findAll(page, code);
@@ -599,7 +600,8 @@ const allGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.allGuidelines = allGuidelines;
 const allPhotozones = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const page = Number(req.query.page);
+    var _b;
+    const page = (_b = Number(req.query.page)) !== null && _b !== void 0 ? _b : 1;
     const code = String(req.query.code);
     try {
         const photozone = yield photoZone_model_1.PhotoZone.findAll(page, code);
