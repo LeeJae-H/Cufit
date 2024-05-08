@@ -88,6 +88,25 @@ const PhotoZoneSchema = new mongoose_1.Schema({
 });
 exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
+PhotoZoneSchema.statics.getFromObjId = function (_id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let pipeline = createInitialPipeline();
+            pipeline.unshift({
+                $match: {
+                    $or: [
+                        { _id: new mongoose_1.default.Types.ObjectId(_id) }
+                    ]
+                }
+            });
+            let result = yield PhotoZone.aggregate(pipeline);
+            return result;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
 PhotoZoneSchema.statics.findByDistance = function (lat, lng, distance) {
     return __awaiter(this, void 0, void 0, function* () {
         const result = PhotoZone.find({
@@ -144,6 +163,14 @@ PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
         return result;
     });
 };
+PhotoZoneSchema.statics.findAll = function (page, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline(code);
+        pipeline = pagination(pipeline, page);
+        let result = yield PhotoZone.aggregate(pipeline);
+        return result;
+    });
+};
 PhotoZoneSchema.virtual('likedCount', {
     ref: 'Like',
     localField: '_id',
@@ -162,6 +189,18 @@ PhotoZoneSchema.virtual('creator', {
     foreignField: 'uid',
     justOne: true
 });
+function pagination(pipeline, page) {
+    let pagination = [
+        {
+            $skip: (page - 1) * 20
+        },
+        {
+            $limit: 20
+        }
+    ];
+    const newPipeline = pipeline.concat(pagination);
+    return newPipeline;
+}
 function createInitialPipeline(code) {
     let pipeline = [
         {

@@ -47,6 +47,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   searchbyTitleOrTag: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   findByDistance(lat: number, lng: number, distance: number, code?: string): Promise<DBGuidelineDocument[]>;
   findByArea(coordinates: any[], code?: string): Promise<DBGuidelineDocument[]>;
+  findAll(page: number, code?: string): Promise<DBGuidelineDocument[]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -122,7 +123,7 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string
   try {
     let pipeline = createInitialPipeline(code);
 
-    pipeline.unshift( {
+    pipeline.unshift({
       $match: {
         $or: [
           { _id: new mongoose.Types.ObjectId(_id) } 
@@ -514,6 +515,29 @@ async function getByLatest(tag: string, sort: string) {
     console.error('Error getting top 5 guidelines by likes:', error);
     throw error;
   }
+}
+
+GuidelineSchema.statics.findAll = async function(page: number, code?: string) {
+  let pipeline = createInitialPipeline(code);
+  pipeline = pagination(pipeline, page);
+  let result = await Guideline.aggregate(pipeline);
+
+  return result;
+}
+
+
+function pagination(pipeline: any[], page: number) {
+  let pagination: any[] = [
+    {
+      $skip: (page - 1) * 20
+    },
+    {
+      $limit: 20
+    }
+  ];
+  // pagination 변수가 배열이므로, push말고 concat을 해야함. push하면 배열 안에 배열 형태.
+  const newPipeline = pipeline.concat(pagination);
+  return newPipeline;
 }
 
 function createInitialPipeline(code?: string) {

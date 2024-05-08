@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
-interface DBPopularGuideline {
+interface DBTodayGuideline {
   title: string;
   createdAt: number;
   productId: mongoose.Schema.Types.ObjectId;
@@ -8,14 +8,14 @@ interface DBPopularGuideline {
   imageUrl?: string;
 }
 
-interface DBPopularGuidelineDocument extends DBPopularGuideline, Document {
+interface DBTodayGuidelineDocument extends DBTodayGuideline, Document {
 
 }
 
-interface DBPopularGuidelineModel extends Model<DBPopularGuidelineDocument> {
+interface DBTodayGuidelineModel extends Model<DBTodayGuidelineDocument> {
 }
 
-const PopularGuidelineSchema: Schema<DBPopularGuidelineDocument> = new Schema({
+const TodayGuidelineSchema: Schema<DBTodayGuidelineDocument> = new Schema({
   title: {
     required: true,
     type: String,
@@ -37,6 +37,6 @@ const PopularGuidelineSchema: Schema<DBPopularGuidelineDocument> = new Schema({
   },
 });
 
-const PopularGuideline = mongoose.model<DBPopularGuidelineDocument, DBPopularGuidelineModel>('PopularGuideline', PopularGuidelineSchema, 'popularGuideline');
+const TodayGuideline = mongoose.model<DBTodayGuidelineDocument, DBTodayGuidelineModel>('TodayGuideline', TodayGuidelineSchema, 'todayGuideline');
 
-export { PopularGuideline, PopularGuidelineSchema };
+export { TodayGuideline, TodayGuidelineSchema };

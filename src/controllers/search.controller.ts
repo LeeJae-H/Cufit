@@ -83,7 +83,7 @@ export const searchFilters = async (req: Request, res: Response) => {
 export const getAnything = async (req: CustomRequest, res: Response) => {
   const keyword = req.params.keyword;
   const authCode: any = req.query.code;
-  const uid = req.params.uid;
+  const uid = req.query.uid;
 
   try{
     // creator, guideline, filter, photoZone

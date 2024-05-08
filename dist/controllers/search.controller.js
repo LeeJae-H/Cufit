@@ -93,7 +93,7 @@ exports.searchFilters = searchFilters;
 const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     const authCode = req.query.code;
-    const uid = req.params.uid;
+    const uid = req.query.uid;
     try {
         // creator, guideline, filter, photoZone
         if (keyword === "") {

@@ -4,9 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const admin_controller_1 = require("../controllers/admin.controller");
+const main_controller_1 = require("../controllers/main.controller");
 const router = express_1.default.Router();
-router.get("/tag-list", admin_controller_1.getTagList);
-router.get("/photozones", admin_controller_1.getPhotoZones);
-router.get("/guidelines", admin_controller_1.getGuidelines);
+router.get("/tag-list", main_controller_1.getTagList);
+// 아래 컨트롤러 함수에서 코멘트 확인 후 요구사항 적용하기
+router.get("/today/guideline", main_controller_1.getTodayGuideline);
+router.get("/today/photozone", main_controller_1.getTodayPhotozone);
 exports.default = router;

@@ -23,6 +23,8 @@ interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
   findByDistance(lat: number, lng: number, distance: number): Promise<DBPhotoZoneDocument[]>;
   findByArea(coordinates: any[], code?: string): Promise<DBPhotoZoneDocument[]>;
   searchByKeyword: (keyword: string) => Promise<[DBPhotoZoneDocument]>;
+  findAll: (page: number, code?: string) => Promise<[DBPhotoZoneDocument]>;
+  getFromObjId: (_id: string) => Promise<DBPhotoZoneDocument>;
 }  
 
 const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
@@ -80,6 +82,26 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
 });
 
 PhotoZoneSchema.index({ location: "2dsphere" }); 
+
+PhotoZoneSchema.statics.getFromObjId = async function(_id: string) {
+  try {
+    let pipeline = createInitialPipeline();
+
+    pipeline.unshift( {
+      $match: {
+        $or: [
+          { _id: new mongoose.Types.ObjectId(_id) } 
+        ]
+      }
+    });
+
+    let result = await PhotoZone.aggregate(pipeline);
+    return result;  
+    } catch(error) {
+    throw error;
+  }
+}
+
 
 PhotoZoneSchema.statics.findByDistance = async function (lat: number, lng: number, distance: number) {
   const result = PhotoZone.find({
@@ -146,6 +168,14 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
   return result;
 }
 
+PhotoZoneSchema.statics.findAll = async function(page: number, code?: string) {
+  let pipeline = createInitialPipeline(code);
+  pipeline = pagination(pipeline, page);
+  let result = await PhotoZone.aggregate(pipeline);
+
+  return result;
+}
+
 PhotoZoneSchema.virtual('likedCount', {
   ref: 'Like',
   localField: '_id',
@@ -168,6 +198,18 @@ PhotoZoneSchema.virtual('creator', {
   justOne: true
 })
 
+function pagination(pipeline: any[], page: number) {
+  let pagination: any[] = [
+    {
+      $skip: (page - 1) * 20
+    },
+    {
+      $limit: 20
+    }
+  ];
+  const newPipeline = pipeline.concat(pagination);
+  return newPipeline;
+}
 
 function createInitialPipeline(code?: string) {
   let pipeline: any[] = [
