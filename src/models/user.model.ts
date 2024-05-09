@@ -31,6 +31,7 @@ interface DBUserModel extends Model<DBUserDocument> {
   getFromObjId: (_id: string) => Promise<DBUserDocument>;
   createNewUser: (uid: DecodedIdToken) => Promise<DBUserDocument>;
   search: (keyword: string) => Promise<[DBUserDocument]>;
+  getPurchasedGuidelines: (uid: string) =>Promise<object[]>;
 }
 
 const UserSchema = new Schema<DBUserDocument>({
@@ -144,6 +145,10 @@ UserSchema.statics.createNewUser = async function(token: DecodedIdToken) {
   } catch(error) {
     throw error;
   }
+}
+
+UserSchema.statics.getPurchasedGuidelines = async function(uid: string) {
+  return await purchasedGuidelines(uid);
 }
 
 UserSchema.virtual('follower', {

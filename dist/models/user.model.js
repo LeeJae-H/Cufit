@@ -163,6 +163,11 @@ UserSchema.statics.createNewUser = function (token) {
         }
     });
 };
+UserSchema.statics.getPurchasedGuidelines = function (uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield purchasedGuidelines(uid);
+    });
+};
 UserSchema.virtual('follower', {
     ref: "Follow",
     localField: 'uid',

@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
+exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.getPurchasedList = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
 const admin = __importStar(require("firebase-admin"));
 const user_model_1 = require("../models/user.model");
 const faq_model_1 = require("../models/faq.model");
@@ -356,6 +356,29 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.checkFollow = checkFollow;
+const getPurchasedList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
+    try {
+        const result = yield user_model_1.User.getPurchasedGuidelines(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully get purchased guidelines",
+            result: {
+                guidelines: result
+            }
+        });
+        logger_1.default.info("Successfully get purchased guidelines");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error check follow: ${error}`);
+    }
+});
+exports.getPurchasedList = getPurchasedList;
 const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { srcUid, dstUid } = req.body;
     try {
