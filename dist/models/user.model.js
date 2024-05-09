@@ -87,6 +87,16 @@ UserSchema.statics.search = function (keyword) {
         return result;
     });
 };
+UserSchema.statics.getCredits = function (uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield credits(uid);
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
 UserSchema.statics.getFromUid = function (uid) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -95,14 +105,7 @@ UserSchema.statics.getFromUid = function (uid) {
             if (!result) {
                 return null;
             }
-            const credits = yield credit_model_1.Credit.find({
-                uid: uid,
-                $or: [
-                    { expireAt: { $gt: Date.now() } },
-                    { expireAt: -1 }
-                ]
-            });
-            const creditAmount = credits.reduce((amount, credit) => amount + credit.amount, 0);
+            const creditAmount = yield credits(result.uid);
             result.credit = creditAmount;
             const guidelines = yield purchasedGuidelines(uid);
             const filters = yield purchasedFilters(uid);
@@ -123,14 +126,7 @@ UserSchema.statics.getFromObjId = function (_id) {
             if (!result) {
                 return null;
             }
-            const credits = yield credit_model_1.Credit.find({
-                uid: result.uid,
-                $or: [
-                    { expireAt: { $gt: Date.now() } },
-                    { expireAt: -1 }
-                ]
-            });
-            const creditAmount = credits.reduce((amount, credit) => amount + credit.amount, 0);
+            const creditAmount = yield credits(result.uid);
             result.credit = creditAmount;
             return result;
         }
@@ -180,6 +176,19 @@ UserSchema.virtual("following", {
     foreignField: 'srcUid',
     count: true
 });
+function credits(uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const credits = yield credit_model_1.Credit.find({
+            uid: uid,
+            $or: [
+                { expireAt: { $gt: Date.now() } },
+                { expireAt: -1 }
+            ]
+        });
+        const creditAmount = credits.reduce((amount, credit) => amount + credit.amount, 0);
+        return creditAmount;
+    });
+}
 function purchasedFilters(uid) {
     return __awaiter(this, void 0, void 0, function* () {
         const orders = yield order_model_1.Order.find({ uid: uid });

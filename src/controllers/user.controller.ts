@@ -323,6 +323,27 @@ export const checkFollow = async (req: Request, res: Response) => {
   }
 };
 
+export const getCredits = async (req: Request, res: Response) => {
+  const uid = req.params.uid;
+
+  try {
+    const result = await User.getCredits(uid);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully get credits",
+      result
+    });
+    logger.info("Successfully get credits");
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error check follow: ${error}`);
+  }
+}
+
 export const getPurchasedList = async (req: Request, res: Response) => {
   const uid = req.params.uid;
   try {
