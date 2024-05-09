@@ -264,7 +264,7 @@ const getLikeList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             statusCode: 0,
             message: 'Successfully read likelist',
             result: {
-                filters: likelistData.filters,
+                photozones: likelistData.photozones,
                 guidelines: likelistData.guidelines,
             }
         });

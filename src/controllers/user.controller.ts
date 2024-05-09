@@ -231,7 +231,7 @@ export const getLikeList = async (req: Request, res: Response) => {
       statusCode: 0,
       message: 'Successfully read likelist',
       result:{
-        filters: likelistData.filters,
+        photozones: likelistData.photozones,
         guidelines: likelistData.guidelines,
       }
     });

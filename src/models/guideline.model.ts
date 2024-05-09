@@ -292,6 +292,14 @@ GuidelineSchema.virtual('authStatus', {
   foreignField: 'productId',
   justOne: true
 })
+
+GuidelineSchema.virtual('viewCount', {
+  ref: 'ViewCount',
+  localField: '_id',
+  foreignField: 'productId',
+  count: true
+});
+
  
 GuidelineSchema.index({ location: "2dsphere" }); 
 

@@ -273,6 +273,12 @@ GuidelineSchema.virtual('authStatus', {
     foreignField: 'productId',
     justOne: true
 });
+GuidelineSchema.virtual('viewCount', {
+    ref: 'ViewCount',
+    localField: '_id',
+    foreignField: 'productId',
+    count: true
+});
 GuidelineSchema.index({ location: "2dsphere" });
 function searchByLatest(keyword, desc, isFree) {
     return __awaiter(this, void 0, void 0, function* () {
