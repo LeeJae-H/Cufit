@@ -200,15 +200,14 @@ export const getFaqList = async (req: Request, res: Response) => {
 
 export const getProductList = async (req: Request, res: Response) => {
   const uid = req.params.uid;
+  const code = String(req.query.code);
 
   try {
-    const filters = await Filter.getListFromCreatorUid(uid);
-    const guidelines = await Guideline.getListFromCreatorUid(uid);
+    const guidelines = await Guideline.getListFromCreatorUid(uid, code);
     res.status(200).json({
       statusCode: 0,
       message: "Successfully read product list",
       result: {
-        filters: filters,
         guidelines: guidelines
       }
     })
@@ -217,10 +216,7 @@ export const getProductList = async (req: Request, res: Response) => {
     res.status(500).json({
       statusCode: -1,
       message: error,
-      result: {
-        filters: [],
-        guidelines: []
-      }
+      result: {}
     })
     logger.error(`Error get product list: ${error}`);
   }

@@ -234,14 +234,13 @@ const getFaqList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.getFaqList = getFaqList;
 const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
+    const code = String(req.query.code);
     try {
-        const filters = yield filter_model_1.Filter.getListFromCreatorUid(uid);
-        const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid);
+        const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid, code);
         res.status(200).json({
             statusCode: 0,
             message: "Successfully read product list",
             result: {
-                filters: filters,
                 guidelines: guidelines
             }
         });
@@ -251,10 +250,7 @@ const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {
-                filters: [],
-                guidelines: []
-            }
+            result: {}
         });
         logger_1.default.error(`Error get product list: ${error}`);
     }
