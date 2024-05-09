@@ -78,6 +78,7 @@ UserSchema.statics.search = async function(keyword: string) {
       { bio: { $regex: new RegExp(keyword, 'i') } }
     ],
   })
+  .populate('follower').populate('following');
   return result;  
 }
 

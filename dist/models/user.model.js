@@ -83,7 +83,8 @@ UserSchema.statics.search = function (keyword) {
                 { displayName: { $regex: new RegExp(keyword, 'i') } },
                 { bio: { $regex: new RegExp(keyword, 'i') } }
             ],
-        });
+        })
+            .populate('follower').populate('following');
         return result;
     });
 };
