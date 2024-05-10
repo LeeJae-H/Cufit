@@ -95,7 +95,7 @@ PhotoZoneSchema.statics.getListFromCreatorUid = function (uid) {
             pipeline.splice(4, 0, {
                 $match: {
                     $or: [
-                        { creatorUid: uid }
+                        { uid: uid }
                     ]
                 }
             });
