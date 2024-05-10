@@ -25,6 +25,7 @@ interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
   searchByKeyword: (keyword: string) => Promise<[DBPhotoZoneDocument]>;
   findAll: (page: number, code?: string) => Promise<[DBPhotoZoneDocument]>;
   getFromObjId: (_id: string) => Promise<DBPhotoZoneDocument>;
+  getListFromCreatorUid: (uid: string) => Promise<[DBPhotoZoneDocument]>;
 }  
 
 const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
@@ -82,6 +83,34 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
 });
 
 PhotoZoneSchema.index({ location: "2dsphere" }); 
+
+PhotoZoneSchema.statics.getListFromCreatorUid = async function(uid: string) {
+  try {
+    let pipeline = createInitialPipeline();
+
+    pipeline.splice(4, 0, {
+      $match: {
+        $or: [
+          { creatorUid: uid } 
+        ]
+      }
+    });
+
+    pipeline.push(
+      {
+        $sort: { _id: -1 } 
+       },
+      {
+        $limit: 50 
+      }
+    );
+  
+    let result = await PhotoZone.aggregate(pipeline);
+    return result;  
+  } catch(error) {
+    throw error;
+  }
+}
 
 PhotoZoneSchema.statics.getFromObjId = async function(_id: string) {
   try {
@@ -168,8 +197,8 @@ PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
   return result;
 }
 
-PhotoZoneSchema.statics.findAll = async function(page: number, code?: string) {
-  let pipeline = createInitialPipeline(code);
+PhotoZoneSchema.statics.findAll = async function(page: number) {
+  let pipeline = createInitialPipeline();
   pipeline = pagination(pipeline, page);
   let result = await PhotoZone.aggregate(pipeline);
 
@@ -211,7 +240,7 @@ function pagination(pipeline: any[], page: number) {
   return newPipeline;
 }
 
-function createInitialPipeline(code?: string) {
+function createInitialPipeline() {
   let pipeline: any[] = [
     {
       $lookup: {

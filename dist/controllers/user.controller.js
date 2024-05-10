@@ -52,6 +52,7 @@ const axios_1 = __importDefault(require("axios"));
 const order_model_1 = require("../models/order.model");
 const income_model_1 = require("../models/income.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const photoZone_model_1 = require("../models/photoZone.model");
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idToken } = req.body;
     try {
@@ -237,11 +238,13 @@ const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function*
     const code = String(req.query.code);
     try {
         const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid, code);
+        const photozones = yield photoZone_model_1.PhotoZone.getListFromCreatorUid(uid);
         res.status(200).json({
             statusCode: 0,
             message: "Successfully read product list",
             result: {
-                guidelines: guidelines
+                guidelines: guidelines,
+                photozones: photozones
             }
         });
         logger_1.default.info('Successfully get product list');

@@ -88,6 +88,30 @@ const PhotoZoneSchema = new mongoose_1.Schema({
 });
 exports.PhotoZoneSchema = PhotoZoneSchema;
 PhotoZoneSchema.index({ location: "2dsphere" });
+PhotoZoneSchema.statics.getListFromCreatorUid = function (uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let pipeline = createInitialPipeline();
+            pipeline.splice(4, 0, {
+                $match: {
+                    $or: [
+                        { creatorUid: uid }
+                    ]
+                }
+            });
+            pipeline.push({
+                $sort: { _id: -1 }
+            }, {
+                $limit: 50
+            });
+            let result = yield PhotoZone.aggregate(pipeline);
+            return result;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
 PhotoZoneSchema.statics.getFromObjId = function (_id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -163,9 +187,9 @@ PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
         return result;
     });
 };
-PhotoZoneSchema.statics.findAll = function (page, code) {
+PhotoZoneSchema.statics.findAll = function (page) {
     return __awaiter(this, void 0, void 0, function* () {
-        let pipeline = createInitialPipeline(code);
+        let pipeline = createInitialPipeline();
         pipeline = pagination(pipeline, page);
         let result = yield PhotoZone.aggregate(pipeline);
         return result;
@@ -201,7 +225,7 @@ function pagination(pipeline, page) {
     const newPipeline = pipeline.concat(pagination);
     return newPipeline;
 }
-function createInitialPipeline(code) {
+function createInitialPipeline() {
     let pipeline = [
         {
             $lookup: {

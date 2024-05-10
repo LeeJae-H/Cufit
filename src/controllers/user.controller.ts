@@ -16,6 +16,7 @@ import axios from 'axios';
 import { Order } from '../models/order.model';
 import { Income } from "../models/income.model";
 import logger from '../config/logger';
+import { PhotoZone } from '../models/photoZone.model';
 
 export const login = async (req: Request, res: Response) => {
   const { idToken } = req.body;
@@ -204,11 +205,13 @@ export const getProductList = async (req: Request, res: Response) => {
 
   try {
     const guidelines = await Guideline.getListFromCreatorUid(uid, code);
+    const photozones = await PhotoZone.getListFromCreatorUid(uid);
     res.status(200).json({
       statusCode: 0,
       message: "Successfully read product list",
       result: {
-        guidelines: guidelines
+        guidelines: guidelines,
+        photozones: photozones
       }
     })
     logger.info('Successfully get product list');
