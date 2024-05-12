@@ -5,6 +5,7 @@ import { TodayPhotoZone } from '../models/todayPhotoZone.model';
 import { TodayGuideline } from '../models/todayGuideline.model';
 import { Guideline } from '../models/guideline.model';
 import { PhotoZone } from '../models/photoZone.model';
+import { TrendingPose } from '../models/tredingPose.model';
 
 export const getTodayGuideline = async (req: Request, res: Response) => {
   try{
@@ -89,6 +90,59 @@ export const getTagList = async (req: Request, res: Response) => {
   }
 }
 
-export const getTrendingGuidelines = async(req: Request, res: Response) => {
-  // 추후에 추가합시다.
+export const getTrendingPoseList = async (req: Request, res: Response) => {
+  try{
+    const tagList = await TrendingPose.getList();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tagList
+    })
+    logger.info("Successfully get tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get tag-list: ${error}`);
+  }
+};
+
+export const getPopularGuidelines = async(req: Request, res: Response) => {
+  try{
+    const result = await Guideline.getPopular();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result
+    })
+    logger.info("Successfully get popular guidelines");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get popular guidelines: ${error}`);
+  }
+}
+
+export const getPopularPhotozones = async(req: Request, res: Response) => {
+  try{
+    const result = await PhotoZone.getPopular();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result
+    })
+    logger.info("Successfully get popular photozones");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get popular photozones: ${error}`);
+  }
 }

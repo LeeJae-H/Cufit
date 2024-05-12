@@ -10,6 +10,7 @@ import { PopularTag } from '../models/popularTag.model';
 import { TodayPhotoZone } from '../models/todayPhotoZone.model';
 import { TodayGuideline } from '../models/todayGuideline.model';
 import { PhotoZone } from '../models/photoZone.model';
+import { TrendingPose } from '../models/tredingPose.model';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;
@@ -294,7 +295,6 @@ export const postAuth = async (req: Request, res: Response) => {
   }
 };
 
-// main.route.ts를 따로 만들었지만 일단 main.controller.ts말고 여기에 넣음, 아래 포토존및가이드라인도 마찬가지
 export const getTagList = async (req: Request, res: Response) => {
   try{
     const tagList = await PopularTag.find();
@@ -597,5 +597,178 @@ export const allPhotozones = async (req: Request, res: Response) => {
       result: {}
     })
     logger.error(`Error while fetching allphotozone: ${error}`);
+  }
+}
+
+export const getTrendingPoseList = async (req: Request, res: Response) => {
+  try{
+    const tagList = await TrendingPose.find();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tagList
+    })
+    logger.info("Successfully get tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get tag-list: ${error}`);
+  }
+};
+
+export const uploadTrendingPoseList = async (req: Request, res: Response) => {
+  const { name, imageUrl, present } = req.body;
+  const createdAt = Date.now();
+
+  try{
+    const guidelines = await Guideline.getListFromTag(name);
+    if (guidelines.length <= 0) {
+      let error = `No guideline found with tag '${name}'`
+      logger.error(`Error upload tag-list: ${error}`);
+      return res.status(500).json({
+        statusCode: -2,
+        message: error,
+        result: {}
+      })
+    };
+    const tag = new TrendingPose({
+      name: name,
+      createdAt:createdAt,
+      imageUrl: imageUrl,
+      present: present
+    })
+    await tag.save();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tag
+    })
+    logger.info("Successfully upload tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error upload tag-list: ${error}`);
+  }
+};
+
+export const modifyTrendingPoseList = async (req: Request, res: Response) => {
+  const { name, imageUrl, present } = req.body;
+  const createdAt = Date.now();
+  
+  try{
+    const tag = await TrendingPose.findOne({ name: name });
+
+    if (!tag) {
+      return res.status(404).json({
+        statusCode: -1,
+        message: "Tag not found",
+        result: {}
+      });
+    }
+
+    if (name) tag.name = name;
+    if (imageUrl) tag.imageUrl = imageUrl;
+    if (present) tag.present = present;
+    tag.createdAt = createdAt;
+
+    await tag.save();
+
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: tag
+    })
+    logger.info("Successfully modify tag-list");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error modify tag-list: ${error}`);
+  }
+};
+
+// deletes
+
+export const deleteTagList = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await PopularTag.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete tag-list: ${error}`);
+  }
+}
+
+export const deleteTrendingPose = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await TrendingPose.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete trending pose: ${error}`);
+  }
+}
+
+export const deleteTodayGuideline = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await TodayGuideline.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete trending pose: ${error}`);
+  }
+}
+
+export const deleteTodayPhotozone = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await TodayPhotoZone.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete trending pose: ${error}`);
   }
 }

@@ -48,6 +48,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   findByDistance(lat: number, lng: number, distance: number, code?: string): Promise<DBGuidelineDocument[]>;
   findByArea(coordinates: any[], code?: string): Promise<DBGuidelineDocument[]>;
   findAll(page: number, code?: string): Promise<DBGuidelineDocument[]>;
+  getPopular(): Promise<DBGuidelineDocument[]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -114,6 +115,26 @@ GuidelineSchema.statics.getListFromTag = async function(tag: string) {
                     .populate('authStatus')
                     .populate('creator');
     return result;
+  } catch(error) {
+    throw error;
+  }
+}
+
+GuidelineSchema.statics.getPopular = async function() {
+  try {
+    let pipeline = createInitialPipeline();
+    pipeline.concat([
+      {
+        $sort: {
+          likedCount: -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ])
+
+    return await Guideline.aggregate(pipeline);
   } catch(error) {
     throw error;
   }

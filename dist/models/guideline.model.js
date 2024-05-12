@@ -110,6 +110,27 @@ GuidelineSchema.statics.getListFromTag = function (tag) {
         }
     });
 };
+GuidelineSchema.statics.getPopular = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let pipeline = createInitialPipeline();
+            pipeline.concat([
+                {
+                    $sort: {
+                        likedCount: -1
+                    }
+                },
+                {
+                    $limit: 20
+                }
+            ]);
+            return yield Guideline.aggregate(pipeline);
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
 GuidelineSchema.statics.getFromObjId = function (_id, code) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

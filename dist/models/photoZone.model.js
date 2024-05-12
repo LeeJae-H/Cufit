@@ -169,6 +169,27 @@ PhotoZoneSchema.statics.findByArea = function (coordinates, code) {
         return result;
     });
 };
+PhotoZoneSchema.statics.getPopular = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let pipeline = createInitialPipeline();
+            pipeline.concat([
+                {
+                    $sort: {
+                        likedCount: -1
+                    }
+                },
+                {
+                    $limit: 20
+                }
+            ]);
+            return yield PhotoZone.aggregate(pipeline);
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
 PhotoZoneSchema.statics.searchByKeyword = function (keyword) {
     return __awaiter(this, void 0, void 0, function* () {
         let pipeline = createInitialPipeline();
