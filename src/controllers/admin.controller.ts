@@ -694,3 +694,81 @@ export const modifyTrendingPoseList = async (req: Request, res: Response) => {
     logger.error(`Error modify tag-list: ${error}`);
   }
 };
+
+// deletes
+
+export const deleteTagList = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await PopularTag.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete tag-list: ${error}`);
+  }
+}
+
+export const deleteTrendingPose = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await TrendingPose.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete trending pose: ${error}`);
+  }
+}
+
+export const deleteTodayGuideline = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await TodayGuideline.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete trending pose: ${error}`);
+  }
+}
+
+export const deleteTodayPhotozone = async (req: Request, res: Response) => {
+  const { _id } = req.body;
+  try {
+    await TodayPhotoZone.deleteOne({ _id });
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {}
+    })
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error delete trending pose: ${error}`);
+  }
+}

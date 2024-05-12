@@ -2,7 +2,7 @@ import express from 'express';
 import { 
     postStatus, getContent, getContents, postContents, getTodayPhotoZones, getTodayGuidelines, getTagList,
     getFaqs, getProducts, postFaqAnswer, postAuth, uploadTagList, modifyTagList, uploadPhotoZone, uploadGuideline,
-    allGuidelines, allPhotozones, modifyGuideline, modifyPhotoZone, getTrendingPoseList, uploadTrendingPoseList, modifyTrendingPoseList
+    allGuidelines, allPhotozones, modifyGuideline, modifyPhotoZone, getTrendingPoseList, uploadTrendingPoseList, modifyTrendingPoseList, deleteTagList, deleteTodayPhotozone, deleteTodayGuideline, deleteTrendingPose
 } from '../controllers/admin.controller';
 
 const router = express.Router();
@@ -20,25 +20,25 @@ router.post("/authorize", postAuth);
 router.get("/tag-list", getTagList);
 router.post("/tag-list", uploadTagList);
 router.patch("/tag-list", modifyTagList);
-router.delete("/tag-list"); // TODO
+router.delete("/tag-list", deleteTagList);
 
 // today photozones
 router.get("/today/photozones", getTodayPhotoZones);
 router.post("/today/photozone", uploadPhotoZone);
 router.patch("/today/photozone", modifyGuideline);
-router.delete("/today/photozone");// TODO
+router.delete("/today/photozone", deleteTodayPhotozone);
 
 // today guidelines
 router.get("/today/guidelines", getTodayGuidelines);
 router.post("/today/guideline", uploadGuideline);
 router.patch("/today/guideline", modifyPhotoZone);
-router.delete("/today/guideline");// TODO
+router.delete("/today/guideline", deleteTodayGuideline);
 
 // trending tag-list
 router.get("/trending/pose", getTrendingPoseList);
 router.post("/trending/pose", uploadTrendingPoseList);
 router.patch("/trending/pose", modifyTrendingPoseList);
-router.delete("/trending/pose");// TODO
+router.delete("/trending/pose", deleteTrendingPose);
 
 // all guidelines, photozones
 router.get("/guidelines", allGuidelines);
