@@ -102,7 +102,8 @@ GuidelineSchema.statics.getListFromTag = function (tag) {
                 .populate('wishedCount')
                 .populate('usedCount')
                 .populate('authStatus')
-                .populate('creator');
+                .populate('creator')
+                .populate('viewCount');
             return result;
         }
         catch (error) {
