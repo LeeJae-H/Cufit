@@ -10,7 +10,7 @@ router.get("/tag-list", main_controller_1.getTagList);
 // 아래 컨트롤러 함수에서 코멘트 확인 후 요구사항 적용하기
 router.get("/today/guideline", main_controller_1.getTodayGuideline);
 router.get("/today/photozone", main_controller_1.getTodayPhotozone);
-router.get("/trending/guidelines", main_controller_1.getTrendingPoseList);
+router.get("/trending/pose", main_controller_1.getTrendingPoseList);
 router.get("/popular/guidelines", main_controller_1.getPopularGuidelines);
 router.get("/popular/photozones", main_controller_1.getPopularPhotozones);
 exports.default = router;
