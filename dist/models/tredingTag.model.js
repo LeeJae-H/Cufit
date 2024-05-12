@@ -62,9 +62,8 @@ TrendingPoseSchema.statics.getList = function () {
                 let name = pose.name;
                 let guidelines = yield guideline_model_1.Guideline.getListFromTag(pose.name);
                 ;
-                let current = {
-                    name: guidelines
-                };
+                let current = {};
+                current[name] = guidelines;
                 result.push(current);
             }
             return result;
