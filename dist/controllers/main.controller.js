@@ -19,7 +19,7 @@ const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
 const guideline_model_1 = require("../models/guideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
-const tredingTag_model_1 = require("../models/tredingTag.model");
+const tredingPose_model_1 = require("../models/tredingPose.model");
 const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const guideline = yield todayGuideline_model_1.TodayGuideline.findOne().sort({ _id: -1 }); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
@@ -104,7 +104,7 @@ const getTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.getTagList = getTagList;
 const getTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const tagList = yield tredingTag_model_1.TrendingPose.getList();
+        const tagList = yield tredingPose_model_1.TrendingPose.getList();
         res.status(200).json({
             statusCode: 0,
             message: "Success",

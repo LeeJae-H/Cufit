@@ -41,8 +41,10 @@ TrendingPoseSchema.statics.getList = async function() {
     for (var pose of poses) {
       let name = pose.name
       let guidelines = await Guideline.getListFromTag(pose.name);;
-      let current: any = {}
-      current[name] = guidelines
+      let current: any = {
+        tagName: name,
+        items: guidelines
+      }
       result.push(current);
     }
     return result;

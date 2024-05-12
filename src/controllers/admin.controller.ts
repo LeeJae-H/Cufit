@@ -10,7 +10,7 @@ import { PopularTag } from '../models/popularTag.model';
 import { TodayPhotoZone } from '../models/todayPhotoZone.model';
 import { TodayGuideline } from '../models/todayGuideline.model';
 import { PhotoZone } from '../models/photoZone.model';
-import { TrendingPose } from '../models/tredingTag.model';
+import { TrendingPose } from '../models/tredingPose.model';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;

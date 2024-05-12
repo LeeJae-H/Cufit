@@ -5,7 +5,7 @@ import { TodayPhotoZone } from '../models/todayPhotoZone.model';
 import { TodayGuideline } from '../models/todayGuideline.model';
 import { Guideline } from '../models/guideline.model';
 import { PhotoZone } from '../models/photoZone.model';
-import { TrendingPose } from '../models/tredingTag.model';
+import { TrendingPose } from '../models/tredingPose.model';
 
 export const getTodayGuideline = async (req: Request, res: Response) => {
   try{

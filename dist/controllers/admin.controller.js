@@ -24,7 +24,7 @@ const popularTag_model_1 = require("../models/popularTag.model");
 const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
-const tredingTag_model_1 = require("../models/tredingTag.model");
+const tredingPose_model_1 = require("../models/tredingPose.model");
 const postStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = `${req.query.code}`;
     const upload = req.query.upload === "true";
@@ -624,7 +624,7 @@ const allPhotozones = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.allPhotozones = allPhotozones;
 const getTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const tagList = yield tredingTag_model_1.TrendingPose.find();
+        const tagList = yield tredingPose_model_1.TrendingPose.find();
         res.status(200).json({
             statusCode: 0,
             message: "Success",
@@ -657,7 +657,7 @@ const uploadTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, f
             });
         }
         ;
-        const tag = new tredingTag_model_1.TrendingPose({
+        const tag = new tredingPose_model_1.TrendingPose({
             name: name,
             createdAt: createdAt,
             imageUrl: imageUrl,
@@ -685,7 +685,7 @@ const modifyTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, f
     const { name, imageUrl, present } = req.body;
     const createdAt = Date.now();
     try {
-        const tag = yield tredingTag_model_1.TrendingPose.findOne({ name: name });
+        const tag = yield tredingPose_model_1.TrendingPose.findOne({ name: name });
         if (!tag) {
             return res.status(404).json({
                 statusCode: -1,
@@ -742,7 +742,7 @@ exports.deleteTagList = deleteTagList;
 const deleteTrendingPose = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { _id } = req.body;
     try {
-        yield tredingTag_model_1.TrendingPose.deleteOne({ _id });
+        yield tredingPose_model_1.TrendingPose.deleteOne({ _id });
         res.status(200).json({
             statusCode: 0,
             message: "Success",
