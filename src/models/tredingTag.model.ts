@@ -46,6 +46,7 @@ TrendingPoseSchema.statics.getList = async function() {
       }
       result.push(current);
     }
+    return result;
   } catch (error) {
     throw error;
   }
