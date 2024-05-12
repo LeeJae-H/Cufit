@@ -91,4 +91,50 @@ export const getTagList = async (req: Request, res: Response) => {
 
 export const getTrendingGuidelines = async(req: Request, res: Response) => {
   // 추후에 추가합시다.
+  /**
+   * result: [
+   *  {
+   *    tagName: String,
+   *    contents: [Guideline]
+   *  }
+   * ]
+   */
+}
+
+export const getPopularGuidelines = async(req: Request, res: Response) => {
+  try{
+    const result = await Guideline.getPopular();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result
+    })
+    logger.info("Successfully get popular guidelines");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get popular guidelines: ${error}`);
+  }
+}
+
+export const getPopularPhotozones = async(req: Request, res: Response) => {
+  try{
+    const result = await PhotoZone.getPopular();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result
+    })
+    logger.info("Successfully get popular photozones");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get popular photozones: ${error}`);
+  }
 }

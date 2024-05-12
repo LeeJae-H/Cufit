@@ -26,6 +26,7 @@ interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
   findAll: (page: number, code?: string) => Promise<[DBPhotoZoneDocument]>;
   getFromObjId: (_id: string) => Promise<DBPhotoZoneDocument>;
   getListFromCreatorUid: (uid: string) => Promise<[DBPhotoZoneDocument]>;
+  getPopular: () => Promise<[DBPhotoZoneDocument]>;
 }  
 
 const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
@@ -174,6 +175,27 @@ PhotoZoneSchema.statics.findByArea = async function (coordinates: any[], code?: 
   return result;
 
 };
+
+PhotoZoneSchema.statics.getPopular = async function() {
+  try {
+    let pipeline = createInitialPipeline();
+    pipeline.concat([
+      {
+        $sort: {
+          likedCount: -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ])
+
+    return await PhotoZone.aggregate(pipeline);
+  } catch(error) {
+    throw error;
+  }
+}
+
 
 PhotoZoneSchema.statics.searchByKeyword = async function(keyword: string) {
   let pipeline = createInitialPipeline();
