@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPopularPhotozones = exports.getPopularGuidelines = exports.getTrendingGuidelines = exports.getTagList = exports.getTodayPhotozone = exports.getTodayGuideline = void 0;
+exports.getPopularPhotozones = exports.getPopularGuidelines = exports.getTrendingPoseList = exports.getTagList = exports.getTodayPhotozone = exports.getTodayGuideline = void 0;
 const logger_1 = __importDefault(require("../config/logger"));
 const popularTag_model_1 = require("../models/popularTag.model");
 const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
 const guideline_model_1 = require("../models/guideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
+const tredingTag_model_1 = require("../models/tredingTag.model");
 const getTodayGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const guideline = yield todayGuideline_model_1.TodayGuideline.findOne().sort({ _id: -1 }); // 가장 최근에 등록된 가이드라인 하나를 가져와야함
@@ -101,18 +102,26 @@ const getTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getTagList = getTagList;
-const getTrendingGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // 추후에 추가합시다.
-    /**
-     * result: [
-     *  {
-     *    tagName: String,
-     *    contents: [Guideline]
-     *  }
-     * ]
-     */
+const getTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tagList = yield tredingTag_model_1.TrendingPose.getList();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tagList
+        });
+        logger_1.default.info("Successfully get tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get tag-list: ${error}`);
+    }
 });
-exports.getTrendingGuidelines = getTrendingGuidelines;
+exports.getTrendingPoseList = getTrendingPoseList;
 const getPopularGuidelines = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = yield guideline_model_1.Guideline.getPopular();

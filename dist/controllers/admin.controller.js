@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allPhotozones = exports.allGuidelines = exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
+exports.modifyTrendingPoseList = exports.uploadTrendingPoseList = exports.getTrendingPoseList = exports.allPhotozones = exports.allGuidelines = exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
 const contents_model_1 = require("../models/contents.model");
 const faq_model_1 = require("../models/faq.model");
 const servserStatus_model_1 = require("../models/servserStatus.model");
@@ -24,6 +24,7 @@ const popularTag_model_1 = require("../models/popularTag.model");
 const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
+const tredingTag_model_1 = require("../models/tredingTag.model");
 const postStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = `${req.query.code}`;
     const upload = req.query.upload === "true";
@@ -314,7 +315,6 @@ const postAuth = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.postAuth = postAuth;
-// main.route.ts를 따로 만들었지만 일단 main.controller.ts말고 여기에 넣음, 아래 포토존및가이드라인도 마찬가지
 const getTagList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const tagList = yield popularTag_model_1.PopularTag.find();
@@ -622,3 +622,99 @@ const allPhotozones = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.allPhotozones = allPhotozones;
+const getTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tagList = yield tredingTag_model_1.TrendingPose.find();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tagList
+        });
+        logger_1.default.info("Successfully get tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get tag-list: ${error}`);
+    }
+});
+exports.getTrendingPoseList = getTrendingPoseList;
+const uploadTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, imageUrl, present } = req.body;
+    const createdAt = Date.now();
+    try {
+        const guidelines = yield guideline_model_1.Guideline.getListFromTag(name);
+        if (guidelines.length <= 0) {
+            let error = `No guideline found with tag '${name}'`;
+            logger_1.default.error(`Error upload tag-list: ${error}`);
+            return res.status(500).json({
+                statusCode: -2,
+                message: error,
+                result: {}
+            });
+        }
+        ;
+        const tag = new tredingTag_model_1.TrendingPose({
+            name: name,
+            createdAt: createdAt,
+            imageUrl: imageUrl,
+            present: present
+        });
+        yield tag.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tag
+        });
+        logger_1.default.info("Successfully upload tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error upload tag-list: ${error}`);
+    }
+});
+exports.uploadTrendingPoseList = uploadTrendingPoseList;
+const modifyTrendingPoseList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, imageUrl, present } = req.body;
+    const createdAt = Date.now();
+    try {
+        const tag = yield tredingTag_model_1.TrendingPose.findOne({ name: name });
+        if (!tag) {
+            return res.status(404).json({
+                statusCode: -1,
+                message: "Tag not found",
+                result: {}
+            });
+        }
+        if (name)
+            tag.name = name;
+        if (imageUrl)
+            tag.imageUrl = imageUrl;
+        if (present)
+            tag.present = present;
+        tag.createdAt = createdAt;
+        yield tag.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: tag
+        });
+        logger_1.default.info("Successfully modify tag-list");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error modify tag-list: ${error}`);
+    }
+});
+exports.modifyTrendingPoseList = modifyTrendingPoseList;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTodayGuideline, getTodayPhotozone, getTagList, getPopularGuidelines, getPopularPhotozones } from '../controllers/main.controller';
+import { getTodayGuideline, getTodayPhotozone, getTagList, getPopularGuidelines, getPopularPhotozones, getTrendingPoseList } from '../controllers/main.controller';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ router.get("/tag-list", getTagList);
 router.get("/today/guideline", getTodayGuideline);
 router.get("/today/photozone", getTodayPhotozone);
 
-router.get("/trending/guidelines");
+router.get("/trending/guidelines", getTrendingPoseList);
 router.get("/popular/guidelines", getPopularGuidelines);
 router.get("/popular/photozones", getPopularPhotozones);
 export default router;
