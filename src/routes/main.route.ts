@@ -8,7 +8,7 @@ router.get("/tag-list", getTagList);
 router.get("/today/guideline", getTodayGuideline);
 router.get("/today/photozone", getTodayPhotozone);
 
-router.get("trending/guidelines");
-router.get("popular/guidelines", getPopularGuidelines);
-router.get("popular/photozones", getPopularPhotozones);
+router.get("/trending/guidelines");
+router.get("/popular/guidelines", getPopularGuidelines);
+router.get("/popular/photozones", getPopularPhotozones);
 export default router;
