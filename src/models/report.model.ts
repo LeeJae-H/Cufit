@@ -34,6 +34,10 @@ const ReportSchema = new Schema<DBReportDocument>({
   message: {
     required: true,
     type: String
+  },
+  uid: {
+    required: true,
+    type: String
   }
 });
 

@@ -17,6 +17,7 @@ import { Order } from '../models/order.model';
 import { Income } from "../models/income.model";
 import logger from '../config/logger';
 import { PhotoZone } from '../models/photoZone.model';
+import { Report } from '../models/report.model';
 
 export const login = async (req: Request, res: Response) => {
   const { idToken } = req.body;
@@ -437,6 +438,44 @@ export const uploadFaq = async (req: Request, res: Response) => {
       result: {}
     })
     logger.error(`Error upload faq: ${error}`);
+  }
+};
+
+export const uploadReport = async (req: Request, res: Response) => {
+  const { targetId, targetType, message, uid } = req.body;
+
+  if (!uid || !targetId || !targetType || !message) {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    });
+  }
+
+  try {
+    const reportData = {
+      targetId: targetId, 
+      targetType: targetType, 
+      message: message, 
+      createdAt: Date.now(),
+      uid: uid
+    }
+    const newReport = new Report(reportData);
+    await newReport.save();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully upload",
+      result: newReport
+    })
+    logger.info("Successfully upload report");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error upload report: ${error}`);
   }
 };
 
