@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 interface DBReport {
   targetId: mongoose.Schema.Types.ObjectId,
   targetType: string,
+  reportType: string,
   message: string,
   createdAt: number,
   uid: string
@@ -27,11 +28,19 @@ const ReportSchema = new Schema<DBReportDocument>({
     type: String,
     enum: ['Filter', 'Guideline', 'PhotoZone']
   },
+  reportType: {
+    required: true,
+    type: String
+  },
   createdAt: {
     required: true,
     type: Number
   },
   message: {
+    required: true,
+    type: String
+  },
+  uid: {
     required: true,
     type: String
   }

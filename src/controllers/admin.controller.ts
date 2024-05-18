@@ -11,6 +11,7 @@ import { TodayPhotoZone } from '../models/todayPhotoZone.model';
 import { TodayGuideline } from '../models/todayGuideline.model';
 import { PhotoZone } from '../models/photoZone.model';
 import { TrendingPose } from '../models/tredingPose.model';
+import { Report } from '../models/report.model';
 
 export const postStatus = async (req: Request, res: Response) => {
   const code: string = `${req.query.code}`;
@@ -137,6 +138,25 @@ export const getFaqs = async (req: Request, res: Response) => {
       result: {}
     })
     logger.error(`Error get faqs: ${error}`);
+  }
+};
+
+export const getReports = async (req: Request, res: Response) => {
+  try{
+    const reports = await Report.find();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully reports read.",
+      result: reports
+    })
+    logger.info("Successfully get reports");
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get reports: ${error}`);
   }
 };
 
