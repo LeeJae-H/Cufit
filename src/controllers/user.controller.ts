@@ -441,8 +441,9 @@ export const uploadFaq = async (req: Request, res: Response) => {
   }
 };
 
-export const uploadReport = async (req: Request, res: Response) => {
-  const { targetId, targetType, message, uid } = req.body;
+export const uploadReport = async (req: CustomRequest, res: Response) => {
+  const { targetId, targetType, message } = req.body;
+  const uid = req.uid!;  
 
   if (!uid || !targetId || !targetType || !message) {
     logger.error("Lack of essential data");

@@ -26,7 +26,7 @@ router.get("/:uid/credits", getCredits);
 router.get("/follow", checkFollow); // follow 되었는지 확인하기
 router.post("/follow", toggleFollow); // follow 또는 unfollow 하기
 router.post("/faq", uploadFaq); // 문의하기
-router.post("/report", uploadReport); // 신고하기
+router.post("/report", verifyIdToken, uploadReport); // 신고하기
 router.post("/product/like", likeProduct); // product like 하기
 router.post("/product/wish", wishProduct); // product wish 하기
 router.post("/product/buy", verifyIdToken, buyProduct); // product 구매
