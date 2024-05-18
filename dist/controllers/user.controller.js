@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.getPurchasedList = exports.getCredits = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
+exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadReport = exports.uploadFaq = exports.toggleFollow = exports.getPurchasedList = exports.getCredits = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
 const admin = __importStar(require("firebase-admin"));
 const user_model_1 = require("../models/user.model");
 const faq_model_1 = require("../models/faq.model");
@@ -53,6 +53,7 @@ const order_model_1 = require("../models/order.model");
 const income_model_1 = require("../models/income.model");
 const logger_1 = __importDefault(require("../config/logger"));
 const photoZone_model_1 = require("../models/photoZone.model");
+const report_model_1 = require("../models/report.model");
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idToken } = req.body;
     try {
@@ -473,6 +474,45 @@ const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.uploadFaq = uploadFaq;
+const uploadReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { targetId, targetType, message, reportType } = req.body;
+    const uid = req.uid;
+    if (!uid || !targetId || !targetType || !message || !reportType) {
+        logger_1.default.error("Lack of essential data");
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
+    try {
+        const reportData = {
+            targetId: targetId,
+            targetType: targetType,
+            reportType: reportType,
+            message: message,
+            createdAt: Date.now(),
+            uid: uid
+        };
+        const newReport = new report_model_1.Report(reportData);
+        yield newReport.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully upload",
+            result: newReport
+        });
+        logger_1.default.info("Successfully upload report");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error upload report: ${error}`);
+    }
+});
+exports.uploadReport = uploadReport;
 const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = req.body.productId;
     const uid = req.body.uid;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTodayPhotozone = exports.deleteTodayGuideline = exports.deleteTrendingPose = exports.deleteTagList = exports.modifyTrendingPoseList = exports.uploadTrendingPoseList = exports.getTrendingPoseList = exports.allPhotozones = exports.allGuidelines = exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
+exports.deleteTodayPhotozone = exports.deleteTodayGuideline = exports.deleteTrendingPose = exports.deleteTagList = exports.modifyTrendingPoseList = exports.uploadTrendingPoseList = exports.getTrendingPoseList = exports.allPhotozones = exports.allGuidelines = exports.modifyGuideline = exports.uploadGuideline = exports.getTodayGuidelines = exports.modifyPhotoZone = exports.uploadPhotoZone = exports.getTodayPhotoZones = exports.modifyTagList = exports.uploadTagList = exports.getTagList = exports.postAuth = exports.postFaqAnswer = exports.getProducts = exports.getReports = exports.getFaqs = exports.postContents = exports.getContents = exports.getContent = exports.postStatus = void 0;
 const contents_model_1 = require("../models/contents.model");
 const faq_model_1 = require("../models/faq.model");
 const servserStatus_model_1 = require("../models/servserStatus.model");
@@ -25,6 +25,7 @@ const todayPhotoZone_model_1 = require("../models/todayPhotoZone.model");
 const todayGuideline_model_1 = require("../models/todayGuideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
 const tredingPose_model_1 = require("../models/tredingPose.model");
+const report_model_1 = require("../models/report.model");
 const postStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const code = `${req.query.code}`;
     const upload = req.query.upload === "true";
@@ -157,6 +158,26 @@ const getFaqs = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getFaqs = getFaqs;
+const getReports = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const reports = yield report_model_1.Report.find();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully reports read.",
+            result: reports
+        });
+        logger_1.default.info("Successfully get reports");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get reports: ${error}`);
+    }
+});
+exports.getReports = getReports;
 const getProducts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const type = req.query.type;
     const code = req.query.code;

@@ -36,11 +36,19 @@ const ReportSchema = new mongoose_1.Schema({
         type: String,
         enum: ['Filter', 'Guideline', 'PhotoZone']
     },
+    reportType: {
+        required: true,
+        type: String
+    },
     createdAt: {
         required: true,
         type: Number
     },
     message: {
+        required: true,
+        type: String
+    },
+    uid: {
         required: true,
         type: String
     }
