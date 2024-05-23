@@ -22,6 +22,7 @@ export const uploadPhotozone = async (req: Request, res: Response) => {
       shortDescription,
       imageUrls,
       tags,
+      address
     } = req.body;
     const createdAt = Date.now();
     var locationJSON: any = {};
@@ -39,7 +40,8 @@ export const uploadPhotozone = async (req: Request, res: Response) => {
       shortDescription,
       imageUrls: imageUrls.split(','),
       tags: tags.split(','),
-      createdAt
+      createdAt,
+      address
     });
 
     await newPhotoZone.save();

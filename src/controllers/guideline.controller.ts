@@ -16,6 +16,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
     originalImageUrl,
     guidelineImageUrl,
     placeName, // nullable
+    address // nullable
   } = req.body;
   const tagsString = req.body.tags;
   const locationString = req.body.location;
@@ -55,7 +56,8 @@ export const uploadGuideline = async (req: Request, res: Response) => {
       originalImageUrl: originalImageUrl,
       guidelineImageUrl: guidelineImageUrl,
       placeName: placeName,
-      location: location
+      location: location,
+      address: address || ""
     })
     const newAuthStatus = new Auth({
       productId: newGuideline._id,

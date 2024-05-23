@@ -13,6 +13,7 @@ interface DBPhotoZone {
   imageUrls: [string];
   tags: [string];
   createdAt: number;
+  address: string;
 }
 
 interface DBPhotoZoneDocument extends DBPhotoZone, Document {
@@ -72,6 +73,10 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
       type: [{type: Number}], 
       default: [0, 0] 
     } 
+  },
+  address: {
+    required: true,
+    type: String,
   }
 }, {
   toJSON: {
