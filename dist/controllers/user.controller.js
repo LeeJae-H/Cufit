@@ -475,9 +475,10 @@ const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.uploadFaq = uploadFaq;
 const uploadReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { targetId, targetType, message } = req.body;
+
+    const { targetId, targetType, message, reportType } = req.body;
     const uid = req.uid;
-    if (!uid || !targetId || !targetType || !message) {
+    if (!uid || !targetId || !targetType || !message || !reportType) {
         logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
@@ -489,6 +490,7 @@ const uploadReport = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const reportData = {
             targetId: targetId,
             targetType: targetType,
+            reportType: reportType,
             message: message,
             createdAt: Date.now(),
             uid: uid

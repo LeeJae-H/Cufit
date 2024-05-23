@@ -442,10 +442,10 @@ export const uploadFaq = async (req: Request, res: Response) => {
 };
 
 export const uploadReport = async (req: CustomRequest, res: Response) => {
-  const { targetId, targetType, message } = req.body;
+  const { targetId, targetType, message, reportType } = req.body;
   const uid = req.uid!;  
 
-  if (!uid || !targetId || !targetType || !message) {
+  if (!uid || !targetId || !targetType || !message || !reportType) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
@@ -458,6 +458,7 @@ export const uploadReport = async (req: CustomRequest, res: Response) => {
     const reportData = {
       targetId: targetId, 
       targetType: targetType, 
+      reportType: reportType,
       message: message, 
       createdAt: Date.now(),
       uid: uid
