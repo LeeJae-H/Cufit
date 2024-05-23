@@ -77,6 +77,7 @@ const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
   address: {
     required: true,
     type: String,
+    default: ""
   }
 }, {
   toJSON: {
