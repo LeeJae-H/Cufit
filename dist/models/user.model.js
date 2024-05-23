@@ -99,8 +99,8 @@ UserSchema.statics.getCredits = function (uid) {
     });
 };
 UserSchema.statics.getFromUid = function (uid) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         try {
             var result = (_a = (yield User.findOne({ uid: uid }).populate('follower').populate('following'))) === null || _a === void 0 ? void 0 : _a.toObject();
             if (!result) {
@@ -120,8 +120,8 @@ UserSchema.statics.getFromUid = function (uid) {
     });
 };
 UserSchema.statics.getFromObjId = function (_id) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         try {
             const result = (_a = (yield User.findById(_id).populate('follower').populate('following'))) === null || _a === void 0 ? void 0 : _a.toObject();
             if (!result) {
@@ -137,8 +137,8 @@ UserSchema.statics.getFromObjId = function (_id) {
     });
 };
 UserSchema.statics.createNewUser = function (token) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         const displayName = (_a = token.name) !== null && _a !== void 0 ? _a : yield checkAndReturnUniqueNickname();
         const bio = `안녕하세요 ${displayName}입니다.`;
         const signupDate = Date.now();

@@ -20,6 +20,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const logger_1 = __importDefault(require("../config/logger"));
 const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { title, shortDescription, description, credit, creatorUid, originalImageUrl, guidelineImageUrl, placeName, // nullable
+    address // nullable
      } = req.body;
     const tagsString = req.body.tags;
     const locationString = req.body.location;
@@ -60,7 +61,8 @@ const uploadGuideline = (req, res) => __awaiter(void 0, void 0, void 0, function
             originalImageUrl: originalImageUrl,
             guidelineImageUrl: guidelineImageUrl,
             placeName: placeName,
-            location: location
+            location: location,
+            address: address || ""
         });
         const newAuthStatus = new auth_model_1.Auth({
             productId: newGuideline._id,

@@ -23,7 +23,7 @@ const wish_model_1 = require("../models/wish.model");
 const viewCount_model_1 = require("../models/viewCount.model");
 const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { uid, title, placeName, location, description, shortDescription, imageUrls, tags, } = req.body;
+        const { uid, title, placeName, location, description, shortDescription, imageUrls, tags, address } = req.body;
         const createdAt = Date.now();
         var locationJSON = {};
         try {
@@ -41,7 +41,8 @@ const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function
             shortDescription,
             imageUrls: imageUrls.split(','),
             tags: tags.split(','),
-            createdAt
+            createdAt,
+            address
         });
         yield newPhotoZone.save();
         res.status(200).json({

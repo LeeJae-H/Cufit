@@ -43,6 +43,10 @@ const ReportSchema = new mongoose_1.Schema({
     message: {
         required: true,
         type: String
+    },
+    uid: {
+        required: true,
+        type: String
     }
 });
 exports.ReportSchema = ReportSchema;

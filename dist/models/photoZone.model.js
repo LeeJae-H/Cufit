@@ -77,6 +77,11 @@ const PhotoZoneSchema = new mongoose_1.Schema({
             type: [{ type: Number }],
             default: [0, 0]
         }
+    },
+    address: {
+        required: true,
+        type: String,
+        default: ""
     }
 }, {
     toJSON: {

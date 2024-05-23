@@ -11,6 +11,7 @@ router.get("/main/contents", admin_controller_1.getContent);
 router.get("/main/contents/history", admin_controller_1.getContents);
 router.post("/main/contents", admin_controller_1.postContents);
 router.get('/faq/list', admin_controller_1.getFaqs);
+router.get('/report/list', admin_controller_1.getReports);
 router.get('/product', admin_controller_1.getProducts);
 router.post('/faq/answer/:faqId', admin_controller_1.postFaqAnswer);
 router.post("/authorize", admin_controller_1.postAuth);
