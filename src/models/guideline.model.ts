@@ -29,6 +29,7 @@ interface DBGuideline {
     type: string;
     coordinates: number[];
   };
+  address?: string;
 }
 
 interface DBGuidelineDocument extends DBGuideline, Document {
@@ -63,7 +64,8 @@ const GuidelineSchema = new Schema<DBGuidelineDocument>({
   type: { required: true, type: String, default: "Guideline" },
   placeName: { type: String },
   creatorUid: { required: true, type: String, ref: 'User' },
-  location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{type: Number}], default: [0, 0] } }
+  location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{type: Number}], default: [0, 0] } },
+  address: { type: String }
 }, {
   toJSON: {
     virtuals: true
