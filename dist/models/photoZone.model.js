@@ -221,6 +221,20 @@ PhotoZoneSchema.statics.findAll = function (page) {
         return result;
     });
 };
+PhotoZoneSchema.statics.searchByAddress = function (address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline();
+        pipeline.unshift({
+            $match: {
+                $or: [
+                    { address: { $regex: new RegExp(address, 'i') } }
+                ],
+            }
+        });
+        let result = yield PhotoZone.aggregate(pipeline);
+        return result;
+    });
+};
 PhotoZoneSchema.virtual('likedCount', {
     ref: 'Like',
     localField: '_id',

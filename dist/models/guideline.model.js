@@ -554,6 +554,20 @@ function pagination(pipeline, page) {
     const newPipeline = pipeline.concat(pagination);
     return newPipeline;
 }
+GuidelineSchema.statics.searchByAddress = function (address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline();
+        pipeline.unshift({
+            $match: {
+                $or: [
+                    { address: { $regex: new RegExp(address, 'i') } }
+                ],
+            }
+        });
+        let result = yield Guideline.aggregate(pipeline);
+        return result;
+    });
+};
 function createInitialPipeline(code) {
     let pipeline = [
         {

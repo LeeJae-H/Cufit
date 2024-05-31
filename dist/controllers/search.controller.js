@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPhotozoneInArea = exports.getGuidelineInArea = exports.getAnything = exports.searchFilters = exports.searchGuidelines = exports.searchCreators = void 0;
+exports.getByAddress = exports.getPhotozoneInArea = exports.getGuidelineInArea = exports.getAnything = exports.searchFilters = exports.searchGuidelines = exports.searchCreators = void 0;
 const user_model_1 = require("../models/user.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
@@ -231,3 +231,35 @@ const getPhotozoneInArea = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.getPhotozoneInArea = getPhotozoneInArea;
+const getByAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const address = `${req.query.address}`;
+    if (!address || address === "") {
+        logger_1.default.error("Lack of essential data");
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
+    try {
+        let guidelines = yield guideline_model_1.Guideline.searchByAddress(address);
+        let photozones = yield photoZone_model_1.PhotoZone.searchByAddress(address);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: {
+                guidelines,
+                photozones
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error while searching with address: ${error}`);
+    }
+});
+exports.getByAddress = getByAddress;

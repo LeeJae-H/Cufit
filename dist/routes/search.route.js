@@ -12,4 +12,5 @@ router.get("/guidelines/:keyword", search_controller_1.searchGuidelines); // 키
 router.get("/filters/:keyword", search_controller_1.searchFilters); // 키워드로 필터 조회
 router.post("/area/guidelines", search_controller_1.getGuidelineInArea);
 router.post("/area/photozones", search_controller_1.getPhotozoneInArea);
+router.get("/address", search_controller_1.getByAddress); //get photozones, guidelines by city name
 exports.default = router;
