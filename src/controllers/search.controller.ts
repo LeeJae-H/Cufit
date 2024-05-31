@@ -223,3 +223,35 @@ export const getPhotozoneInArea = async (req: CustomRequest, res: Response) => {
     logger.error(`Error get photozone in area: ${error}`);
   }
 };
+
+export const getByAddress = async (req: CustomRequest, res: Response) => {
+  const address = `${req.query.address}`;
+  if (!address || address === "") {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    })
+  }
+
+  try {
+    let guidelines = await Guideline.searchByAddress(address);
+    let photozones = await PhotoZone.searchByAddress(address);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {
+        guidelines,
+        photozones
+      }
+    })
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error while searching with address: ${error}`);
+  }
+}

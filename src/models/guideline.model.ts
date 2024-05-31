@@ -50,6 +50,7 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   findByArea(coordinates: any[], code?: string): Promise<DBGuidelineDocument[]>;
   findAll(page: number, code?: string): Promise<DBGuidelineDocument[]>;
   getPopular(): Promise<DBGuidelineDocument[]>;
+  searchByAddress: (address: string) => Promise<[DBGuidelineDocument]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -571,6 +572,23 @@ function pagination(pipeline: any[], page: number) {
   const newPipeline = pipeline.concat(pagination);
   return newPipeline;
 }
+
+GuidelineSchema.statics.searchByAddress = async function(address: string) {
+  let pipeline = createInitialPipeline();
+  pipeline.unshift(
+    {
+      $match: {
+        $or: [
+          { address: { $regex: new RegExp(address, 'i') } }
+        ],
+      }
+    }
+  )
+
+  let result = await Guideline.aggregate(pipeline);
+  return result;
+}
+
 
 function createInitialPipeline(code?: string) {
   let pipeline: any[] = [

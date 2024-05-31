@@ -28,6 +28,7 @@ interface DBPhotoZoneModel extends Model<DBPhotoZoneDocument> {
   getFromObjId: (_id: string) => Promise<DBPhotoZoneDocument>;
   getListFromCreatorUid: (uid: string) => Promise<[DBPhotoZoneDocument]>;
   getPopular: () => Promise<[DBPhotoZoneDocument]>;
+  searchByAddress: (address: string) => Promise<[DBPhotoZoneDocument]>;
 }  
 
 const PhotoZoneSchema = new Schema<DBPhotoZoneDocument>({
@@ -230,6 +231,22 @@ PhotoZoneSchema.statics.findAll = async function(page: number) {
   pipeline = pagination(pipeline, page);
   let result = await PhotoZone.aggregate(pipeline);
 
+  return result;
+}
+
+PhotoZoneSchema.statics.searchByAddress = async function(address: string) {
+  let pipeline = createInitialPipeline();
+  pipeline.unshift(
+    {
+      $match: {
+        $or: [
+          { address: { $regex: new RegExp(address, 'i') } }
+        ],
+      }
+    }
+  )
+
+  let result = await PhotoZone.aggregate(pipeline);
   return result;
 }
 
