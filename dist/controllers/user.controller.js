@@ -475,7 +475,6 @@ const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.uploadFaq = uploadFaq;
 const uploadReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-
     const { targetId, targetType, message, reportType } = req.body;
     const uid = req.uid;
     if (!uid || !targetId || !targetType || !message || !reportType) {
