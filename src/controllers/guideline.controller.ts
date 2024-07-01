@@ -21,7 +21,7 @@ export const uploadGuideline = async (req: Request, res: Response) => {
   const tagsString = req.body.tags;
   const locationString = req.body.location;
   const createdAt = Date.now();
-  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !originalImageUrl || ! guidelineImageUrl) {
+  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
@@ -92,6 +92,102 @@ export const uploadGuideline = async (req: Request, res: Response) => {
       result: {}
     })
     logger.error(`Error upload guideline: ${error}`);
+  }
+};
+
+export const updateGuideline = async (req: Request, res: Response) => {
+  const guidelineId = req.params.id; 
+  const {
+    title,
+    shortDescription,
+    description,
+    credit,
+    creatorUid,
+    originalImageUrl,
+    guidelineImageUrl,
+    placeName,
+    address
+  } = req.body;
+  const tagsString = req.body.tags;
+  const locationString = req.body.location;
+
+  if (!guidelineId) {
+    logger.error("Wrong guidelineId");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Wrong guidelineId",
+      result: {}
+    });
+  }
+
+  const updateFields: any = {};
+
+  if (title) updateFields.title = title;
+  if (shortDescription) updateFields.shortDescription = shortDescription;
+  if (description) updateFields.description = description;
+  if (credit) updateFields.credit = parseInt(credit);
+  if (creatorUid) updateFields.creatorUid = creatorUid;
+  if (originalImageUrl) updateFields.originalImageUrl = originalImageUrl;
+  if (guidelineImageUrl) updateFields.guidelineImageUrl = guidelineImageUrl;
+  if (placeName) updateFields.placeName = placeName;
+  if (address) updateFields.address = address;
+
+  if (tagsString) updateFields.tags = tagsString.split(',');
+  if (locationString) {
+    try {
+      updateFields.location = JSON.parse(locationString);
+    } catch (error) {
+      logger.error("Error while parsing location");
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Error while parsing location",
+        result: {}
+      });
+    }
+  }
+
+  try {
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+      const guideline = await Guideline.findById(guidelineId).session(session);
+
+      if (!guideline) {
+        logger.error("Guideline not found");
+        return res.status(404).json({
+          statusCode: -1,
+          message: "Guideline not found",
+          result: {}
+        });
+      }
+
+      Object.assign(guideline, updateFields); // 객체 속성 복사 메서드 
+      const updatedGuideline = await guideline.save({ session });
+      await session.commitTransaction();
+      res.status(200).json({
+        statusCode: 0,
+        message: "Successfully updated",
+        result: updatedGuideline
+      });
+      logger.info("Successfully update guideline");
+    } catch (error) {
+      await session.abortTransaction();
+      logger.error("Failed transaction during update");
+      res.status(500).json({
+        statusCode: -1,
+        message: "Failed transaction",
+        result: {}
+      });
+    } finally {
+      session.endSession();
+    }
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: `Error update guideline: ${error}`,
+      result: {}
+    });
+    logger.error(`Error update guideline: ${error}`);
   }
 };
 
