@@ -17,7 +17,7 @@ interface DBGuideline {
   createdAt: number;
   authStatus: object;
   originalImageUrl: string;
-  guidelineImageUrl: string;
+  guidelineImageUrl?: string;
   credit: number;
   type: string;
   placeName?: string;
@@ -60,7 +60,7 @@ const GuidelineSchema = new Schema<DBGuidelineDocument>({
   shortDescription: { required: true, type: String },
   createdAt: { required: true, type: Number },
   originalImageUrl: { required: true, type: String },
-  guidelineImageUrl: { required: true, type: String },
+  guidelineImageUrl: { type: String },
   credit: { required: true, type: Number },
   type: { required: true, type: String, default: "Guideline" },
   placeName: { type: String },

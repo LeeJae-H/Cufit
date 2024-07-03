@@ -21,13 +21,13 @@ export const uploadGuideline = async (req: Request, res: Response) => {
   const tagsString = req.body.tags;
   const locationString = req.body.location;
   const createdAt = Date.now();
-  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid) {
+  if (!title || !tagsString || ! shortDescription || !description || !credit || !creatorUid || !originalImageUrl) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
       message: "Lack of essential data",
       result: {}
-    });
+    });    
   }
 
   try{
@@ -44,12 +44,15 @@ export const uploadGuideline = async (req: Request, res: Response) => {
         coordinates: [0, 0]
       }
     }
+    let tagList: string[];
+    tagList = tagsString.map((tag: any) => String(tag).trim());
+
     const newGuideline = new Guideline({
       title: title,
       type: "Guideline",
       createdAt: createdAt,
       credit: parseInt(credit),
-      tags: tagsString.split(','),
+      tags: tagList,
       shortDescription,
       description,
       creatorUid,
