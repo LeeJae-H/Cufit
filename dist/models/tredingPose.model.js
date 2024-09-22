@@ -32,73 +32,48 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LikeSchema = exports.Like = void 0;
+exports.TrendingPoseSchema = exports.TrendingPose = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const guideline_model_1 = require("./guideline.model");
-const photoZone_model_1 = require("./photoZone.model");
-const LikeSchema = new mongoose_1.Schema({
-    uid: {
+const TrendingPoseSchema = new mongoose_1.Schema({
+    name: {
         required: true,
         type: String,
-    },
-    productId: {
-        required: true,
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        refPath: 'productType'
     },
     createdAt: {
         required: true,
-        type: Number
+        type: Number,
     },
-    productType: {
-        required: true,
+    imageUrl: {
         type: String,
-        enum: ['Filter', 'Guideline', 'PhotoZone']
+    },
+    present: {
+        required: true,
+        type: Boolean,
     }
 });
-exports.LikeSchema = LikeSchema;
-LikeSchema.statics.isExist = function (pid, uid, type) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const result = yield Like.findOne({
-            productId: new mongoose_1.default.Types.ObjectId(pid),
-            uid: uid,
-            productType: type
-        });
-        if (result) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    });
-};
-LikeSchema.statics.getLikelist = function (uid) {
+exports.TrendingPoseSchema = TrendingPoseSchema;
+TrendingPoseSchema.statics.getList = function () {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const likelist = yield Like.find({ uid: uid });
-            const photozoneIds = likelist
-                .filter((like) => like.productType === "PhotoZone")
-                .map((like) => like.productId);
-            const guidelineIds = likelist
-                .filter((like) => like.productType === "Guideline")
-                .map((like) => like.productId);
-            const photozones = yield photoZone_model_1.PhotoZone.find({ _id: { $in: photozoneIds } })
-                .populate('likedCount')
-                .populate('creator')
-                .populate('viewCount');
-            const guidelines = yield guideline_model_1.Guideline.find({ _id: { $in: guidelineIds } })
-                .populate('likedCount')
-                .populate('usedCount')
-                .populate('authStatus')
-                .populate('creator')
-                .populate('viewCount');
-            return { photozones, guidelines };
+            const poses = yield TrendingPose.find({ present: true });
+            var result = [];
+            for (var pose of poses) {
+                let name = pose.name;
+                let guidelines = yield guideline_model_1.Guideline.getListFromTag(pose.name);
+                ;
+                let current = {
+                    tagName: name,
+                    items: guidelines
+                };
+                result.push(current);
+            }
+            return result;
         }
         catch (error) {
-            console.error('Error in getLikelistByUid:', error);
             throw error;
         }
     });
 };
-const Like = mongoose_1.default.model('Like', LikeSchema, 'like');
-exports.Like = Like;
+const TrendingPose = mongoose_1.default.model('TrendingPose', TrendingPoseSchema, 'trendingPose');
+exports.TrendingPose = TrendingPose;

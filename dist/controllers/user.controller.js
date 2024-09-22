@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadFaq = exports.toggleFollow = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
+exports.purchaseCredit = exports.getAdreward = exports.getAdrewardAmount = exports.getCreditTransaction = exports.reviewProduct = exports.buyProduct = exports.wishProduct = exports.likeProduct = exports.uploadReport = exports.uploadFaq = exports.toggleFollow = exports.getPurchasedList = exports.getCredits = exports.checkFollow = exports.getWishList = exports.getLikeList = exports.getProductList = exports.getFaqList = exports.getFollowingList = exports.getFollowerList = exports.deleteUser = exports.updateUserProfile = exports.getUserProfile = exports.login = void 0;
 const admin = __importStar(require("firebase-admin"));
 const user_model_1 = require("../models/user.model");
 const faq_model_1 = require("../models/faq.model");
@@ -52,6 +52,8 @@ const axios_1 = __importDefault(require("axios"));
 const order_model_1 = require("../models/order.model");
 const income_model_1 = require("../models/income.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const photoZone_model_1 = require("../models/photoZone.model");
+const report_model_1 = require("../models/report.model");
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { idToken } = req.body;
     try {
@@ -234,15 +236,16 @@ const getFaqList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.getFaqList = getFaqList;
 const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = req.params.uid;
+    const code = String(req.query.code);
     try {
-        const filters = yield filter_model_1.Filter.getListFromCreatorUid(uid);
-        const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid);
+        const guidelines = yield guideline_model_1.Guideline.getListFromCreatorUid(uid, code);
+        const photozones = yield photoZone_model_1.PhotoZone.getListFromCreatorUid(uid);
         res.status(200).json({
             statusCode: 0,
             message: "Successfully read product list",
             result: {
-                filters: filters,
-                guidelines: guidelines
+                guidelines: guidelines,
+                photozones: photozones
             }
         });
         logger_1.default.info('Successfully get product list');
@@ -251,10 +254,7 @@ const getProductList = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({
             statusCode: -1,
             message: error,
-            result: {
-                filters: [],
-                guidelines: []
-            }
+            result: {}
         });
         logger_1.default.error(`Error get product list: ${error}`);
     }
@@ -268,7 +268,7 @@ const getLikeList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             statusCode: 0,
             message: 'Successfully read likelist',
             result: {
-                filters: likelistData.filters,
+                photozones: likelistData.photozones,
                 guidelines: likelistData.guidelines,
             }
         });
@@ -356,6 +356,50 @@ const checkFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.checkFollow = checkFollow;
+const getCredits = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
+    try {
+        const result = yield user_model_1.User.getCredits(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully get credits",
+            result
+        });
+        logger_1.default.info("Successfully get credits");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error check follow: ${error}`);
+    }
+});
+exports.getCredits = getCredits;
+const getPurchasedList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const uid = req.params.uid;
+    try {
+        const result = yield user_model_1.User.getPurchasedGuidelines(uid);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully get purchased guidelines",
+            result: {
+                guidelines: result
+            }
+        });
+        logger_1.default.info("Successfully get purchased guidelines");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error check follow: ${error}`);
+    }
+});
+exports.getPurchasedList = getPurchasedList;
 const toggleFollow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { srcUid, dstUid } = req.body;
     try {
@@ -430,6 +474,45 @@ const uploadFaq = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.uploadFaq = uploadFaq;
+const uploadReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { targetId, targetType, message, reportType } = req.body;
+    const uid = req.uid;
+    if (!uid || !targetId || !targetType || !message || !reportType) {
+        logger_1.default.error("Lack of essential data");
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
+    try {
+        const reportData = {
+            targetId: targetId,
+            targetType: targetType,
+            reportType: reportType,
+            message: message,
+            createdAt: Date.now(),
+            uid: uid
+        };
+        const newReport = new report_model_1.Report(reportData);
+        yield newReport.save();
+        res.status(200).json({
+            statusCode: 0,
+            message: "Successfully upload",
+            result: newReport
+        });
+        logger_1.default.info("Successfully upload report");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error upload report: ${error}`);
+    }
+});
+exports.uploadReport = uploadReport;
 const likeProduct = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const productId = req.body.productId;
     const uid = req.body.uid;

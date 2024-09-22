@@ -23,36 +23,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReportSchema = exports.Report = void 0;
+exports.SearchedKeywordSchema = exports.SearchedKeyword = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const ReportSchema = new mongoose_1.Schema({
-    targetId: {
-        required: true,
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        refPath: 'targetType'
-    },
-    targetType: {
+const SearchedKeywordSchema = new mongoose_1.Schema({
+    keyword: {
         required: true,
         type: String,
-        enum: ['Filter', 'Guideline', 'PhotoZone']
-    },
-    reportType: {
-        required: true,
-        type: String
     },
     createdAt: {
         required: true,
-        type: Number
-    },
-    message: {
-        required: true,
-        type: String
+        type: Number,
     },
     uid: {
-        required: true,
-        type: String
+        type: String,
     }
 });
-exports.ReportSchema = ReportSchema;
-const Report = mongoose_1.default.model("Report", ReportSchema, "report");
-exports.Report = Report;
+exports.SearchedKeywordSchema = SearchedKeywordSchema;
+const SearchedKeyword = mongoose_1.default.model('SearchedKeyword', SearchedKeywordSchema, 'searchedKeyword');
+exports.SearchedKeyword = SearchedKeyword;

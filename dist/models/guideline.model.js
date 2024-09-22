@@ -54,7 +54,8 @@ const GuidelineSchema = new mongoose_1.Schema({
     type: { required: true, type: String, default: "Guideline" },
     placeName: { type: String },
     creatorUid: { required: true, type: String, ref: 'User' },
-    location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{ type: Number }], default: [0, 0] } }
+    location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{ type: Number }], default: [0, 0] } },
+    address: { type: String }
 }, {
     toJSON: {
         virtuals: true
@@ -102,8 +103,30 @@ GuidelineSchema.statics.getListFromTag = function (tag) {
                 .populate('wishedCount')
                 .populate('usedCount')
                 .populate('authStatus')
-                .populate('creator');
+                .populate('creator')
+                .populate('viewCount');
             return result;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
+GuidelineSchema.statics.getPopular = function () {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let pipeline = createInitialPipeline();
+            pipeline.concat([
+                {
+                    $sort: {
+                        likedCount: -1
+                    }
+                },
+                {
+                    $limit: 20
+                }
+            ]);
+            return yield Guideline.aggregate(pipeline);
         }
         catch (error) {
             throw error;
@@ -224,6 +247,25 @@ GuidelineSchema.statics.findByDistance = function (lat, lng, distance, code) {
         return result;
     });
 };
+GuidelineSchema.statics.findByArea = function (coordinates, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline(code);
+        pipeline.unshift({
+            $match: {
+                location: {
+                    $geoWithin: {
+                        $geometry: {
+                            type: "Polygon",
+                            coordinates: [coordinates]
+                        }
+                    }
+                }
+            }
+        });
+        let result = yield Guideline.aggregate(pipeline);
+        return result;
+    });
+};
 GuidelineSchema.virtual('likedCount', {
     ref: 'Like',
     localField: '_id',
@@ -253,6 +295,12 @@ GuidelineSchema.virtual('authStatus', {
     localField: '_id',
     foreignField: 'productId',
     justOne: true
+});
+GuidelineSchema.virtual('viewCount', {
+    ref: 'ViewCount',
+    localField: '_id',
+    foreignField: 'productId',
+    count: true
 });
 GuidelineSchema.index({ location: "2dsphere" });
 function searchByLatest(keyword, desc, isFree) {
@@ -485,6 +533,41 @@ function getByLatest(tag, sort) {
         }
     });
 }
+GuidelineSchema.statics.findAll = function (page, code) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline(code);
+        pipeline = pagination(pipeline, page);
+        let result = yield Guideline.aggregate(pipeline);
+        return result;
+    });
+};
+function pagination(pipeline, page) {
+    let pagination = [
+        {
+            $skip: (page - 1) * 20
+        },
+        {
+            $limit: 20
+        }
+    ];
+    // pagination 변수가 배열이므로, push말고 concat을 해야함. push하면 배열 안에 배열 형태.
+    const newPipeline = pipeline.concat(pagination);
+    return newPipeline;
+}
+GuidelineSchema.statics.searchByAddress = function (address) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let pipeline = createInitialPipeline();
+        pipeline.unshift({
+            $match: {
+                $or: [
+                    { address: { $regex: new RegExp(address, 'i') } }
+                ],
+            }
+        });
+        let result = yield Guideline.aggregate(pipeline);
+        return result;
+    });
+};
 function createInitialPipeline(code) {
     let pipeline = [
         {
@@ -542,7 +625,21 @@ function createInitialPipeline(code) {
             }
         },
         {
+            $lookup: {
+                from: "viewCount",
+                localField: "_id",
+                foreignField: "productId",
+                as: "views"
+            }
+        },
+        {
+            $addFields: {
+                viewCount: { $size: "$views" }
+            }
+        },
+        {
             $project: {
+                views: 0,
                 orders: 0, // likes 필드를 제외하고 출력
                 likes: 0
             }

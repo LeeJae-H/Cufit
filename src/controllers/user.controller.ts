@@ -16,6 +16,8 @@ import axios from 'axios';
 import { Order } from '../models/order.model';
 import { Income } from "../models/income.model";
 import logger from '../config/logger';
+import { PhotoZone } from '../models/photoZone.model';
+import { Report } from '../models/report.model';
 
 export const login = async (req: Request, res: Response) => {
   const { idToken } = req.body;
@@ -200,16 +202,17 @@ export const getFaqList = async (req: Request, res: Response) => {
 
 export const getProductList = async (req: Request, res: Response) => {
   const uid = req.params.uid;
+  const code = String(req.query.code);
 
   try {
-    const filters = await Filter.getListFromCreatorUid(uid);
-    const guidelines = await Guideline.getListFromCreatorUid(uid);
+    const guidelines = await Guideline.getListFromCreatorUid(uid, code);
+    const photozones = await PhotoZone.getListFromCreatorUid(uid);
     res.status(200).json({
       statusCode: 0,
       message: "Successfully read product list",
       result: {
-        filters: filters,
-        guidelines: guidelines
+        guidelines: guidelines,
+        photozones: photozones
       }
     })
     logger.info('Successfully get product list');
@@ -217,10 +220,7 @@ export const getProductList = async (req: Request, res: Response) => {
     res.status(500).json({
       statusCode: -1,
       message: error,
-      result: {
-        filters: [],
-        guidelines: []
-      }
+      result: {}
     })
     logger.error(`Error get product list: ${error}`);
   }
@@ -235,7 +235,7 @@ export const getLikeList = async (req: Request, res: Response) => {
       statusCode: 0,
       message: 'Successfully read likelist',
       result:{
-        filters: likelistData.filters,
+        photozones: likelistData.photozones,
         guidelines: likelistData.guidelines,
       }
     });
@@ -323,6 +323,49 @@ export const checkFollow = async (req: Request, res: Response) => {
   }
 };
 
+export const getCredits = async (req: Request, res: Response) => {
+  const uid = req.params.uid;
+
+  try {
+    const result = await User.getCredits(uid);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully get credits",
+      result
+    });
+    logger.info("Successfully get credits");
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error check follow: ${error}`);
+  }
+}
+
+export const getPurchasedList = async (req: Request, res: Response) => {
+  const uid = req.params.uid;
+  try {
+    const result = await User.getPurchasedGuidelines(uid);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully get purchased guidelines",
+      result: {
+        guidelines: result
+      }
+    });
+    logger.info("Successfully get purchased guidelines");
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error check follow: ${error}`);
+  }
+}
+
 export const toggleFollow = async (req: Request, res: Response) => {
   const { srcUid, dstUid } = req.body;
 
@@ -395,6 +438,46 @@ export const uploadFaq = async (req: Request, res: Response) => {
       result: {}
     })
     logger.error(`Error upload faq: ${error}`);
+  }
+};
+
+export const uploadReport = async (req: CustomRequest, res: Response) => {
+  const { targetId, targetType, message, reportType } = req.body;
+  const uid = req.uid!;  
+
+  if (!uid || !targetId || !targetType || !message || !reportType) {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    });
+  }
+
+  try {
+    const reportData = {
+      targetId: targetId, 
+      targetType: targetType, 
+      reportType: reportType,
+      message: message, 
+      createdAt: Date.now(),
+      uid: uid
+    }
+    const newReport = new Report(reportData);
+    await newReport.save();
+    res.status(200).json({
+      statusCode: 0,
+      message: "Successfully upload",
+      result: newReport
+    })
+    logger.info("Successfully upload report");
+  } catch(error){
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error upload report: ${error}`);
   }
 };
 

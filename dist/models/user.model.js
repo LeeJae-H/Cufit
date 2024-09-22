@@ -83,26 +83,30 @@ UserSchema.statics.search = function (keyword) {
                 { displayName: { $regex: new RegExp(keyword, 'i') } },
                 { bio: { $regex: new RegExp(keyword, 'i') } }
             ],
-        });
+        })
+            .populate('follower').populate('following');
         return result;
     });
 };
-UserSchema.statics.getFromUid = function (uid) {
-    var _a;
+UserSchema.statics.getCredits = function (uid) {
     return __awaiter(this, void 0, void 0, function* () {
+        try {
+            return yield credits(uid);
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+};
+UserSchema.statics.getFromUid = function (uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         try {
             var result = (_a = (yield User.findOne({ uid: uid }).populate('follower').populate('following'))) === null || _a === void 0 ? void 0 : _a.toObject();
             if (!result) {
                 return null;
             }
-            const credits = yield credit_model_1.Credit.find({
-                uid: uid,
-                $or: [
-                    { expireAt: { $gt: Date.now() } },
-                    { expireAt: -1 }
-                ]
-            });
-            const creditAmount = credits.reduce((amount, credit) => amount + credit.amount, 0);
+            const creditAmount = yield credits(result.uid);
             result.credit = creditAmount;
             const guidelines = yield purchasedGuidelines(uid);
             const filters = yield purchasedFilters(uid);
@@ -116,21 +120,14 @@ UserSchema.statics.getFromUid = function (uid) {
     });
 };
 UserSchema.statics.getFromObjId = function (_id) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         try {
             const result = (_a = (yield User.findById(_id).populate('follower').populate('following'))) === null || _a === void 0 ? void 0 : _a.toObject();
             if (!result) {
                 return null;
             }
-            const credits = yield credit_model_1.Credit.find({
-                uid: result.uid,
-                $or: [
-                    { expireAt: { $gt: Date.now() } },
-                    { expireAt: -1 }
-                ]
-            });
-            const creditAmount = credits.reduce((amount, credit) => amount + credit.amount, 0);
+            const creditAmount = yield credits(result.uid);
             result.credit = creditAmount;
             return result;
         }
@@ -140,8 +137,8 @@ UserSchema.statics.getFromObjId = function (_id) {
     });
 };
 UserSchema.statics.createNewUser = function (token) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         const displayName = (_a = token.name) !== null && _a !== void 0 ? _a : yield checkAndReturnUniqueNickname();
         const bio = `안녕하세요 ${displayName}입니다.`;
         const signupDate = Date.now();
@@ -163,6 +160,11 @@ UserSchema.statics.createNewUser = function (token) {
         }
     });
 };
+UserSchema.statics.getPurchasedGuidelines = function (uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield purchasedGuidelines(uid);
+    });
+};
 UserSchema.virtual('follower', {
     ref: "Follow",
     localField: 'uid',
@@ -175,6 +177,19 @@ UserSchema.virtual("following", {
     foreignField: 'srcUid',
     count: true
 });
+function credits(uid) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const credits = yield credit_model_1.Credit.find({
+            uid: uid,
+            $or: [
+                { expireAt: { $gt: Date.now() } },
+                { expireAt: -1 }
+            ]
+        });
+        const creditAmount = credits.reduce((amount, credit) => amount + credit.amount, 0);
+        return creditAmount;
+    });
+}
 function purchasedFilters(uid) {
     return __awaiter(this, void 0, void 0, function* () {
         const orders = yield order_model_1.Order.find({ uid: uid });

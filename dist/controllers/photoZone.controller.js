@@ -20,9 +20,10 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const follow_model_1 = require("../models/follow.model");
 const like_model_1 = require("../models/like.model");
 const wish_model_1 = require("../models/wish.model");
+const viewCount_model_1 = require("../models/viewCount.model");
 const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { uid, title, placeName, location, description, shortDescription, imageUrls, tags, } = req.body;
+        const { uid, title, placeName, location, description, shortDescription, imageUrls, tags, address } = req.body;
         const createdAt = Date.now();
         var locationJSON = {};
         try {
@@ -40,7 +41,8 @@ const uploadPhotozone = (req, res) => __awaiter(void 0, void 0, void 0, function
             shortDescription,
             imageUrls: imageUrls.split(','),
             tags: tags.split(','),
-            createdAt
+            createdAt,
+            address
         });
         yield newPhotoZone.save();
         res.status(200).json({
@@ -172,7 +174,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const cid = `${req.query.cid}`;
         const type = `${req.query.type}`;
         const photoZoneId = req.params.photoZoneId;
-        if (!cid || !photoZoneId || !type) {
+        if (!photoZoneId || !type) {
             logger_1.default.error("Lack of essential data");
             return res.status(400).json({
                 statusCode: -1,
@@ -180,7 +182,26 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 result: {}
             });
         }
+        const view = new viewCount_model_1.ViewCount({
+            productId: photoZoneId,
+            productType: type,
+            uid: uid,
+            createdAt: Date.now()
+        });
+        view.save(); // 저장보다 정보를 가져오는게 더중요하고 저장이 안되어도 크게 문제가 되지 않기 때문에 결과를 보지 않고 다음 블록을 진행하도록 await 제거
         const creator = yield user_model_1.User.getFromUid(cid);
+        if (!uid || uid === "") {
+            return res.status(200).json({
+                statusCode: 0,
+                message: "Success",
+                result: {
+                    creator: creator,
+                    isFollowed: false,
+                    isLiked: false,
+                    isWished: false,
+                }
+            });
+        }
         let isFollowed = yield follow_model_1.Follow.isFollowed(uid, cid);
         let isLiked = yield like_model_1.Like.isExist(photoZoneId, uid, type);
         let isWished = yield wish_model_1.Wish.isExist(photoZoneId, uid, type);
@@ -191,7 +212,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 creator: creator,
                 isFollowed,
                 isLiked,
-                isWished,
+                isWished
             }
         });
         logger_1.default.info("Successfully get detail");

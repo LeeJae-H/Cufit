@@ -23,36 +23,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReportSchema = exports.Report = void 0;
+exports.PopularTagSchema = exports.PopularTag = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const ReportSchema = new mongoose_1.Schema({
-    targetId: {
-        required: true,
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        refPath: 'targetType'
-    },
-    targetType: {
+const PopularTagSchema = new mongoose_1.Schema({
+    name: {
         required: true,
         type: String,
-        enum: ['Filter', 'Guideline', 'PhotoZone']
-    },
-    reportType: {
-        required: true,
-        type: String
     },
     createdAt: {
         required: true,
-        type: Number
+        type: Number,
     },
-    message: {
-        required: true,
-        type: String
+    imageUrl: {
+        type: String,
     },
-    uid: {
+    present: {
         required: true,
-        type: String
+        type: Boolean,
     }
 });
-exports.ReportSchema = ReportSchema;
-const Report = mongoose_1.default.model("Report", ReportSchema, "report");
-exports.Report = Report;
+exports.PopularTagSchema = PopularTagSchema;
+const PopularTag = mongoose_1.default.model('PopularTag', PopularTagSchema, 'popularTag');
+exports.PopularTag = PopularTag;

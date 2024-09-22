@@ -17,7 +17,7 @@ interface DBGuideline {
   createdAt: number;
   authStatus: object;
   originalImageUrl: string;
-  guidelineImageUrl: string;
+  guidelineImageUrl?: string;
   credit: number;
   type: string;
   placeName?: string;
@@ -29,6 +29,7 @@ interface DBGuideline {
     type: string;
     coordinates: number[];
   };
+  address?: string;
 }
 
 interface DBGuidelineDocument extends DBGuideline, Document {
@@ -46,6 +47,10 @@ interface DBGuidelineModel extends Model<DBGuidelineDocument> {
   newSearch: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   searchbyTitleOrTag: (keyword: string, code?: string) => Promise<[DBGuidelineDocument]>;
   findByDistance(lat: number, lng: number, distance: number, code?: string): Promise<DBGuidelineDocument[]>;
+  findByArea(coordinates: any[], code?: string): Promise<DBGuidelineDocument[]>;
+  findAll(page: number, code?: string): Promise<DBGuidelineDocument[]>;
+  getPopular(): Promise<DBGuidelineDocument[]>;
+  searchByAddress: (address: string) => Promise<[DBGuidelineDocument]>;
 }
 
 const GuidelineSchema = new Schema<DBGuidelineDocument>({
@@ -55,12 +60,13 @@ const GuidelineSchema = new Schema<DBGuidelineDocument>({
   shortDescription: { required: true, type: String },
   createdAt: { required: true, type: Number },
   originalImageUrl: { required: true, type: String },
-  guidelineImageUrl: { required: true, type: String },
+  guidelineImageUrl: { type: String },
   credit: { required: true, type: Number },
   type: { required: true, type: String, default: "Guideline" },
   placeName: { type: String },
   creatorUid: { required: true, type: String, ref: 'User' },
-  location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{type: Number}], default: [0, 0] } }
+  location: { type: { type: String, enum: ['Point'], default: 'Point' }, coordinates: { type: [{type: Number}], default: [0, 0] } },
+  address: { type: String }
 }, {
   toJSON: {
     virtuals: true
@@ -110,8 +116,29 @@ GuidelineSchema.statics.getListFromTag = async function(tag: string) {
                     .populate('wishedCount')
                     .populate('usedCount')
                     .populate('authStatus')
-                    .populate('creator');
+                    .populate('creator')
+                    .populate('viewCount');
     return result;
+  } catch(error) {
+    throw error;
+  }
+}
+
+GuidelineSchema.statics.getPopular = async function() {
+  try {
+    let pipeline = createInitialPipeline();
+    pipeline.concat([
+      {
+        $sort: {
+          likedCount: -1
+        }
+      },
+      {
+        $limit: 20
+      }
+    ])
+
+    return await Guideline.aggregate(pipeline);
   } catch(error) {
     throw error;
   }
@@ -121,7 +148,7 @@ GuidelineSchema.statics.getFromObjId = async function(_id: string, code?: string
   try {
     let pipeline = createInitialPipeline(code);
 
-    pipeline.unshift( {
+    pipeline.unshift({
       $match: {
         $or: [
           { _id: new mongoose.Types.ObjectId(_id) } 
@@ -235,6 +262,27 @@ GuidelineSchema.statics.findByDistance = async function (lat: number, lng: numbe
   return result;  
 };
 
+
+GuidelineSchema.statics.findByArea = async function (coordinates: any[], code?: string) {
+  let pipeline = createInitialPipeline(code);
+
+  pipeline.unshift({
+    $match: {
+      location: {
+        $geoWithin: {
+          $geometry: {
+            type: "Polygon",
+            coordinates: [coordinates]
+          }
+        }
+      }
+    }
+  });
+    
+  let result = await Guideline.aggregate(pipeline);
+  return result;  
+};
+
 GuidelineSchema.virtual('likedCount', {
   ref: 'Like',
   localField: '_id',
@@ -269,6 +317,14 @@ GuidelineSchema.virtual('authStatus', {
   foreignField: 'productId',
   justOne: true
 })
+
+GuidelineSchema.virtual('viewCount', {
+  ref: 'ViewCount',
+  localField: '_id',
+  foreignField: 'productId',
+  count: true
+});
+
  
 GuidelineSchema.index({ location: "2dsphere" }); 
 
@@ -494,6 +550,46 @@ async function getByLatest(tag: string, sort: string) {
   }
 }
 
+GuidelineSchema.statics.findAll = async function(page: number, code?: string) {
+  let pipeline = createInitialPipeline(code);
+  pipeline = pagination(pipeline, page);
+  let result = await Guideline.aggregate(pipeline);
+
+  return result;
+}
+
+
+function pagination(pipeline: any[], page: number) {
+  let pagination: any[] = [
+    {
+      $skip: (page - 1) * 20
+    },
+    {
+      $limit: 20
+    }
+  ];
+  // pagination 변수가 배열이므로, push말고 concat을 해야함. push하면 배열 안에 배열 형태.
+  const newPipeline = pipeline.concat(pagination);
+  return newPipeline;
+}
+
+GuidelineSchema.statics.searchByAddress = async function(address: string) {
+  let pipeline = createInitialPipeline();
+  pipeline.unshift(
+    {
+      $match: {
+        $or: [
+          { address: { $regex: new RegExp(address, 'i') } }
+        ],
+      }
+    }
+  )
+
+  let result = await Guideline.aggregate(pipeline);
+  return result;
+}
+
+
 function createInitialPipeline(code?: string) {
   let pipeline: any[] = [
     {
@@ -551,7 +647,21 @@ function createInitialPipeline(code?: string) {
       }
     },
     {
+      $lookup: {
+        from: "viewCount",
+        localField: "_id",
+        foreignField: "productId",
+        as: "views"
+      }
+    },
+    {
+      $addFields: {
+        viewCount: { $size: "$views" } 
+      }
+    },
+    {
       $project: {
+        views: 0,
         orders: 0, // likes 필드를 제외하고 출력
         likes: 0
       }

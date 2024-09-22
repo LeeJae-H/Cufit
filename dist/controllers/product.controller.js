@@ -22,6 +22,7 @@ const wish_model_1 = require("../models/wish.model");
 const follow_model_1 = require("../models/follow.model");
 const order_model_1 = require("../models/order.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const viewCount_model_1 = require("../models/viewCount.model");
 const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const uid = `${req.query.uid}`;
     const cid = `${req.query.cid}`;
@@ -30,7 +31,7 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let avgRating = 0;
     let reviewCount = 0;
     let latestReviews = [];
-    if (!cid || !productId || !type) {
+    if (!productId || !type) {
         logger_1.default.error("Lack of essential data");
         return res.status(400).json({
             statusCode: -1,
@@ -59,6 +60,13 @@ const getDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         catch (error) {
             throw new Error("error while find creator info");
         }
+        const view = new viewCount_model_1.ViewCount({
+            productId: productId,
+            productType: type,
+            uid: uid,
+            createdAt: Date.now()
+        });
+        view.save(); // 저장보다 정보를 가져오는게 더중요하고 저장이 안되어도 크게 문제가 되지 않기 때문에 결과를 보지 않고 다음 블록을 진행하도록 await 제거
         if (!uid || uid === "") {
             return res.status(200).json({
                 statusCode: 0,

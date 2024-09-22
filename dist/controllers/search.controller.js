@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAnything = exports.searchFilters = exports.searchGuidelines = exports.searchCreators = void 0;
+exports.getByAddress = exports.getPhotozoneInArea = exports.getGuidelineInArea = exports.getAnything = exports.searchFilters = exports.searchGuidelines = exports.searchCreators = void 0;
 const user_model_1 = require("../models/user.model");
 const filter_model_1 = require("../models/filter.model");
 const guideline_model_1 = require("../models/guideline.model");
 const photoZone_model_1 = require("../models/photoZone.model");
 const logger_1 = __importDefault(require("../config/logger"));
+const searchedKeyword_model_1 = require("../models/searchedKeyword.model");
 const searchCreators = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     try {
@@ -92,11 +93,18 @@ exports.searchFilters = searchFilters;
 const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const keyword = req.params.keyword;
     const authCode = req.query.code;
+    const uid = req.query.uid;
     try {
         // creator, guideline, filter, photoZone
         if (keyword === "") {
             throw new Error("Empty keyword");
         }
+        const searched = new searchedKeyword_model_1.SearchedKeyword({
+            keyword: keyword,
+            createdAt: Date.now(),
+            uid: uid
+        });
+        yield searched.save();
         const creator = yield user_model_1.User.search(keyword);
         const guideline = yield guideline_model_1.Guideline.newSearch(keyword, authCode);
         const filter = yield filter_model_1.Filter.newSearch(keyword);
@@ -123,3 +131,135 @@ const getAnything = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getAnything = getAnything;
+// req.body.coordinates 예시
+// {
+//   "coordinates": [
+//     {"lng": -1, "lat": -1},
+//     {"lng": 1, "lat": -1},
+//     {"lng": 1, "lat": 1},
+//     {"lng": -1, "lat": 1},
+//     {"lng": -1, "lat": -1}
+//   ]
+// }
+// 
+// => 점들이 순서대로 가야하고, 첫 점과 끝 점이 같아야 함
+const getGuidelineInArea = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const authCode = req.query.code;
+    if (!req.body.coordinates) {
+        logger_1.default.error("Lack of essential data");
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
+    try {
+        let coordinates = [];
+        req.body.coordinates.forEach((coord) => {
+            const count = coord.lat.length;
+            for (var i = 0; i < count; i++) {
+                coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])]);
+            }
+        });
+        if (coordinates.length < 3) {
+            logger_1.default.error("Lack of essential data");
+            return res.status(400).json({
+                statusCode: -1,
+                message: "Lack of essential data",
+                result: {}
+            });
+        }
+        const result = yield guideline_model_1.Guideline.findByArea(coordinates, authCode);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: result
+        });
+        logger_1.default.info("Successfully get guideline in area");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get guideline in area: ${error}`);
+    }
+});
+exports.getGuidelineInArea = getGuidelineInArea;
+const getPhotozoneInArea = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const authCode = req.query.code;
+    if (!req.body.coordinates) {
+        logger_1.default.error("Lack of essential data");
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
+    try {
+        let coordinates = [];
+        req.body.coordinates.forEach((coord) => {
+            const count = coord.lat.length;
+            for (var i = 0; i < count; i++) {
+                coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])]);
+            }
+        });
+        if (coordinates.length < 3) {
+            logger_1.default.error("Lack of essential data");
+            return res.status(400).json({
+                statusCode: -1,
+                message: "Lack of essential data",
+                result: {}
+            });
+        }
+        const result = yield photoZone_model_1.PhotoZone.findByArea(coordinates, authCode);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: result
+        });
+        logger_1.default.info("Successfully get photozone in area");
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error get photozone in area: ${error}`);
+    }
+});
+exports.getPhotozoneInArea = getPhotozoneInArea;
+const getByAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const address = `${req.query.address}`;
+    if (!address || address === "") {
+        logger_1.default.error("Lack of essential data");
+        return res.status(400).json({
+            statusCode: -1,
+            message: "Lack of essential data",
+            result: {}
+        });
+    }
+    try {
+        let guidelines = yield guideline_model_1.Guideline.searchByAddress(address);
+        let photozones = yield photoZone_model_1.PhotoZone.searchByAddress(address);
+        res.status(200).json({
+            statusCode: 0,
+            message: "Success",
+            result: {
+                guidelines,
+                photozones
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            statusCode: -1,
+            message: error,
+            result: {}
+        });
+        logger_1.default.error(`Error while searching with address: ${error}`);
+    }
+});
+exports.getByAddress = getByAddress;

@@ -5,6 +5,7 @@ import { Filter } from '../models/filter.model';
 import { Guideline } from '../models/guideline.model';
 import { PhotoZone } from '../models/photoZone.model';
 import logger from '../config/logger';
+import { SearchedKeyword } from '../models/searchedKeyword.model';
 
 export const searchCreators = async (req: Request, res: Response) => {
   const keyword = req.params.keyword;
@@ -82,12 +83,21 @@ export const searchFilters = async (req: Request, res: Response) => {
 export const getAnything = async (req: CustomRequest, res: Response) => {
   const keyword = req.params.keyword;
   const authCode: any = req.query.code;
+  const uid = req.query.uid;
 
   try{
     // creator, guideline, filter, photoZone
     if (keyword === "") {
       throw new Error("Empty keyword")
     }
+
+    const searched = new SearchedKeyword({
+      keyword: keyword,
+      createdAt: Date.now(),
+      uid: uid
+    })
+    await searched.save();
+
     const creator = await User.search(keyword);
     const guideline = await Guideline.newSearch(keyword, authCode);
     const filter = await Filter.newSearch(keyword);
@@ -112,3 +122,136 @@ export const getAnything = async (req: CustomRequest, res: Response) => {
     logger.error(`Error get anything: ${error}`);
   }
 };
+
+
+// req.body.coordinates 예시
+    // {
+    //   "coordinates": [
+    //     {"lng": -1, "lat": -1},
+    //     {"lng": 1, "lat": -1},
+    //     {"lng": 1, "lat": 1},
+    //     {"lng": -1, "lat": 1},
+    //     {"lng": -1, "lat": -1}
+    //   ]
+    // }
+    // 
+    // => 점들이 순서대로 가야하고, 첫 점과 끝 점이 같아야 함
+export const getGuidelineInArea = async (req: CustomRequest, res: Response) => {
+  const authCode: any = req.query.code;
+  if (!req.body.coordinates) {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    })
+  }
+  
+  try {
+    let coordinates: any[] = [];
+    req.body.coordinates.forEach((coord: any) => {
+      const count = coord.lat.length;
+      for (var i = 0; i < count; i++) {
+        coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])])
+      }
+    })
+    if (coordinates.length < 3) {
+      logger.error("Lack of essential data");
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Lack of essential data",
+        result: {}
+      })
+    }
+    const result = await Guideline.findByArea(coordinates, authCode);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: result
+    })
+    logger.info("Successfully get guideline in area");
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get guideline in area: ${error}`);
+  }
+};
+
+export const getPhotozoneInArea = async (req: CustomRequest, res: Response) => {
+  const authCode: any = req.query.code;
+  if (!req.body.coordinates) {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    })
+  }
+  
+  try {
+    let coordinates: any[] = [];
+    req.body.coordinates.forEach((coord: any) => {
+      const count = coord.lat.length;
+      for (var i = 0; i < count; i++) {
+        coordinates.push([parseFloat(coord.lng[i]), parseFloat(coord.lat[i])])
+      }
+    })
+    if (coordinates.length < 3) {
+      logger.error("Lack of essential data");
+      return res.status(400).json({
+        statusCode: -1,
+        message: "Lack of essential data",
+        result: {}
+      })
+    }
+    const result = await PhotoZone.findByArea(coordinates, authCode);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: result
+    })
+    logger.info("Successfully get photozone in area");
+  } catch (error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error get photozone in area: ${error}`);
+  }
+};
+
+export const getByAddress = async (req: CustomRequest, res: Response) => {
+  const address = `${req.query.address}`;
+  if (!address || address === "") {
+    logger.error("Lack of essential data");
+    return res.status(400).json({
+      statusCode: -1,
+      message: "Lack of essential data",
+      result: {}
+    })
+  }
+
+  try {
+    let guidelines = await Guideline.searchByAddress(address);
+    let photozones = await PhotoZone.searchByAddress(address);
+    res.status(200).json({
+      statusCode: 0,
+      message: "Success",
+      result: {
+        guidelines,
+        photozones
+      }
+    })
+  } catch(error) {
+    res.status(500).json({
+      statusCode: -1,
+      message: error,
+      result: {}
+    })
+    logger.error(`Error while searching with address: ${error}`);
+  }
+}

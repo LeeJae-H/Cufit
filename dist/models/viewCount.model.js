@@ -23,36 +23,27 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReportSchema = exports.Report = void 0;
+exports.viewCountSchema = exports.ViewCount = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const ReportSchema = new mongoose_1.Schema({
-    targetId: {
-        required: true,
+const viewCountSchema = new mongoose_1.Schema({
+    productId: {
         type: mongoose_1.default.Schema.Types.ObjectId,
-        refPath: 'targetType'
+        refPath: 'productType',
+        required: true
     },
-    targetType: {
+    productType: {
         required: true,
         type: String,
         enum: ['Filter', 'Guideline', 'PhotoZone']
     },
-    reportType: {
-        required: true,
-        type: String
+    uid: {
+        type: String,
     },
     createdAt: {
         required: true,
         type: Number
-    },
-    message: {
-        required: true,
-        type: String
-    },
-    uid: {
-        required: true,
-        type: String
     }
 });
-exports.ReportSchema = ReportSchema;
-const Report = mongoose_1.default.model("Report", ReportSchema, "report");
-exports.Report = Report;
+exports.viewCountSchema = viewCountSchema;
+const ViewCount = mongoose_1.default.model('ViewCount', viewCountSchema, 'viewCount');
+exports.ViewCount = ViewCount;

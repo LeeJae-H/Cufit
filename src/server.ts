@@ -18,7 +18,7 @@ app.use(cors({ origin: true, credentials: true }));
 
 // 미들웨어 : 데이터 파싱 설정 -> 클라이언트에서 전송한 HTTP 요청의 본문(body)에 있는 데이터를 파싱하여 express 애플리케이션에서 사용할 수 있도록 해준다. 라우팅 핸들러(controller)에서 req.body를 통해 파싱된 데이터에 접근할 수 있다.
 app.use(express.json()); // application/json
-app.use(express.urlencoded({ extended: false })); // application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true })); // application/x-www-form-urlencoded
 // multipart/form-data 를 위해서 multer를 사용하는데, multer는 서버 전체에 적용되지 않고 필요한 부분에서만 사용한다.
 
 // app.use(cache);

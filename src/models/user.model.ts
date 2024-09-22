@@ -31,6 +31,8 @@ interface DBUserModel extends Model<DBUserDocument> {
   getFromObjId: (_id: string) => Promise<DBUserDocument>;
   createNewUser: (uid: DecodedIdToken) => Promise<DBUserDocument>;
   search: (keyword: string) => Promise<[DBUserDocument]>;
+  getPurchasedGuidelines: (uid: string) =>Promise<object[]>;
+  getCredits: (uid: string) => Promise<number>;
 }
 
 const UserSchema = new Schema<DBUserDocument>({
@@ -76,7 +78,16 @@ UserSchema.statics.search = async function(keyword: string) {
       { bio: { $regex: new RegExp(keyword, 'i') } }
     ],
   })
+  .populate('follower').populate('following');
   return result;  
+}
+
+UserSchema.statics.getCredits = async function(uid: string) {
+  try {
+    return await credits(uid);
+  } catch(error) {
+    throw error;
+  }
 }
 
 UserSchema.statics.getFromUid = async function(uid: string) {
@@ -85,14 +96,7 @@ UserSchema.statics.getFromUid = async function(uid: string) {
     if (!result) {
       return null;
     }
-    const credits = await Credit.find({ 
-      uid: uid,
-      $or: [
-        { expireAt: { $gt: Date.now() } },
-        { expireAt: -1 }
-      ]
-    })
-    const creditAmount = credits.reduce((amount, credit) =>  amount + credit.amount , 0)
+    const creditAmount = await credits(result.uid);
     result.credit = creditAmount
     const guidelines = await purchasedGuidelines(uid);
     const filters = await purchasedFilters(uid);
@@ -110,14 +114,7 @@ UserSchema.statics.getFromObjId = async function(_id: string) {
     if (!result) {
       return null;
     }
-    const credits = await Credit.find({ 
-      uid: result.uid,
-      $or: [
-        { expireAt: { $gt: Date.now() } },
-        { expireAt: -1 }
-      ]
-    })
-    const creditAmount = credits.reduce((amount, credit) =>  amount + credit.amount , 0)
+    const creditAmount = await credits(result.uid);
     result.credit = creditAmount;
     return result;
   } catch(error) {
@@ -146,6 +143,10 @@ UserSchema.statics.createNewUser = async function(token: DecodedIdToken) {
   }
 }
 
+UserSchema.statics.getPurchasedGuidelines = async function(uid: string) {
+  return await purchasedGuidelines(uid);
+}
+
 UserSchema.virtual('follower', {
   ref: "Follow",
   localField: 'uid',
@@ -159,6 +160,18 @@ UserSchema.virtual("following", {
   foreignField: 'srcUid',
   count: true
 })
+
+async function credits(uid: string) : Promise<number> {
+  const credits = await Credit.find({ 
+    uid: uid,
+    $or: [
+      { expireAt: { $gt: Date.now() } },
+      { expireAt: -1 }
+    ]
+  })
+  const creditAmount = credits.reduce((amount, credit) =>  amount + credit.amount , 0);
+  return creditAmount;
+}
 
 async function purchasedFilters(uid: string) : Promise<object[]> {
   const orders = await Order.find({uid: uid});

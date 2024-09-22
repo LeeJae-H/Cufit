@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import { Filter, DBFilterDocument } from './filter.model';
 import { Guideline, DBGuidelineDocument } from './guideline.model';
+import { PhotoZone, DBPhotoZoneDocument } from './photoZone.model';
 
 interface DBLike {
   uid: string;
@@ -16,7 +16,7 @@ interface DBLikeDocument extends DBLike, Document {
 
 interface DBLikeModel extends Model<DBLikeDocument> {
   isExist: (pid: string, uid: string, type?: string) => Promise<Boolean>;
-  getLikelist: (uid: string) => Promise<{ filters: DBFilterDocument[], guidelines: DBGuidelineDocument[] }>;
+  getLikelist: (uid: string) => Promise<{ photozones: DBPhotoZoneDocument[], guidelines: DBGuidelineDocument[] }>;
 }
 
 
@@ -57,29 +57,27 @@ LikeSchema.statics.isExist = async function(pid: string, uid: string, type?: str
 LikeSchema.statics.getLikelist = async function (uid: string) {
   try {
     const likelist = await Like.find({ uid: uid });
-    const filterIds = likelist
-    .filter((like: DBLikeDocument) => like.productType === "Filter")
+    const photozoneIds = likelist
+    .filter((like: DBLikeDocument) => like.productType === "PhotoZone")
     .map((like: DBLikeDocument) => like.productId);    
     
     const guidelineIds = likelist
     .filter((like: DBLikeDocument) => like.productType === "Guideline")
     .map((like: DBLikeDocument) => like.productId); 
 
-    const filters = await Filter.find({ _id: { $in: filterIds } })
+    const photozones = await PhotoZone.find({ _id: { $in: photozoneIds } })
       .populate('likedCount')
-      .populate('wishedCount')
-      .populate('usedCount')
-      .populate('authStatus')
-      .populate('creator');
+      .populate('creator')
+      .populate('viewCount');
 
     const guidelines = await Guideline.find({ _id: { $in: guidelineIds } })
       .populate('likedCount')
-      .populate('wishedCount')
       .populate('usedCount')
       .populate('authStatus')
-      .populate('creator');
+      .populate('creator')
+      .populate('viewCount');
 
-    return { filters, guidelines };
+    return { photozones, guidelines };
   } catch (error) {
     console.error('Error in getLikelistByUid:', error);
     throw error;

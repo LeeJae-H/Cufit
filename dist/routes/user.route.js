@@ -17,9 +17,12 @@ router.get('/:uid/faq-list', user_controller_1.getFaqList); // uid로 faqlist �
 router.get("/:uid/like-list", user_controller_1.getLikeList); // uid로 likelist 조회
 router.get("/:uid/wish-list", user_controller_1.getWishList); // uid로 wishlist 조회
 router.get("/:uid/product-list", user_controller_1.getProductList); // 사용자가 올린 가이드라인, 필터 조회
+router.get("/:uid/purchased-list", user_controller_1.getPurchasedList); // 구매한 제품 조회
+router.get("/:uid/credits", user_controller_1.getCredits);
 router.get("/follow", user_controller_1.checkFollow); // follow 되었는지 확인하기
 router.post("/follow", user_controller_1.toggleFollow); // follow 또는 unfollow 하기
 router.post("/faq", user_controller_1.uploadFaq); // 문의하기
+router.post("/report", authMiddleware_1.default, user_controller_1.uploadReport); // 신고하기
 router.post("/product/like", user_controller_1.likeProduct); // product like 하기
 router.post("/product/wish", user_controller_1.wishProduct); // product wish 하기
 router.post("/product/buy", authMiddleware_1.default, user_controller_1.buyProduct); // product 구매

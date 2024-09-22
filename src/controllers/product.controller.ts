@@ -9,6 +9,7 @@ import { Wish } from '../models/wish.model';
 import { Follow } from '../models/follow.model';
 import { Order } from '../models/order.model';
 import logger from '../config/logger';
+import { ViewCount } from '../models/viewCount.model';
 
 export const getDetail = async (req: Request, res: Response) => {
   const uid = `${req.query.uid}`;
@@ -18,7 +19,7 @@ export const getDetail = async (req: Request, res: Response) => {
   let avgRating: Double = 0;
   let reviewCount = 0;
   let latestReviews: any[] = [];
-  if (!cid || !productId || !type) {
+  if (!productId || !type) {
     logger.error("Lack of essential data");
     return res.status(400).json({
       statusCode: -1,
@@ -48,6 +49,15 @@ export const getDetail = async (req: Request, res: Response) => {
       throw new Error("error while find creator info");
     }
     
+    const view = new ViewCount({
+      productId: productId,
+      productType: type,
+      uid: uid,
+      createdAt: Date.now()
+    });
+    
+    view.save(); // 저장보다 정보를 가져오는게 더중요하고 저장이 안되어도 크게 문제가 되지 않기 때문에 결과를 보지 않고 다음 블록을 진행하도록 await 제거
+
     if (!uid || uid === "") {
       return res.status(200).json({
         statusCode: 0,
@@ -70,6 +80,7 @@ export const getDetail = async (req: Request, res: Response) => {
     let isWished: Boolean = await Wish.isExist(productId, uid, type);
     let isPurchased: Boolean = await Order.isExist(productId, uid, type);
     let review = await Review.findOne({uid, productId});
+    
     res.status(200).json({
       statusCode: 0,
       message: "Success",
