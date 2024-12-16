@@ -1,53 +1,39 @@
-## Cufit - Mobile Camera App
-### 📱 Cufit 소개
----
-![image](https://github.com/user-attachments/assets/df1548f7-8235-411f-9ec4-4d5975b7d305)
+<p align="left"><img src="https://github.com/user-attachments/assets/f4420012-6f0e-4058-bb6b-a7bebcf79c91" height=110></p>
 
-**< 기능 >**
-- 사용자는 사진 촬영 시 가이드라인 사진을 오버레이하여 원하는 구도의 사진을 찍을 수 있다.
-  <br>
-    -> 오버레이 시 가이드라인 사진의 투명도를 조절할 수 있다.
-  <br>
-    -> 가이드라인 사진 속 인물의 외곽선만 오버레이 할 수 있다.
-
-**< 팀원 - 총 3명 >**
-- 팀장 - 기획 및 풀스택 개발자(iOS) : 1명
-- 디자이너 : 1명
-- 백엔드 개발자(본인) : 1명
-
-**< 참여 기간 >**
-- 2023.09 ~ 2024.07
-
-**< 시작 동기 >**
-- 연인 사이에서, 서로가 찍어주는 사진이 만족스럽지 않아 작은 불화가 생겼던 경험을 바탕으로 해당 프로젝트를 시작하게 되었다.
-  <br>
-    → 실제로 프로젝트 팀원들 모두 이러한 경험을 겪은 적이 있으며, 주변에도 이러한 경험을 겪은 사람들이 꽤 많았다.
-    
-
-**< 목표 >**
-- “Cufit” 프로젝트는 인물 사진을 잘 찍을 수 있도록 도와주는 카메라 서비스를 제공하고자 한다.
-  <br>
-    -> 주요 타겟 : 연인
-  <br>
-    -> 서브 타겟 : 인플루언서, 개인 사업자 등
+# Cufit
+```
+원하는 사진 구도의 촬영을 도와주는 카메라 앱
+```
 
 <br>
 
-### 📖 Cufit 백엔드
----
-**< 아키텍처 >**
+## TEAM
+- 풀스택 개발자 : 1명
+- 백엔드 개발자 : 1명  ✅
+- 디자이너 : 1명
 
-<img src="https://github.com/user-attachments/assets/12569d26-7c33-477f-9cbd-b3953687f726" width="600"/>
+<br>
 
-**< 언어 & 프레임워크 >** 
-- Typescript 5.3.3
-- Express 4.18.2
+## PRODUCT
+![image](https://github.com/user-attachments/assets/df1548f7-8235-411f-9ec4-4d5975b7d305)
 
-**< 데이터베이스 >**
-- MongoDB
+<br>
 
-**< 프로젝트 폴더 구조 >**
+## TECH STACK
+- **Development**
+  - *Express 4.18.2*
+  - *Typescript 5.3.3*
 
+- **Infra**
+  - *AWS Route53 & AWS ELB(ALB)*
+  - *AWS EC2*
+  - *AWS S3*
+  - *MongoDB Atlas*
+
+- **External**
+  - *Firebase Authentication*
+
+<br>
+
+## Directory Structure
 <img src="https://github.com/user-attachments/assets/e67a7556-c1bf-444a-ab6b-0141d6b81bbb" width="600"/>
-
-  
