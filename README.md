@@ -1,4 +1,4 @@
-<p align="left"><img src="https://github.com/user-attachments/assets/f4420012-6f0e-4058-bb6b-a7bebcf79c91" height=110></p>
+<p align="left"><img src="https://github.com/user-attachments/assets/f956b90b-99c7-4e98-9107-cb7c1d3f812c" height=110></p>
 
 # Cufit
 ```
