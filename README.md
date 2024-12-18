@@ -4,6 +4,7 @@
 ```
 원하는 사진 구도의 촬영을 도와주는 카메라 서비스
 ```
+[App Store(iOS) 링크](https://apps.apple.com/kr/app/cufit/id6451354744)
 
 <br>
 
